@@ -12,7 +12,7 @@
 	   *(Note that this never updates outdated versions of already installed commands, to update commands use adoupdate)
 	   * - Use ieboilstart to harmonize settings across users
 	 
-	   local user_commands ietoolkit sxpose spmap   
+	   local user_commands ietoolkit labutil   
 	   foreach command of local user_commands  {
 		   cap which `command'
 		   if _rc == 111 {
@@ -25,8 +25,9 @@
 		set scheme economist
 		set matsize 11000
 		graph set window fontface "Times"
-                  
-
+        set level 95
+		
+		
    * PART 1:  PREPARING FOLDER PATH GLOBALS
    *________________________________________________________________________________________________________________________________*
 	   * Users

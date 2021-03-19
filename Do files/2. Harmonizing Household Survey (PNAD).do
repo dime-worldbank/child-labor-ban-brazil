@@ -386,13 +386,17 @@
 			br 		year id_dom inf uf ninf_mae
 		
 			*------------------------------------------------------------------------------------------------------------------------*
-			rename (v9058 v4729	v8005 v0401 v9892) (hours_worked weight age c_household work_age)																								//horas de trabalho no trabalho principal na semana de referência
-
-			replace age 			= . if age == 999
+			rename (v9058 v4729	v8005 v0401 v9892 v9611 v9612) (hours_worked weight age c_household work_age years_current_work months_current_work)	//horas de trabalho no trabalho principal na semana de referência
 			
-			replace hours_worked 	= . if hours_worked == 99 | hours_worked == - 1
+			replace years_current_work  = . if years_current_work  == 99 | years_current_work == -1
 			
-			replace work_age 	  	= . if work_age 	== 99 | work_age     == - 1
+			replace months_current_work = . if months_current_work == 99 | months_current_work == -1
+			
+			replace age 				= . if age == 999
+			
+			replace hours_worked 		= . if hours_worked == 99 | hours_worked == - 1
+			
+			replace work_age 	  		= . if work_age 	== 99 | work_age     == - 1
 					
 			recode 	v4728 (1 = 1) (2 = 1) (3 = 1) (4 = 0) (5 = 0) (6 = 0) (7 = 0) (8 = 0)										, gen (urban)
 				
@@ -402,9 +406,9 @@
 
 			recode  v9115 (1 = 1) (3 = 0) (9 = .)																				, gen (looking_job)
 
-			rename (v9002 v9003 v9004 v9001) (tar_2 tar_3 tar_4 ref_week)																										//v9001 = 1 se trab na sem de ref. 9002 trab rem que estava afastado na sem de ref. 			
+			rename (v9002 v9003 v9004 v9001) (tar_2 tar_3 tar_4 ref_week)																					//v9001 = 1 se trab na sem de ref. 9002 trab rem que estava afastado na sem de ref. 			
 
-			gen 	ocupado = 1 								if (ref_week == 1 | tar_2 == 2 | tar_3 == 1 | tar_4 == 2) 					//está ocupado na semana de referência se trabalhou, estava afastado ou exerceu tarefas de cultivo, construção
+			gen 	ocupado = 1 								if (ref_week == 1 | tar_2 == 2 | tar_3 == 1 | tar_4 == 2) 									//está ocupado na semana de referência se trabalhou, estava afastado ou exerceu tarefas de cultivo, construção
 	 
 			replace ocupado = 0 								if (looking_job == 1 & ocupado != 1)					  
 			
@@ -552,7 +556,7 @@
 			
 			*gen 	grade 	   = v0605
 
-			keep uf age c_household weight ref_week tar_3 tar_4 hours_worked id_dom-edu_level_enrolled v3031 v3032 v3033 v0404 v0406
+			keep uf age c_household weight ref_week tar_3 tar_4 hours_worked years_current_work months_current_work id_dom-edu_level_enrolled v3031 v3032 v3033 v0404 v0406
 
 		}
 		
@@ -599,7 +603,7 @@
 			
 			*College degree
 			*------------------------------------------------------------------------------------------------------------------------*
-			gen 	 college_degree   = edu_att == 7
+			gen 	 college_degree   = edu_att == 7  | edu_att == 6
 			
 			replace  college_degree   = . if edu_att == .
 			
@@ -646,9 +650,13 @@
 
 			gen     base_date = mdy(3,31,1998) 				if year == 1998 		//be careful if year < 2000
 			
+			gen 	base_pnad = mdy(9,30,1998)				if year == 1998
+			
 			foreach wave in 1999 2001 2002 2003 2004 2005 2006 2007 2008 2009 2011 2012 2013 2014 2015 {
 				
 				replace base_date = mdy(3,31,`wave') 		if year == `wave'		//be careful if year < 2000
+				
+				replace base_pnad = mdy(9,31,`wave') 		if year == `wave'		//be careful if year < 2000
 			
 			}
 
@@ -657,36 +665,42 @@
 			g 		ageA = (base_date - birth_date)/365.25
 				
 			g 		age_31_march = trunc(ageA)
+			
+			gen		age_pnad	 = trunc((base_pnad - birth_date)/365.25)
+			
+			foreach var of varlist age_31_march age_pnad {
 				
-			replace age_31_march=age 						if v3032==20
+				replace `var' = age 						if v3032==20
 
-			replace age_31_march=age 						if v3033 < 1895 & year == 2015
+				replace `var' = age 						if v3033 < 1895 & year == 2015
 
-			replace age_31_march=age 						if v3033 < 1890 & year == 2014
+				replace `var' = age 						if v3033 < 1890 & year == 2014
 
-			replace age_31_march=age 						if v3033 < 1893 & year == 2013
+				replace `var' = age 						if v3033 < 1893 & year == 2013
 
-			replace age_31_march=age 						if v3033 < 1890 & year == 2012
+				replace `var' = age 						if v3033 < 1890 & year == 2012
 
-			replace age_31_march=age 						if v3033 < 1890 & year == 2011
+				replace `var' = age 						if v3033 < 1890 & year == 2011
 
-			replace age_31_march=age 						if v3033 < 1887 & year == 2009
+				replace `var' = age 						if v3033 < 1887 & year == 2009
 
-			replace age_31_march=age 						if v3033 < 1887 & year == 2008
+				replace `var' = age 						if v3033 < 1887 & year == 2008
 
-			replace age_31_march=age 						if v3033 < 1885 & year == 2007
+				replace `var' = age 						if v3033 < 1885 & year == 2007
+				
+				replace `var' = age 						if v3033 < 1885 & year == 2006
+
+				replace `var' = age							if v3033 < 1884 & year == 2005
+
+				replace `var' = age 						if v3033 < 1883 & year == 2004
+
+				replace `var' = age							if v3033 < 1882 & year == 2003
+
+				replace `var' = age 						if v3033 < 1882 & year == 2002
+				
+				replace `var' = age							if v3033 <  99 
 			
-			replace age_31_march=age 						if v3033 < 1885 & year == 2006
-
-			replace age_31_march=age 						if v3033 < 1884 & year == 2005
-
-			replace age_31_march=age 						if v3033 < 1883 & year == 2004
-
-			replace age_31_march=age 						if v3033 < 1882 & year == 2003
-
-			replace age_31_march=age 						if v3033 < 1882 & year == 2002
-			
-			replace age_31_march=age 						if v3033 <  99 
+			}
 
 			br 		year v3031 v3031b v3032 v3032b v3033 v3033b age ageA age_31_march bd birth_date base_date
 
@@ -895,6 +909,14 @@
 			gen 	pwork_informal 	= 1 		if (pwork   == 1 & formal == 0)
 				
 			replace pwork_informal 	= 0 		if (pwork   == 1 & formal == 1) | pwork == 0
+			
+			gen 	work_formal		= 1 		if (working == 1 & formal == 1)
+			
+			replace work_formal     = 0			if (working == 1 & formal == 0) | working == 0
+			
+			gen 	work_informal	= 1 		if (working == 1 & formal == 0)
+			
+			replace work_informal   = 0			if (working == 1 & formal == 1) | working == 0
 				
 			gen 	pwork_sch  		= pwork   == 1 & schoolatt == 1
 			
@@ -904,7 +926,7 @@
 
 			gen 	uwork_only 		= uwork   == 1 & schoolatt == 0
 
-			gen 	study_only 		= working == 0 & schoolatt == 1
+			gen 	study_only 		= pwork   == 0 & schoolatt == 1
 
 			gen 	nemnem	   		= working == 0 & schoolatt == 0
 
@@ -1127,6 +1149,8 @@
 			label var pwork					"Paid work"
 			label var pwork_formal			"Formal paid work"
 			label var pwork_informal		"Informal paid work"
+			label var work_formal			"Formal work"
+			label var work_informal			"Informal work"
 			label var uwork					"Unpaid work"
 			label var schoolatt				"School attendance"
 			label var pwork_sch				"Paid work and studying"
@@ -1136,7 +1160,9 @@
 			label var study_only			"Only studying"	
 			label var nemnem				"Neither working or studying"
 			label var per_capita_inc		"Household per capita income (current BRL)"			
-				
+			label var mom_yrs_school		"Mother's years of schooling"
+			label var mom_age				"Mother's age"
+			label var hh_members			"Household size"
 
 			*------------------------------------------------------------------------------------------------------------------------*
 			sort 	year id_dom
