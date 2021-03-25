@@ -5,18 +5,18 @@
 	
 	*Appendix B
 	*--------------------------------------------------------------------------------------------------------------------------------*
-		use "$final/Child Labor Data.dta" if urban == 1 & male == 1 & year == 1999 & xw >= - 12 & xw <= 12, clear	
-		
-			foreach v of varlist $shortterm_outcomes {
+		use "$final/Child Labor Data.dta" if urban == 1 & male == 1 & year == 1999 & xw >= - 12 & xw < 12, clear	
+
+			foreach v of varlist $shortterm_outcomes mom_working {
 				local `v'_label: var label `v'
 			}
-			collapse $shortterm_outcomes  [pw = weight], by(xw)
-			foreach v of varlist $shortterm_outcomes {
+			collapse $shortterm_outcomes mom_working  [pw = weight], by(xw)
+			foreach v of varlist $shortterm_outcomes mom_working {
 				replace   `v' = `v'*100
 				label var `v' `"``v'_label'"'
 			}
 
-			foreach var of varlist $shortterm_outcomes {
+			foreach var of varlist mom_working {
 				tw  (lpolyci `var' xw if xw >= 0, degree(0) bw(1) acolor(gs12) fcolor(gs12) clcolor(gray) clwidth(0.3)) 		///
 					(lpolyci `var' xw if xw <  0, degree(0) bw(1) acolor(gs12) fcolor(gs12) clcolor(gray) clwidth(0.3)) 		///
 					(scatter `var' xw if xw >= -12 & xw <  0 , sort msymbol(circle) msize(small) mcolor(navy))         		 	///
@@ -172,7 +172,7 @@
 			local bandwidth 	"6" 						
 			local variable = 1
 			foreach var of varlist $longterm_outcomes {
-				foreach year in 2007 2008 2009 2011 2012 2013 2014      {
+				foreach year in 2007 2008 2009 2011 2012 2013 2014      { 
 					foreach bdw of local bandwidth {
 						quietly reg `var' D zw [pw = weight] if xw >= -`bdw' & xw <= `bdw' & year == `year', cluster(zw)
 						matrix results = results \ (`year', 0, `variable', el(r(table),1,1), el(r(table),5,1), el(r(table),6,1))
@@ -272,14 +272,32 @@
 				restore
 			}
 	
+	
+	
 
-	/*
+			use "$final/Child Labor Data.dta" if male == 1 & urban == 1 & zw > -13 & zw < 12, clear
+
+			tab edu_att, gen(educ)
+			
+			collapse (mean)educ1-educ7  [pw = weight], by(year)
+			foreach var of varlist educ* {
+				replace `var' = `var'*100
+			}
+			
+			format educ* %12.2fc
+			
+			
+			graph bar (percent) educ4 educ5 educ6 educ7, over(year) stack
+			
+			
+			
+			
 	
 	
 			use "$final/Child Labor Data.dta", clear
 	
-			gen 		age14_15 = age_pnad == 14 | age_pnad == 15
-			replace 	age14_15 = . if age_pnad== .
+			gen 		age14_15 = age == 14 | age== 15
+			replace 	age14_15 = . if age== .
 			
 			keep if age14_15 == 1
 			collapse (mean)pea ocupado working [pw = weight], by(year)
@@ -310,7 +328,7 @@
 			 graph box  tempo_trabalho [pw = weight], over(D)
 			
 			gen id = 1
-			collapse (sum) id working pwork uwork formal informal  (mean)tempo_trabalho got_work_bef_law [pw = weight], by(D)
+			collapse (sum) id working pwork uwork formal informal  (mean)tempo_trabalho got_work_bef_law age [pw = weight], by(D)
 
 			
 			

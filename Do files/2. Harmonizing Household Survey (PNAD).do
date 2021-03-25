@@ -60,10 +60,6 @@
 			recode 	v9067 (1 = 1) (3 = 0)																				, gen (worked_last_year)								//trabalhadores com 10 anos ou +. teve algum trabalho no período de captação de 358 dias							//para as pessoas desocupadas na semana de referência, elas trabalharam no período de captação de 358 dias?						
 
 			recode 	v9070 (2 = 1) (4 = 2) (6 = 3)																		, gen (n_jobs_last_year)								//para as pessoas desocupadas na semana de referência, elas trabalharam no período de captação de 358 dias? em 1, 2 ou 3 trabalhos?
-
-			gen 	nonpaid_work 		= 1 				if 				  v4706 == 13
-			
-			replace nonpaid_work 		= 0 				if ocupado == 1 & v4706 != 13
 						
 			gen 	wage  		  		= v4718   		   	if v4718 < 999999999999														//rendimento no trabalho principal na semana de referência
 
@@ -246,10 +242,6 @@
 				drop 	id t_ind 
 			}
 			
-			gen 	nonpaid_work 		= 1 				if 				  v4706 == 13
-			
-			replace nonpaid_work 		= 0 				if ocupado == 1 & v4706 != 13
-
 
 			*Carteira de trabalho e previdência social
 			*------------------------------------------------------------------------------------------------------------------------*
@@ -306,7 +298,7 @@
 			replace edu_att = 6 							if  v0607 == 6 											//Superior incompleto
 
 			replace edu_att = 7 							if (v0607 == 6 & v0611 == 1) | v0607 == 7 				//Superior completo
-					
+			
 			replace edu_att = 1 							if inlist(v0603, 6, 7, 8) 								//Sem instrução. Está matriculado na alfabetização, creche e pré-escola
 		
 			replace edu_att = 2 							if inlist(v0603, 1, 2, 3) 								//está cursando EF, portando, ef incompleto
@@ -445,10 +437,6 @@
 			gen     social_security = 1 					if  v4711 == 1 						& ocupado == 1
 
 			replace social_security = 0 					if  v4711 == 2 						& ocupado == 1				//a pessoa está ocupada mas não contribui para a previdência social
-
-			gen 	nonpaid_work 		= 1 				if 				  v4706 == 13
-			
-			replace nonpaid_work 		= 0 				if ocupado == 1 & v4706 != 13
 										
 			gen 	inc_household 		= v4721   		   	if v4721 < 999999999999
 
@@ -733,94 +721,99 @@
 		
 			recode  formal (1 = 0) (0 = 1), gen (informal)
 			
+			
+			*Trabalho não remunerado
+			*------------------------------------------------------------------------------------------------------------------------*
+ 			gen 	nonpaid_work 		= 1 				if 				  type_work == 4
+			
+			replace nonpaid_work 		= 0 				if ocupado == 1 & type_work != 4
 	
-			*Educação da mãe
+	
+			*Status de trabalho e estudo
+			*------------------------------------------------------------------------------------------------------------------------*
+			gen 	working 		= ocupado == 1
+					
+			gen 	pwork 			= 1 		if  working == 1 & nonpaid_work == 0
+				
+			replace pwork 			= 0 		if (working == 1 & nonpaid_work == 1) 	| working == 0 
+				
+			gen 	uwork 			= 1 		if  working == 1 & nonpaid_work == 1						
+				
+			replace uwork 			= 0 		if (working == 1 & nonpaid_work == 0) 	| working == 0 
+				
+			gen 	pwork_formal 	= 1 		if (pwork   == 1 & formal == 1)
+				
+			replace pwork_formal 	= 0 		if (pwork   == 1 & formal == 0) 		| pwork == 0
+				
+			gen 	pwork_informal 	= 1 		if (pwork   == 1 & formal == 0)
+				
+			replace pwork_informal 	= 0 		if (pwork   == 1 & formal == 1) 		| pwork == 0
+			
+			gen 	work_formal		= 1 		if (working == 1 & formal == 1)
+			
+			replace work_formal     = 0			if (working == 1 & formal == 0) 		| working == 0
+			
+			gen 	work_informal	= 1 		if (working == 1 & formal == 0)
+			
+			replace work_informal   = 0			if (working == 1 & formal == 1) 		| working == 0
+				
+			gen 	pwork_sch  		= pwork   == 1 & schoolatt == 1
+			
+			gen 	uwork_sch  		= uwork   == 1 & schoolatt == 1
+
+			gen 	pwork_only 		= pwork   == 1 & schoolatt == 0
+
+			gen 	uwork_only 		= uwork   == 1 & schoolatt == 0
+
+			gen 	study_only 		= working == 0 & schoolatt == 1
+
+			gen 	nemnem	   		= working == 0 & schoolatt == 0
+
+			foreach var of varlist pwork_sch uwork_sch pwork_only uwork_only study_only nemnem* {
+				
+				replace `var' = . if  working == . | schoolatt == .
+					
+			}
+
+	
+			*Educação, idade e status de ocupacao da mãe
 			*------------------------------------------------------------------------------------------------------------------------*
 			sort 	id_dom inf
 			
 			br 		id_dom inf c_household ninf_mae edu_att2
 			
-			gen 	mom_edu_att2   = .
-			
-			gen 	mom_yrs_school = .
-			
-			gen 	mom_age        = .
-			
 			***
 			***
+
+			foreach var of varlist edu_att2 yrs_school age working {
+			
 			levelsof ninf_mae, local(levels)
 			
 			di `levels'
 			
-			foreach i in `levels' {
-				gen 	mom_edu_aux 	= edu_att2							if inf == `i'
-				
-				egen 	mom_edu_aux2 	= max(mom_edu_aux), 				by (id_dom)
-				
-				replace mom_edu_att2	= mom_edu_aux2 						if ninf_mae == `i'
-				
-				drop 	mom_edu_aux*
-			}
-			
-			br id_dom inf c_household ninf_mae edu_att2 mom_edu_att2
-			
-			count 															if  mom_edu_att2 & c_household == 3 & v0406== 2 											//c_household = 3 se filho. 0406 = 2 se mora com a mae. foi possível identificar a escolaridade das mães de todas as crianças que moram com elas
-							
-				gen		mom_edu_aux  	= edu_att2 			 				if 					       (c_household == 1 | c_household == 2) & female == 1				//para crianças que não temos o identifidor da mãe (porque não moram com elas ou a mãe é falecida, a escolaridade que vai nessa variável é a escolaridade da mulher que é chefe do domicílio ou cônjuge
-							
-				egen 	mom_edu_aux2 	= max(mom_edu_aux), 				by (id_dom)
-				
-				replace mom_edu_att2	= mom_edu_aux2 	 	 				if missing(mom_edu_att2) & (c_household == 3 | c_household == 4)	
-				
-				drop 	mom_edu_aux*
-			
-			***
-			***
-			levelsof ninf_mae, local(levels)
-
-			foreach i in `levels' {
-			
-				gen 	mom_edu_aux 	= yrs_school						if inf == `i'
-				
-				egen 	mom_edu_aux2 	= max(mom_edu_aux), 				by (id_dom)
-				
-				replace mom_yrs_school	= mom_edu_aux2 						if ninf_mae == `i'
-				
-				drop 	mom_edu_aux*
-			}
-										
-				gen		mom_edu_aux  	= yrs_school 			 			if 							 (c_household == 1 | c_household == 2) & female == 1				//para crianças que não temos o identifidor da mãe (porque não moram com elas ou a mãe é falecida, a escolaridade que vai nessa variável é a escolaridade da mulher que é chefe do domicílio ou cônjuge
-							
-				egen 	mom_edu_aux2 	= max(mom_edu_aux), 				by (id_dom)
-				
-				replace mom_yrs_school	= mom_edu_aux2 	 	 				if missing(mom_yrs_school) & (c_household == 3 | c_household == 4)
-				
-				drop 	mom_edu_aux*
-
-			
-			***
-			***
-			levelsof ninf_mae, local(levels)
-
-			foreach i in `levels' {
-							
-				gen 	mom_aux 		= age								if inf == `i'
-				
-				egen 	mom_aux2 		= max(mom_aux), 					by (id_dom)
-				
-				replace mom_age			= mom_aux2 							if ninf_mae == `i'
-				
-				drop 	mom_aux*
-			}
-								
-				gen		mom_aux  		= age 			 					if 				      (c_household == 1 | c_household == 2) & female == 1				//para crianças que não temos o identifidor da mãe (porque não moram com elas ou a mãe é falecida, a escolaridade que vai nessa variável é a escolaridade da mulher que é chefe do domicílio ou cônjuge
-	
-				egen 	mom_aux2 		= max(mom_aux), 					by (id_dom)
+			gen mom_`var' = .
+		
+				foreach i in `levels' {
 					
-				replace mom_age			= mom_aux2 	 	 					if missing(mom_age) & (c_household == 3 | c_household == 4)
-				
-				drop 	mom_aux*
-
+					gen  	mom_aux   = `var' 				if inf == `i'
+					
+					egen 	mom_aux_2 = max(mom_aux), 		by (id_dom)
+					
+					replace	mom_`var' = mom_aux_2			if ninf_mae == `i'
+					
+					drop 	mom_aux*
+					
+				}
+			
+					gen		mom_aux   = `var' 				if 					    (c_household == 1 | c_household == 2) & female == 1				//para crianças que não temos o identifidor da mãe (porque não moram com elas ou a mãe é falecida, a escolaridade que vai nessa variável é a escolaridade da mulher que é chefe do domicílio ou cônjuge
+								
+					egen 	mom_aux2  = max(mom_aux), 		by (id_dom)
+					
+					replace mom_`var' = mom_aux2	 		if missing(mom_`var') & (c_household == 3 | c_household == 4)	
+					
+					drop 	mom_aux*
+			}
+			
 
 			*Cor de pele
 			*------------------------------------------------------------------------------------------------------------------------*
@@ -890,52 +883,6 @@
 			destring uf, replace
 			
 			
-			*Status de trabalho e estudo
-			*------------------------------------------------------------------------------------------------------------------------*
-			gen 	working 		= ocupado == 1
-					
-			gen 	pwork 			= 1 		if  working == 1 & nonpaid_work == 0
-				
-			replace pwork 			= 0 		if (working == 1 & nonpaid_work == 1) | working == 0 
-				
-			gen 	uwork 			= 1 		if  working == 1 & nonpaid_work == 1						
-				
-			replace uwork 			= 0 		if (working == 1 & nonpaid_work == 0) | working == 0 
-				
-			gen 	pwork_formal 	= 1 		if (pwork   == 1 & formal == 1)
-				
-			replace pwork_formal 	= 0 		if (pwork   == 1 & formal == 0) | pwork == 0
-				
-			gen 	pwork_informal 	= 1 		if (pwork   == 1 & formal == 0)
-				
-			replace pwork_informal 	= 0 		if (pwork   == 1 & formal == 1) | pwork == 0
-			
-			gen 	work_formal		= 1 		if (working == 1 & formal == 1)
-			
-			replace work_formal     = 0			if (working == 1 & formal == 0) | working == 0
-			
-			gen 	work_informal	= 1 		if (working == 1 & formal == 0)
-			
-			replace work_informal   = 0			if (working == 1 & formal == 1) | working == 0
-				
-			gen 	pwork_sch  		= pwork   == 1 & schoolatt == 1
-			
-			gen 	uwork_sch  		= uwork   == 1 & schoolatt == 1
-
-			gen 	pwork_only 		= pwork   == 1 & schoolatt == 0
-
-			gen 	uwork_only 		= uwork   == 1 & schoolatt == 0
-
-			gen 	study_only 		= pwork   == 0 & schoolatt == 1
-
-			gen 	nemnem	   		= working == 0 & schoolatt == 0
-
-			foreach var of varlist pwork* uwork* study_only nemnem* {
-				
-				replace `var' = . if  working == . | schoolatt == .
-					
-			}
-
 		save "$inter/pnad_harm_`year'.dta", replace
 		*----------------------------------------------------------------------------------------------------------------------------*
 		end
@@ -1163,6 +1110,7 @@
 			label var mom_yrs_school		"Mother's years of schooling"
 			label var mom_age				"Mother's age"
 			label var hh_members			"Household size"
+			label var mom_working			"Mother's working"
 
 			*------------------------------------------------------------------------------------------------------------------------*
 			sort 	year id_dom

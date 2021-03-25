@@ -19,6 +19,7 @@
 			   ssc install `command'
 		   }
 	   }
+		net install rdlocrand, from(https://raw.githubusercontent.com/rdpackages/rdlocrand/master/stata) replace
 		ieboilstart, version(15)          	
 		`r(version)' 
 	   

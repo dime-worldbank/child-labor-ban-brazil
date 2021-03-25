@@ -32,7 +32,7 @@
 		
 		
 	*--------------------------------------------------------------------------------------------------------------------------------*
-		drop 	age_31_march CT_signed spouse filho social_security activity* kid* two* female occupation goes_public_school went_school civil_servant_federal civil_servant_state civil_servant_municipal
+		drop 	age_31_march CT_signed spouse filho social_security activity* kid* female occupation goes_public_school went_school civil_servant_federal civil_servant_state civil_servant_municipal
 		compress
 		save 	"$final/Child Labor Data.dta", replace
 	
