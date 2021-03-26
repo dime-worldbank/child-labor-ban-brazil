@@ -2,10 +2,14 @@
 											*REGRESSION DISCONTINUITY UNDER LOCAL RANDOMIZATION*
 	*________________________________________________________________________________________________________________________________*
 
+	*global final "C:\Users\wb495845\Downloads"
 
+	**
+	**
+	*Selecting the window around the cutoffxa
+	**
+	*________________________________________________________________________________________________________________________________*
 	
-	*Selecting the window around the cutoff
-	*--------------------------------------------------------------------------------------------------------------------------------*
 		**The command rdwinselect helps us to find a window near the cutoff in which we can assume that the treatment assignment
 		**may be regarded as a known randomization mechanism near the cutoff. 
 		**For the procedure to be useful, the distribution of the covariates for control and treatment units should be unaffected
@@ -14,15 +18,19 @@
 	use "$final/Child Labor Data.dta" if urban == 1 & male == 1 & year == 1999, clear
 			
 		**Testing two specifications. 
-		rdwinselect zw $covariates, obsmin(200) 		 seed(1039)						// obsmin() is the minimum number of observations below and above the cutoff. 
+		rdwinselect zw $covariates1, obsmin(200) 		  seed(2198)						// obsmin() is the minimum number of observations below and above the cutoff. 
 			**Selected windon -13, +12
 			
-		rdwinselect zw $covariates, obsmin(200) wstep(2) seed(2948)						// wstep()  is the window increase in each step
+		rdwinselect zw $covariates1, obsmin(200) wstep(2) seed(2948)						// wstep()  is the window increase in each step
 			**Selected windon -10, +10												
 
-	
+			
+	**		
+	**
 	*Estimate of ATE on short and long term outcomes
-	*--------------------------------------------------------------------------------------------------------------------------------*
+	**
+	*________________________________________________________________________________________________________________________________*
+
 	matrix results = (0,0,0,0,0,0) //store year, short-term variable, long-term variable, observed statistic, lower bound and upper bound. 
 	
 	use "$final/Child Labor Data.dta" if urban == 1 & male == 1, clear
@@ -36,13 +44,24 @@
 				preserve
 					keep if year == `year' 
 					
+						if `year' < 2002 {
+						rdwinselect zw $covariates1, obsmin(200) seed(2198)
+						local wr = r(w_right)
+						local wl = r(w_left)
+						}
+						
+						if `year' > 2001  {
+						rdwinselect zw $covariates2, obsmin(200) seed(2198)
+						local wr = r(w_right)
+						local wl = r(w_left)
+						}	
+							
 						local variable = 1
 						foreach var of varlist $shortterm_outcomes  {
-							rdrandinf `var' zw, c(0) wl(-13) wr(12)  interfci(0.05)
+							rdrandinf `var' zw, wl(`wl') wr(`wr') interfci(0.05) seed(94757)	
 							matrix results = results \ (`year', `variable', 0, r(obs_stat), r(int_lb), r(int_ub))
 							local variable = `variable' + 1
 						}
-						
 				restore
 			}
 			
@@ -52,10 +71,14 @@
 			foreach year in 2007 2008 2009 2011 2012 2013 2014      {
 				preserve
 					keep if year == `year'
-					
+						
+						rdwinselect zw $covariates2, obsmin(200) seed(2198)
+						local wr = r(w_right)
+						local wl = r(w_left)
+
 						local variable = 1
 						foreach var of varlist $longterm_outcomes   {
-							rdrandinf `var' zw, c(0) wl(-13) wr(12) interfci(0.05)
+							rdrandinf `var' zw,  wl(`wl') wr(`wr') interfci(0.05) seed(493734)	
 							matrix results = results \ (`year', 0, `variable', r(obs_stat), r(int_lb), r(int_ub))
 							local variable = `variable' + 1
 						}
@@ -165,12 +188,15 @@
 			graph combine long1.gph long2.gph long3.gph long4.gph long5.gph	long6.gph																			, graphregion(fcolor(white)) ysize(5) xsize(10) title(, fcolor(white) size(medium) color(cranberry))
 			graph export "$figures/Long-term outcomes.pdf", as(pdf) replace
 			forvalues figure = 1(1)6  {
-			erase short`figure'.gph
+			erase long`figure'.gph
 			}	
-		
-
+	/*
+	**
+	**	
 	*Robustness check 
-	*--------------------------------------------------------------------------------------------------------------------------------*
+	**
+	*________________________________________________________________________________________________________________________________*
+	
 		use "$final/Child Labor Data.dta" if urban == 1 & male == 1, clear
 
 		preserve
@@ -180,16 +206,16 @@
 			**
 			*Paid work
 			**
-			rdrandinf pwork zw, c(0) wl(-13) wr(12) interfci(0.05)
+			rdrandinf pwork 		zw, c(0) wl(-13) wr(12) interfci(0.05) seed(1029)
 
-			rdsensitivity  	pwork 		zw, wlist(10(1)18) tlist(-0.17(0.01)0.03) verbose nodots saving(graphdata1)
+			rdsensitivity  	pwork 		zw, wlist(10(1)18) tlist(-0.17(0.01)0.03) verbose nodots saving("$inter/Robustness_pwork") 			seed(2048)
 
 			**
 			*School attendance
 			**
-			rdrandinf schoolatt zw, c(0) wl(-13) wr(12) interfci(0.05)
+			rdrandinf schoolatt 	zw, c(0) wl(-13) wr(12) interfci(0.05) seed(93757)
 			
-			rdsensitivity  	schoolatt   zw, wlist(10(1)18) tlist(-0.07(0.01)0.13) verbose nodots saving(graphdata2)
+			rdsensitivity  	schoolatt   zw, wlist(10(1)18) tlist(-0.07(0.01)0.13) verbose nodots saving("$inter/Robustness_schoolatt") 		seed(29273)
 		
 		restore
 		
@@ -198,134 +224,31 @@
 			**
 			*Formal paid work
 			**
-			rdrandinf pwork_formal zw, c(0) wl(-13) wr(12) interfci(0.05)
+			rdrandinf pwork_formal 	zw, c(0) wl(-13) wr(12) interfci(0.05) seed(34958)
 
-			rdsensitivity  	pwork 		zw, wlist(10(1)18) tlist(-0.15(0.01)0.05) verbose nodots saving(graphdata3)
+			rdsensitivity  	pwork 		zw, wlist(10(1)18) tlist(-0.15(0.01)0.05) verbose nodots saving("$inter/Robustness_pwork_formal") 	seed(93875)
 
 			
 			**
 			*Charts
 			**
-			use graphdata1, clear
-			twoway contour pvalue t w, ccuts(0(0.05)1) ccolors(gray*0.01 gray*0.05 gray*0.1 gray*0.15 gray*0.2 gray*0.25 gray*0.3 gray*0.35 gray*0.4 gray*0.5    ///
-															   gray*0.6 gray*0.7 gray*0.8 gray*0.9 gray black*0.5 black*0.6 black*0.7 black*0.8 black*0.9 black) ///
-									   xlabel(10(1)18) ylabel(-0.17(0.01)0.03, nogrid) graphregion(fcolor(none))
+			use "$inter/Robustness_pwork", clear
+			twoway contour pvalue t w, ccuts(0(0.05)1) xlabel(10(1)18,labsize(small)) ylabel(-0.17(0.01)0.03, labsize(small) nogrid) ///
+			xtitle("Weeks around the cutoff") ///
+			ytitle("ATE under the null hyphothesis") ///
+			title("{bf:Paid work, 1999}")
+			graph export "$figures/Robustness_pwork.pdf", replace
+		
+			use "$inter/Robustness_schoolatt", clear
+			twoway contour pvalue t w, ccuts(0(0.05)1) xlabel(10(1)18,labsize(small)) ylabel(-0.07(0.01)0.13, labsize(small) nogrid) ///
+			xtitle("Weeks around the cutoff") ///
+			ytitle("ATE under the null hyphothesis") ///
+			title("{bf:School attendance, 1999}")
+			graph export "$figures/Robustness_schoolatt.pdf", replace
 			
-		
-		
-		
-		use "$final/Child Labor Data.dta" if urban == 1 & male == 1 & year == 1999 & c_household == 3, clear
-		
-		rdrandinf mom_working zw if two_parent == 0, c(0) interfci(0.05) covariates($covariates) obsmin(200) wstep(2) seed(2948)
-		rdrandinf mom_working zw if two_parent == 1, c(0) interfci(0.05) covariates($covariates) obsmin(200) wstep(2) seed(2948)
-	
-
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-			use "$final/Child Labor Data.dta" if urban == 1 & male == 1 & year == 1999, clear
-			clonevar T = D
-
-				rdrandinf 		pwork zw, c(0) wl(-13) wr(12)  interfci(0.05)
-				rdsensitivity  	pwork zw, wlist(10(1)12) verbose nodots saving(graphdata)
-		
-						rdsensitivity  	pwork zw, wlist(10(1)15) tlist(-0.17(0.01)0.03) nodots saving(graphdata)
-
-		
-		
-		use graphdata, clear 
-		twoway contour pvalue t w, ccuts(0(0.05)1)
-		
-				rdrbounds pwork zw, expgamma(1.5 2 3) wlist(9 12 15) reps(1000)
-		
-		/*
-										ysize(3) xsize(4) 	saving(`outcome'.gph, replace))		
-							}
-					
-				}
-			}
-		**
-		*Short term outcomes
-		**
-			foreach year in 1999 2001  {
-				preserve
-					if `year' != 2001 keep if year == `year'
-					if `year' == 2001 keep if year == `year' | year == 1999
-					
-						local variable = 1
-						foreach var of varlist $shortterm_outcomes  {
-							rdrandinf `var' zw, c(0) wl(-13) wr(12)  interfci(0.05)
-							matrix results = results \ (`year', `variable', r(obs_stat), r(int_lb), r(int_ub))
-							local variable = `variable' + 1
-						}
-						
-				restore
-			}
-			
-		**
-		*Results
-		**
-
-			clear
-			svmat results
-					
-			drop  in 1
-			rename (results1-results5) (year shortterm_outcomes ATE lower upper)	
-					
-			label define shortterm_outcomes  1 "Paid work" 					2 "Formal paid work" 				3 "Informal paid work" 	4  "Unpaid work"    5 "School attendance" 				6 "Paid work and studying" ///
-											 7 "Unpaid work and studying" 	8 "Only paid work" 					9 "Only unpaid work" 	10 "Only studying" 11 "Neither working or studying"		
-												
-			label val shortterm_outcomes shortterm_outcomes
-
-			label var ATE    "ATE"
-			label var lower  "Lower bound"
-			label var upper  "Upper bound"
-			format ATE lower upper %4.3fc
-
-			save "$final/Regression Results using RD under local randomization.dta", replace
-	
-					
-		**
-		*Charts
-		**
-			
-			use   "$final/Regression Results using RD under local randomization.dta" if inlist(shortterm_outcomes, 1, 2, 3, 5), clear
-
-				
-					su lower, detail
-					local min = r(min) + r(min)/3
-					su upper, detail
-					local max = r(max) + r(max)/3
-					
-					twoway   scatter ATE shortterm_outcomes if year == 1999,  color(cranberry) || rcap lower upper shortterm_outcomes if year == 1999, lcolor(navy)																	///
-					yline(0, lw(1) lp(shortdash) lcolor(cranberry))				 																								///
-					xlabel(1 `" "Paid Work" "' 2 `" "Formal" "' 3 `" "Informal" "' 4 `" "School attendance" "' , labsize(small) ) 			///
-					xtitle("", size(medsmall)) 											  																						///
-					yscale(r())	 																																	///
-					ytitle("ITT", size(small))					 																												///					
-					title(`: label shortterm_outcomes `shortterm_outcomes'')																									///
-					legend(off)  																																				///
-					note("Source: PNAD.", color(black) fcolor(background) pos(7) size(small)) 
-					graph export "$figures/Figure_RD_short`figure'.pdf", as(pdf) replace
-			
-			
-			
-			
-			
-			
-			
-		
+			use "$inter/Robustness_pwork_formal", clear
+			twoway contour pvalue t w, ccuts(0(0.05)1) xlabel(10(1)18,labsize(small)) ylabel(-0.15(0.01)0.05, labsize(small) nogrid) ///
+			xtitle("Weeks around the cutoff") ///
+			ytitle("ATE under the null hyphothesis") ///
+			title("{bf:Formal paid work, 2003}")
+			graph export "$figures/Robustness_pwork_formal.pdf", replace

@@ -301,9 +301,9 @@
 			
 			replace edu_att = 1 							if inlist(v0603, 6, 7, 8) 								//Sem instrução. Está matriculado na alfabetização, creche e pré-escola
 		
-			replace edu_att = 2 							if inlist(v0603, 1, 2, 3) 								//está cursando EF, portando, ef incompleto
+			replace edu_att = 2 							if inlist(v0603, 1, 3) 									//está cursando EF, portando, ef incompleto
 				
-			replace edu_att = 4 							if v0603 == 4											//está cursando EM, portando, em incompleto		
+			replace edu_att = 4 							if inlist(v0603, 2,	4)									//está cursando EM, portando, em incompleto		
 			
 			replace edu_att = 5 							if v0603 == 9											//cursinho pre-vestibular. EM completo. tab v4703 = 12 (anos de estudo) quanto v0603 == 9
 					
@@ -530,7 +530,7 @@
 
 			replace edu_level_enrolled = 5 					if v4701 == 12								//ef eja
 
-			replace edu_level_enrolled = 6					if v4701 == 14 								//em ou eja em
+			replace edu_level_enrolled = 6					if v4701 == 14 								//em
 			
 			replace edu_level_enrolled = 7					if v4701 == 15								//em ou eja em
 			
