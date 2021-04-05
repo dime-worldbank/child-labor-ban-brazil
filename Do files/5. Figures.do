@@ -3,20 +3,20 @@
 	*________________________________________________________________________________________________________________________________*
 
 	
-	*Appendix B
+	*Visual Inspection
 	*--------------------------------------------------------------------------------------------------------------------------------*
 		use "$final/Child Labor Data.dta" if urban == 1 & male == 1 & year == 1999 & xw >= - 12 & xw < 12, clear	
 
-			foreach v of varlist $shortterm_outcomes mom_working {
+			foreach v of varlist eap {
 				local `v'_label: var label `v'
 			}
-			collapse $shortterm_outcomes mom_working  [pw = weight], by(xw)
-			foreach v of varlist $shortterm_outcomes mom_working {
+			collapse eap [pw = weight], by(xw)
+			foreach v of varlist  eap {
 				replace   `v' = `v'*100
 				label var `v' `"``v'_label'"'
 			}
 
-			foreach var of varlist mom_working {
+			foreach var of varlist eap {
 				tw  (lpolyci `var' xw if xw >= 0, degree(0) bw(1) acolor(gs12) fcolor(gs12) clcolor(gray) clwidth(0.3)) 		///
 					(lpolyci `var' xw if xw <  0, degree(0) bw(1) acolor(gs12) fcolor(gs12) clcolor(gray) clwidth(0.3)) 		///
 					(scatter `var' xw if xw >= -12 & xw <  0 , sort msymbol(circle) msize(small) mcolor(navy))         		 	///
@@ -25,10 +25,10 @@
 					title({bf:`: variable label `var''}, pos(11) span size(large))												///
 					ytitle("%") xtitle("Age difference from the cutoff (in months)") 											/// 
 					note("Source: PNAD 1999. 95% CI.", color(black) fcolor(background) pos(7) size(small)) 
-					graph export "$figures/FigureAppendixB_`var'.pdf", as(pdf) replace
+					graph export "$figures/Figure_`var'.pdf", as(pdf) replace
 			}
 			
-			
+	/*		
 	*Figure 1a/1b
 	*--------------------------------------------------------------------------------------------------------------------------------*
 		use "$final/Child Labor Data.dta" if urban == 1 & year == 1999 & xw >= - 9 & xw < 0, clear	
