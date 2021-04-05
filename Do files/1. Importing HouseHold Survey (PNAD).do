@@ -3,28 +3,19 @@
 	*________________________________________________________________________________________________________________________________*
 
 
-	*INSTRUÇÕES
+	*INTRUCTIONS TO USE DATAZOOM TOOL TO IMPORT THE PESQUISA NACIONAL POR AMOSTRA DE DOMICÍLIOS
 	*-------------------------------------------------------------------------------------------------------------------------------*
 	/*
-	1 - Digite na janela de comando do STATA:
+	1 - Run:
 	net from http://www.econ.puc-rio.br/datazoom/portugues  
 
-	2 - Clique em: 
-	datazoom_pnad  
+	2 - Click datazoom_pnad, and then install
 
-	3 - Clique em:
-	click here to install
+	3 - Save PNAD microdata (in txt format). for example: "C:\Vivian\PNAD\2014", "C:\Vivian\PNAD\2008". DO NOT USE FOLDER's NAMES WITH SPACES
 
-	4 - Salve os MicroPNAD da PNAD (domicílios e pessoas) em uma pasta cujo tamanho não apresente espaços, por exemplo:
-	"C:\Vivian\PNAD\2014"
+	4 - Check if the name of the files (in txt format) are the same as especified in datazoom: help datazoom_pnad
 
-	5 - Verifique se o nome dos arquivos está igual ao exigido pelo programa Datazoom. Consulte em:
-	help datazoom_pnad
-
-	6 - Digite para escolher as variáveis:
-	db datazoom_pnad
-	ou
-	Digite algum comando seguindo as instruções descritas em ajuda.
+	5 - Run the code bellow. 
 	*/
 	*________________________________________________________________________________________________________________________________*
 
