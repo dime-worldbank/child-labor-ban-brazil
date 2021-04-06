@@ -7,61 +7,76 @@
 	*--------------------------------------------------------------------------------------------------------------------------------*
 		estimates clear
 		use "$final/Child Labor Data.dta" if urban == 1 & male == 1 & year == 1999 & xw >= - 9 & xw < 9, clear
-		eststo sumstats1: estpost sum working $shortterm_outcomes white mom_yrs_school hh_members 
+		eststo sumstats1: estpost sum working pwork pwork_formal pwork_informal uwork schoolatt white mom_yrs_school hh_size
 		esttab sumstats1 using "$tables/Table1.tex", noobs nonumbers booktabs label 															///
 		cells("count(label(Obs) fmt(0)) mean(label(Mean) fmt(2)) sd(label(Stand.Dev.) fmt(2)) min(label(Min.) fmt(0)) max(label(Max.) fmt(0))") ///
-		addnotes("Source: PNAD 1999.") title("Descriptive Statistics of the Whole Sample of Males, 9-Month Bandwidth (1999)") replace 
-	
+		addnotes("Source: PNAD 1999.") title("Descriptive Statistics for the sample of urban males, 9-Month Bandwidth (1999)") 			  replace 
+		
+		
+	*Table 2
+	*--------------------------------------------------------------------------------------------------------------------------------*
+		estimates clear
 
-	*Table 2a and 2b
-	*--------------------------------------------------------------------------------------------------------------------------------*
-		estimates clear
-		use "$final/Child Labor Data.dta" if urban == 1 & male == 1 & (year == 1999 | year == 2001), clear
-		local bandwidth 	"3 5 6 9 12" 					
-		local model = 1
-	
-		foreach var of varlist $shortterm_outcomes {
-			foreach bdw of local bandwidth {
-				su `var' [w = weight] 							  if xw >= -`bdw' & xw < `bdw' 
-				scalar mean_outcome = r(mean) 
-			
-				quietly reg `var' $dep_vars1 i.year [pw = weight] if xw >= -`bdw' & xw < `bdw', cluster(zw)
-				eststo model`model', title("Linear")
-				estadd scalar mean_outcome = mean_outcome: model`model'
-				local model = `model' + 1
-				
-				quietly reg `var' $dep_vars2 i.year [pw = weight] if xw >= -`bdw' & xw < `bdw', cluster(zw)
-				eststo model`model', title("Quadratic")
-				estadd scalar mean_outcome = mean_outcome: model`model'
-				local model = `model' + 1
-				
-				quietly reg `var' $dep_vars3 i.year [pw = weight] if xw >= -`bdw' & xw < `bdw', cluster(zw)
-				eststo model`model', title("Piecewise Linear")
-				estadd scalar mean_outcome = mean_outcome: model`model'
-				local model = `model' + 1
-			}
-		}
-		
-		
-		estout model1   model2   model3    model4   model5   model6    model7   model8   model9    model10  model11  model12  model13  model14  model15  using "$tables/Table2.csv", delimiter(";") keep(D*)  title("Paid work"		  			 ) label mgroups("3-months" "5-months" "6-months" "9-months" "12-months", pattern(1 0 0 1 0 0 1 0 0 1 0 0 1 0 0)) cells(b(star fmt(3)) se(fmt(2))) starlevels(* 0.10 ** 0.05 *** 0.01) stats(N r2 mean_outcome, labels("Obs" "R2" "Mean outcome") fmt(%9.0g %9.3f %9.3f)) replace
-		estout model16  model17  model18   model19  model20  model21   model22  model23  model24   model25  model26  model27  model28  model29  model30  using "$tables/Table2.csv", delimiter(";") keep(D*)  title("Informal paid work"		 ) label mgroups("3-months" "5-months" "6-months" "9-months" "12-months", pattern(1 0 0 1 0 0 1 0 0 1 0 0 1 0 0)) cells(b(star fmt(3)) se(fmt(2))) starlevels(* 0.10 ** 0.05 *** 0.01) stats(N r2 mean_outcome, labels("Obs" "R2" "Mean outcome") fmt(%9.0g %9.3f %9.3f)) append
-		estout model31  model32  model33   model34  model35  model36   model37  model38  model39   model40  model41  model42  model43  model44  model45  using "$tables/Table2.csv", delimiter(";") keep(D*)  title("Unpaid work" 	  			 ) label mgroups("3-months" "5-months" "6-months" "9-months" "12-months", pattern(1 0 0 1 0 0 1 0 0 1 0 0 1 0 0)) cells(b(star fmt(3)) se(fmt(2))) starlevels(* 0.10 ** 0.05 *** 0.01) stats(N r2 mean_outcome, labels("Obs" "R2" "Mean outcome") fmt(%9.0g %9.3f %9.3f)) append
-		estout model46  model47  model48   model49  model50  model51   model52  model53  model54   model55  model56  model57  model58  model59  model60  using "$tables/Table2.csv", delimiter(";") keep(D*)  title("School attendance" 		 ) label mgroups("3-months" "5-months" "6-months" "9-months" "12-months", pattern(1 0 0 1 0 0 1 0 0 1 0 0 1 0 0)) cells(b(star fmt(3)) se(fmt(2))) starlevels(* 0.10 ** 0.05 *** 0.01) stats(N r2 mean_outcome, labels("Obs" "R2" "Mean outcome") fmt(%9.0g %9.3f %9.3f)) append
-		estout model61  model62  model63   model64  model65  model66   model67  model68  model69   model70  model71  model72  model73  model74  model75  using "$tables/Table2.csv", delimiter(";") keep(D*)  title("Paid work and studying" 	 ) label mgroups("3-months" "5-months" "6-months" "9-months" "12-months", pattern(1 0 0 1 0 0 1 0 0 1 0 0 1 0 0)) cells(b(star fmt(3)) se(fmt(2))) starlevels(* 0.10 ** 0.05 *** 0.01) stats(N r2 mean_outcome, labels("Obs" "R2" "Mean outcome") fmt(%9.0g %9.3f %9.3f)) append
-		estout model76  model77  model78   model79  model80  model81   model82  model83  model84   model85  model86  model87  model88  model89  model90  using "$tables/Table2.csv", delimiter(";") keep(D*)  title("Unpaid work and studying" 	 ) label mgroups("3-months" "5-months" "6-months" "9-months" "12-months", pattern(1 0 0 1 0 0 1 0 0 1 0 0 1 0 0)) cells(b(star fmt(3)) se(fmt(2))) starlevels(* 0.10 ** 0.05 *** 0.01) stats(N r2 mean_outcome, labels("Obs" "R2" "Mean outcome") fmt(%9.0g %9.3f %9.3f)) append
-		estout model91  model92  model93   model94  model95  model96   model97  model98  model99   model100 model101 model102 model103 model104 model105 using "$tables/Table2.csv", delimiter(";") keep(D*)  title("Only paid work" 			 ) label mgroups("3-months" "5-months" "6-months" "9-months" "12-months", pattern(1 0 0 1 0 0 1 0 0 1 0 0 1 0 0)) cells(b(star fmt(3)) se(fmt(2))) starlevels(* 0.10 ** 0.05 *** 0.01) stats(N r2 mean_outcome, labels("Obs" "R2" "Mean outcome") fmt(%9.0g %9.3f %9.3f)) append
-		estout model106 model107 model108  model109 model110 model111  model112 model113 model114  model115 model116 model117 model118 model119 model120 using "$tables/Table2.csv", delimiter(";") keep(D*)  title("Only unpaid work"			 ) label mgroups("3-months" "5-months" "6-months" "9-months" "12-months", pattern(1 0 0 1 0 0 1 0 0 1 0 0 1 0 0)) cells(b(star fmt(3)) se(fmt(2))) starlevels(* 0.10 ** 0.05 *** 0.01) stats(N r2 mean_outcome, labels("Obs" "R2" "Mean outcome") fmt(%9.0g %9.3f %9.3f)) append
-		estout model121 model122 model123  model124 model125 model126  model127 model128 model129  model130 model131 model132 model133 model134 model135 using "$tables/Table2.csv", delimiter(";") keep(D*)  title("Only studying"		  		 ) label mgroups("3-months" "5-months" "6-months" "9-months" "12-months", pattern(1 0 0 1 0 0 1 0 0 1 0 0 1 0 0)) cells(b(star fmt(3)) se(fmt(2))) starlevels(* 0.10 ** 0.05 *** 0.01) stats(N r2 mean_outcome, labels("Obs" "R2" "Mean outcome") fmt(%9.0g %9.3f %9.3f)) append
-		estout model136 model137 model138  model139 model140 model141  model142 model143 model144  model145 model146 model147 model148 model149 model150 using "$tables/Table2.csv", delimiter(";") keep(D*)  title("Neither working or studying") label mgroups("3-months" "5-months" "6-months" "9-months" "12-months", pattern(1 0 0 1 0 0 1 0 0 1 0 0 1 0 0)) cells(b(star fmt(3)) se(fmt(2))) starlevels(* 0.10 ** 0.05 *** 0.01) stats(N r2 mean_outcome, labels("Obs" "R2" "Mean outcome") fmt(%9.0g %9.3f %9.3f)) append
-		
-	
-		
-	*Table 3
-	*--------------------------------------------------------------------------------------------------------------------------------*
-		estimates clear
 		use "$final/Child Labor Data.dta" if urban == 1 & male == 1 & year == 1999 & xw >= - 9 & xw < 9, clear
-		iebaltab  mom_yrs_school mom_age hh_members per_capita_inc [pw = weight], format(%12.2fc) grpvar(D) save("$tables/Table3.xlsx") rowvarlabels replace 
-	
+		iebaltab  mom_yrs_school mom_age hh_size per_capita_inc, format(%12.2fc) grpvar(D) savetex("$tables/Table2.tex") rowvarlabels 			///
+		tblnote("Source: PNAD 1999.") notecombine texdocument  texcaption("Balance test for affected and unaffected cohorts, 9-Month Bandwidth (1999)") replace
+
+		
+	*Table 3/4
+	*--------------------------------------------------------------------------------------------------------------------------------*
+		foreach year in 1999 2001 {
+		
+			estimates clear
+			use "$final/Child Labor Data.dta" if urban == 1 & male == 1, clear
+			
+			if `year' == 1999 {
+			keep if year == 1999
+			local table = 3
+			}
+			if `year' == 2001 {
+			keep if year == 1999 | year == 2001
+			local table = 4
+			}
+			
+			local bandwidth 	"3 5 9" 					
+		
+			foreach var of varlist eap pwork uwork schoolatt {
+			
+				if "`var'" == "eap"   		local title = "Eco. Act. Pop"
+				if "`var'" == "pwork" 		local title = "Paid work"
+				if "`var'" == "schoolatt" 	local title = "School attendance"
+				if "`var'" == "uwork" 		local title = "Unpaid work"
+			
+				local model = 1
+				
+				foreach bdw of local bandwidth {
+					quietly su `var' [w = weight] 					  						  if xw >= -`bdw' & xw < `bdw' 
+					scalar mean_outcome = r(mean) 
+				
+					quietly reg `var' $dep_vars1 i.year 						[pw = weight] if xw >= -`bdw' & xw < `bdw', cluster(zw)
+					eststo model`model', title("Spline Linear")
+					estadd scalar mean_outcome = mean_outcome: model`model'
+					local model = `model' + 1
+					
+					quietly reg `var' $dep_vars2 i.year 						[pw = weight] if xw >= -`bdw' & xw < `bdw', cluster(zw)
+					eststo model`model', title("Quadratic")
+					estadd scalar mean_outcome = mean_outcome: model`model'
+					local model = `model' + 1
+					
+					if `bdw' == 3 {
+					quietly reg `var' $dep_vars3 i.year 						[pw = weight] if xw >= -`bdw' & xw < `bdw', cluster(zw)
+					eststo model`model', title("No controls")
+					estadd scalar mean_outcome = mean_outcome: model`model'
+					local model = `model' + 1
+					}
+				}
+				
+				if "`var'" == "eap" estout model1 model2 model3 model4 model5 model6 model7 using "$tables/Table`table'.tex", style(tex) keep(D*)  title("`title'") label mgroups("3-months" "5-months" "9-months" "12-months", pattern(1 0 0 1 0 1 0)) cells(b(star fmt(3)) se(fmt(2))) starlevels(* 0.10 ** 0.05 *** 0.01) stats(N r2 mean_outcome, labels("Obs" "R2" "Mean outcome") fmt(%9.0g %9.3f %9.3f)) replace
+				if "`var'" != "eap" estout model1 model2 model3 model4 model5 model6 model7 using "$tables/Table`table'.tex", style(tex) keep(D*)  title("`title'") label mgroups("3-months" "5-months" "9-months" "12-months", pattern(1 0 0 1 0 1 0)) cells(b(star fmt(3)) se(fmt(2))) starlevels(* 0.10 ** 0.05 *** 0.01) stats(N r2 mean_outcome, labels("Obs" "R2" "Mean outcome") fmt(%9.0g %9.3f %9.3f)) append
+				estimates clear
+			}	
+		}
+
 
 	*Table 4
 	*--------------------------------------------------------------------------------------------------------------------------------*

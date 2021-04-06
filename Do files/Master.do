@@ -120,6 +120,7 @@
 		set matsize 11000
 		graph set window fontface "Times"
         set level 95
+		set seed 108474
 		
 		
    * PART 1:  PREPARING FOLDER PATH GLOBALS

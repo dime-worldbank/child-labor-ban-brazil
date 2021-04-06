@@ -46,7 +46,8 @@
 		label var zw3 "Cubic of the running variable"
 		label var dw2 "Square of the running variable"
 		label var dw3 "Cubic of the running variable"
-		
+		label define D 0 "Control" 1 "Treatment"
+		label val 	 D D
 		
 	*--------------------------------------------------------------------------------------------------------------------------------*
 		drop 	age_31_march children_income labor_card spouse female_with_children social_security activity* kid* female occupation goes_public_school went_school civil_servant_federal civil_servant_state civil_servant_municipal
