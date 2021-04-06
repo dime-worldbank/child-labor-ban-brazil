@@ -10,7 +10,7 @@
 
 		**
 		*Months
-		*
+		* 
 		gen 	xw = mofd(dateofbirth  - mdy(12, 16, 1984)) 			//months between date of birth and December 15th  1984
 	
 		**
