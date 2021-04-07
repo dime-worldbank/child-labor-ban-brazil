@@ -12,25 +12,25 @@
 	Short and Long-term effects of a Child Labor Ban in Brazil. 
 	**
 	
-	In December 15th 1998, the Brazilian Federal Government increased the minimum age of employement
-	from 14 to 16 years old. Children that were already employed were not affected. 
-	We employed a regression discontinuity design to explore the effects of this policy.
-	
-	Our Running variable (zw) is equal to 0 if the children was born after December 15th 1984, therefore, turned 14
-	after the law changed. zw = 1 if the children turned 14 one week after the law changed, zw = 2 if she/he turned
-	14 two weeks after the law changed, so on. zw = - 1 if the children turned 14 one week before the law changed,
-	zw = -2 if she/he turned 14 two weeks before the law changed, and so on. 
-	
-	We used the Brazilian Household Survey (Pesquisa Nacional por Amostra de Domicílios, PNAD) to assess the effect
-	of the policy on the following outcomes:
-	
-		- Economically Active Population.
-		- Share of children in paid jobs.
-		- Share of children in unpaid jobs.
-		- School attendance. 
-		- Wages. 
-			
-	We used the PNAD from 1998 to 2015, except 2000 and 2010, years of the Demographic Census. 
+		In December 15th 1998, the Brazilian Federal Government increased the minimum age of employement
+		from 14 to 16 years old. Children that were already employed were not affected. 
+		We employed a regression discontinuity design to explore the effects of this policy.
+		
+		Our Running variable (zw) is equal to 0 if the children was born after December 15th 1984, therefore, turned 14
+		after the law changed. zw = 1 if the children turned 14 one week after the law changed, zw = 2 if she/he turned
+		14 two weeks after the law changed, so on. zw = - 1 if the children turned 14 one week before the law changed,
+		zw = -2 if she/he turned 14 two weeks before the law changed, and so on. 
+		
+		We used the Brazilian Household Survey (Pesquisa Nacional por Amostra de Domicílios, PNAD) to assess the effect
+		of the policy on the following outcomes:
+		
+			- Economically Active Population.
+			- Share of children in paid jobs.
+			- Share of children in unpaid jobs.
+			- School attendance. 
+			- Wages. 
+				
+		We used the PNAD from 1998 to 2015, except 2000 and 2010, years of the Demographic Census. 
 	
 	This master do file runs the following codes: 
 		
@@ -92,12 +92,9 @@
 		The code specifies: 
 			- The short and long term outcomes of the analysis.
 			- The variables used for balance checks between control and treatment groups.
-			- The dependent variables used in the regression. 
-		
+			- The dependent variables used in the regression.   	*/
 
-	
-	*/
-
+			
    * PART 0:  INSTALL PACKAGES AND STANDARDIZE SETTINGS
    *________________________________________________________________________________________________________________________________*
 	   * - Install packages needed to run all dofiles called by this master dofile. 	 

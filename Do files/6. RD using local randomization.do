@@ -3,6 +3,7 @@
 	*________________________________________________________________________________________________________________________________*
 
 	*global final "C:\Users\wb495845\Downloads"
+	*global inter "C:\Users\wb495845\Downloads"
 	
 	
 	*________________________________________________________________________________________________________________________________*
@@ -96,10 +97,10 @@
 			*/
 							
 			label define shortterm_outcomes  1 "Economically Active Population" 		2 "Paid work" 						3 "Formal paid work" ///
-											 4 "Unpaid work" 							5 "School attendance" 				6 "Ln wage hour" 
+											 4 "Unpaid work" 							5 "School attendance" 				6 "Ln wage per hour" 
 											 
-			label define longterm_outcomes   1 "Years of schooling" 					2 "At least High School degree" 						 ///
-											 3 "Employed" 								4 "Formal occupation" 				5 "Ln wage hour" 
+			label define longterm_outcomes   1 "At least High School degree" 						 ///
+											 2 "Employed" 								3 "Formal occupation" 				4 "Ln wage per hour" 
 												
 			label val shortterm_outcomes shortterm_outcomes
 			label val longterm_outcomes  longterm_outcomes
@@ -159,7 +160,7 @@
 			*Longterm outcomes
 			use   "$final/Regression Results using RD under local randomization.dta" if longterm_outcomes != 0, clear
 			local figure = 1
-			forvalues longterm_outcomes = 1(1)5 {
+			forvalues longterm_outcomes = 1(1)4 {
 				preserve
 					keep if longterm_outcomes == `longterm_outcomes'
 					
@@ -188,9 +189,9 @@
 			erase short`figure'.gph
 			}	
 			*Graph with estimations for longterm outcomes
-			graph combine long1.gph long2.gph long3.gph long4.gph long5.gph		, graphregion(fcolor(white)) ysize(5) xsize(10) title(, fcolor(white) size(medium) color(cranberry))
+			graph combine long1.gph long2.gph long3.gph long4.gph 						   , graphregion(fcolor(white)) ysize(5) xsize(8) title(, fcolor(white) size(medium) color(cranberry))
 			graph export "$figures/Local Rand. Longterm outcomes.pdf", as(pdf) replace
-			forvalues figure = 1(1)5  {
+			forvalues figure = 1(1)4  {
 			erase long`figure'.gph
 			}	
 			
@@ -220,9 +221,14 @@
 				rdrandinf 		pwork 		 zw, c(0) wl(-13) wr(12) interfci(0.05) seed(1029)
 				
 				local lower =  r(obs_stat) - 0.10
-				local upper =  r(obs_stat) + 0.10					
+				local upper =  r(obs_stat) + 0.10	
+				local mean  =  r(obs_stat)
+				
+				di `mean'
+				di `lower'
+				di `upper'
 
-				rdsensitivity  	pwork 		 zw, wlist(10(1)18) tlist(`lower'(r(obs_stat))`upper') verbose nodots saving("$inter/Robustness_eap") 			seed(93850)
+				rdsensitivity  	pwork 		 zw, wlist(10(1)18) tlist(`lower' (0.01) `upper') verbose nodots saving("$inter/Robustness_eap") 			seed(93850)
 			
 				**
 				*Paid work
@@ -231,8 +237,9 @@
 				
 				local lower =  r(obs_stat) - 0.10
 				local upper =  r(obs_stat) + 0.10
-				
-				rdsensitivity  	pwork 		 zw, wlist(10(1)18) tlist(`lower'(r(obs_stat))`upper') verbose nodots saving("$inter/Robustness_pwork") 		seed(20468)
+				local mean  =  r(obs_stat)
+
+				rdsensitivity  	pwork 		 zw, wlist(10(1)18) tlist(`lower' (0.01) `upper') verbose nodots saving("$inter/Robustness_pwork") 		seed(20468)
 
 				**
 				*School attendance
@@ -241,8 +248,9 @@
 				
 				local lower =  r(obs_stat) - 0.10
 				local upper =  r(obs_stat) + 0.10
+				local mean  =  r(obs_stat)
 				
-				rdsensitivity  	schoolatt    zw, wlist(10(1)18) tlist(`lower'(r(obs_stat))`upper') verbose nodots saving("$inter/Robustness_schoolatt") 	seed(29273)
+				rdsensitivity  	schoolatt    zw, wlist(10(1)18) tlist(`lower' (0.01) `upper') verbose nodots saving("$inter/Robustness_schoolatt") 	seed(29273)
 			
 			restore
 		
@@ -258,15 +266,28 @@
 				
 				local lower =  r(obs_stat) - 0.10
 				local upper =  r(obs_stat) + 0.10
+				local mean  =  r(obs_stat)
+				
+				rdsensitivity   pwork_formal zw, wlist(10(1)18) tlist(`lower' (0.01) `upper') verbose nodots saving("$inter/Robustness_pwork_formal")  seed(93875)
 
-				rdsensitivity   pwork_formal zw, wlist(10(1)18) tlist(`lower'(r(obs_stat))`upper') verbose nodots saving("$inter/Robustness_pwork_formal") 	seed(93875)
+				
+				**
+				*Log earnings
+				**
+				rdrandinf		lnwage_hour  zw, c(0) wl(-13) wr(12) interfci(0.05) seed(12546)
+				
+				local lower =  r(obs_stat) - 0.10
+				local upper =  r(obs_stat) + 0.10
+				local mean  =  r(obs_stat)
+				
+				rdsensitivity   lnwage_hour  zw, wlist(10(1)18) tlist(`lower' (0.01) `upper') verbose nodots saving("$inter/Robustness_lnwage_hour") 	 seed(93875)
 
 		
 		**
 		*Charts
 		**
 		
-			foreach name in eap pwork schoolatt pwork_formal {
+			foreach name in eap pwork schoolatt pwork_formal lnwage_hour {
 				
 				use "$inter/Robustness_`name'.dta", clear
 	 
@@ -274,7 +295,9 @@
 				if "`name'" == "pwork" 		  local title =  "Paid work"
 				if "`name'" == "schoolatt" 	  local title =  "School attendance"
 				if "`name'" == "pwork_formal" local title =  "Formal paid work"
-			
+				if "`name'" == "lnwage_hour"  local title =  "Ln wage hour"
+				
+				
 				twoway contour pvalue t w, ccuts(0(0.05)1) xlabel(10(1)18,labsize(small)) ylabel(, labsize(small) nogrid) ///
 				xtitle("Weeks around the cutoff") ///
 				ytitle("ATE under the null hyphothesis") ///
@@ -283,5 +306,23 @@
 			
 			}
 		
-			graph combine Robustness_eap.gph Robustness_pwork.gph Robustness_schoolatt.gph	Robustness_pwork_formal.gph, graphregion(fcolor(white)) cols(3) ysize(5) xsize(10) title(, fcolor(white) size(medium) color(cranberry))
-			erase 
+			graph combine Robustness_eap.gph 			Robustness_pwork.gph Robustness_schoolatt.gph, graphregion(fcolor(white)) cols(3) ysize(5) xsize(10) title(, fcolor(white) size(medium) color(cranberry))
+			graph export "$figures/Robustness_1999.pdf", as(pdf) replace
+			graph combine Robustness_pwork_formal.gph 	Robustness_lnwage_hour.gph					 , graphregion(fcolor(white)) cols(2) ysize(5) xsize(7)  title(, fcolor(white) size(medium) color(cranberry))
+			graph export "$figures/Robustness_2003.pdf", as(pdf) replace
+
+			
+			foreach name in eap pwork schoolatt pwork_formal lnwage_hour {
+				erase Robustness_`name'.gph
+			}
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
