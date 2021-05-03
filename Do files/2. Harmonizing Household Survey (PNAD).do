@@ -25,11 +25,11 @@
 			*------------------------------------------------------------------------------------------------------------------------*
 			if `year' < 2015 drop id_dom																																		//apenas excluí porque o primeiro comando abaixo irá fazer isso e não tenho ctza se a puc considera família = domicílio ou que um domicílio pode ser formado por mais de uma família. 
 			
-			egen 	hh_id   = group(uf v0101 v0102 v0103)			//household id																												//identificação do domicílio
+			egen 	hh_id   = group(uf v0101 v0102 v0103)																														//household id																								
 
-			gen 	inf      = v0301								//identification of the member of the household
+			gen 	inf      = v0301																																			//identification of the member of the household
 
-			gen 	ninf_mom = v0407 								//number of the mother of the respondent																								//número de ordem da mãe - vai ser últil para sabermos a escolaridade da mãe
+			gen 	ninf_mom = v0407 																																			//número de ordem da mãe - vai ser últil para sabermos a escolaridade da mãe
 			
 			sort 	hh_id inf uf
 
@@ -47,7 +47,7 @@
 			
 			recode  v4704 (1 = 1) (2 = 0)																				, gen (eap)												//semana de ref. pessoas com 10 anos ou + 
 
-			recode  v4805 (1 = 1) (2 = 0)																				, gen (employed)										//semana de ref. pessoas com 10 anos ou +. employed leva em consideracao quem trabalhou para proprio consumo. 
+			recode  v4805 (1 = 1) (2 = 0)																				, gen (employed)										//semana de ref. pessoas com 10 anos ou +. Employed leva em consideracao quem trabalhou para proprio consumo. 
 
 			recode  v4805 (1 = 0) (2 = 1)																				, gen (unemployed)										//semana de ref. pessoas com 10 anos ou +
 
@@ -115,7 +115,7 @@
 
 			recode  v4745 (8 = .)													   , gen (edu_att)
 							
-			assert  v6007 == . | v6007 == 0  				if schoolatt == 1												   													 //6007 = último curso que frequentou para quem está fora da escola. a variável v6007 precisa ser igual a 0 ou . toda vez que schoolatt == 1
+			assert  v6007 == . | v6007 == 0  				if schoolatt == 1												   													//6007 = último curso que frequentou para quem está fora da escola. a variável v6007 precisa ser igual a 0 ou . toda vez que schoolatt == 1
 
 			assert  v6003 == . | v6003 == 0  				if schoolatt != 1												   							 						//6003 = curso que frequenta para quem está na escola. a variável v6003 precisa ser igual a 0 ou . toda vez que schoolatt ~= 1
 			
@@ -221,11 +221,11 @@
 					
 			recode v6002 (2 = 1) (4 = 0) (9 = .)																		, gen (goes_public_school)							//demanda de ensino público ou privado de quem edu_level_enrolled
 			
-			if `year'>= 2004 & `year' <= 2006 gen per_capita_inc  = v4742  	if v4742 < 999999999999 //sem declaração
+			if `year'>= 2004 & `year' <= 2006 gen per_capita_inc  = v4742  	if v4742 < 999999999999 																		//sem declaração
 				
 			if `year'>= 2002 & `year' <= 2003 {
 			
-				gen 	id  = 1 							if hh_member < 6 																								//pessoas do domicílio exceto pensionistas, emprego doméstico e parente de empregado doméstico. 
+				gen 	id  = 1 											if hh_member < 6 																				//pessoas do domicílio exceto pensionistas, emprego doméstico e parente de empregado doméstico. 
 				
 				bysort hh_id: egen t_ind = sum(id)
 				
@@ -272,7 +272,7 @@
 			replace civil_servant_municipal = 0				if ((v9032 == 4 & v9033 != 5) | v9032 == 2) & employed == 1 & civil_servant == 1 
 			
 			
-			*Educação
+			*Education
 			*------------------------------------------------------------------------------------------------------------------------*		
 			recode  v0606 (2 = 1) (4 = 0)										 , gen (went_school)																		//já frequentou a escola alguma vez na vida
 			
@@ -347,7 +347,8 @@
 			tab v4701 edu_level_enrolled
 
 			keep uf age hh_member hours_worked weight hh_id-edu_level_enrolled v3031 v3032 v3033 v0404 v0406
-		}
+		
+		} //fim da harmonização de 2002 a 2006
 		
 		**
 		**
@@ -358,18 +359,17 @@
 			
 			*Child employment according to Bargain/Boutin paper
 			*------------------------------------------------------------------------------------------------------------------------*
-			 gen 	 child_labor_bargain   = (v9001 == 1  | v9004 == 2 | v9002  == 2 | v9003 == 1) 
+			gen 	 child_labor_bargain   = (v9001 == 1  | v9004 == 2 | v9002  == 2 | v9003 == 1) 
 			
-			 replace child_labor_bargain   = 0 	if v9008 == 13  | v9029 == 7
+			replace  child_labor_bargain   = 0 														if v9008 == 13  | v9029 == 7
 			
-			 gen 	 work_home_consumption = v9003 == 1 | v9004 ==2 
+			gen 	 work_home_consumption =  v9003 == 1  | v9004 == 2  																										//trabalha na produção de alimentos ou na construção para uso próprio
 
+			
 			*Household Id
 			*------------------------------------------------------------------------------------------------------------------------*	
-			drop 	id_dom																																					//Apenas excluí porque o primeiro comando abaixo irá fazer isso e não tenho ctza se a puc considera família = domicílio ou que um domicílio pode ser formado por mais de uma família. 
+			drop 	id_dom																																					//apenas excluí porque o primeiro comando abaixo irá fazer isso e não tenho ctza se a puc considera família = domicílio ou que um domicílio pode ser formado por mais de uma família. 
 			
-			gen 	id_dom 	 = "`year'"  + uf + "00" + v0102 + "00" + v0103 																								//to merge with Bargain/Boutin dataset and understand the differences between the data
-
 			egen 	hh_id   = group(uf v0101 v0102 v0103)																													//identificação do domicílio
 
 			gen 	inf      = v0301
@@ -382,9 +382,11 @@
 		
 		
 			*------------------------------------------------------------------------------------------------------------------------*
-			rename (v9058 v4729	v8005 v0401 v9892 v9611 v9612) (hours_worked weight age hh_member work_age years_current_work months_current_work)							//horas de trabalho no trabalho principal na semana de referência
+			rename  (v9058 		  v4729  v8005  v0401	  v9892    v9611              v9612 			  v9002 v9003 v9004 v9001	) ///
+					///
+					(hours_worked weight age 	hh_member work_age years_current_work months_current_work tar_2 tar_3 tar_4 ref_week)										//horas de trabalho -> trabalho principal na semana de referência
 			
-			replace years_current_work  = . 				if years_current_work  == 99 | years_current_work == -1
+			replace years_current_work  = . 				if years_current_work  == 99 | years_current_work  == -1
 			
 			replace months_current_work = . 				if months_current_work == 99 | months_current_work == -1
 			
@@ -402,13 +404,13 @@
 
 			recode  v9115 (1 = 1) (3 = 0) (9 = .)																				, gen (looking_job)
 
-			recode  v9008 (1/4 = 1) (5/7 = 2) (8/10 = 3) (11 = 4) (12 = 5) (13 = 6) (88 89 = .)									, gen (type_work_agric) 
-			
 			recode  v9054 (5/8 = 5)(9 = .)																						, gen (place_work)
 			
-			rename (v9002 v9003 v9004 v9001) (tar_2 tar_3 tar_4 ref_week)																										//v9001 = 1 se trab na sem de ref. 9002 trab rem que estava afastado na sem de ref. 			
+			recode  v9008 (1/4 = 1) (5/7 = 2) (8/10 = 3) (11 = 4) (12 = 5) (13 = 6) (88 89 = .)									, gen (type_work_agric) 						//para trabalhadores do setor agrícula. 1: empregado, 2: conta própria...	
 
-			gen 	employed = 1 							if (ref_week == 1 | tar_2 == 2 | tar_3 == 1 | tar_4 == 2) 															//está employed na semana de referência se trabalhou, estava afastado ou exerceu tarefas de cultivo, construção
+			rename  v9029 type_work_noagric																																		//para trabalhadores do setor não agrícola. 1: empregado, 2: conta própria...	
+			
+			gen 	employed = 1 							if (ref_week == 1 | tar_2 == 2 | tar_3 == 1 | tar_4 == 2) 															//está ocupado na semana de referência se trabalhou, estava afastado ou exerceu tarefas de cultivo, construção
 	 
 			replace employed = 0 							if (looking_job == 1 & employed != 1)					  
 			
@@ -416,15 +418,12 @@
 			
 				recode  v6002 (2 = 1) (4 = 0) (9 = .)																			, gen (goes_public_school)						//demanda de ensino público ou privado de quem edu_level_enrolled
 					
-				rename (v4754 v4756 v4759 v4760 v4768 v4769 v4761) ///
+				rename (v4754 v4756 v4759 v4760 v4768 v4769 v4761) 	///	
 				///
-					   (v4704 v4706 v4709 v4710 v4718 v4719 v4711)
+					   (v4704 v4706 v4709 v4710 v4718 v4719 v4711)																												//em 2001, o nome das variáveis é um pouco diferente porque engloba trabalhadores com ou acima de 5 anos
 			
 			}
 			
-			if `year' < 2001 rename (v4709 v4710) (activity90s occupation90s)
-						
-			rename  v9029 type_work_noagric
 			
 			recode  v4704 (1 = 1) (2 = 0) (3 = .)															  					, gen (eap)
 			
@@ -439,18 +438,10 @@
 			gen 	wage  			= v4718   				if  v4718 < 999999999999  & v4718 != -1
 			
 			gen 	wage_all_jobs 	= v4719 				if  v4719 < 999999999999  & v4719 != -1
-			
-			gen     labor_card 		= 1       				if (v4706 == 1 | v4706 == 6) 		& employed == 1
-
-			replace labor_card 		= 0       				if  v4706 ~= 1 & v4706 ~= 6  		& employed == 1																	//a pessoa está ocupada mas não é trabalhador com carteira assinada.
-
-			gen     social_security = 1 					if  v4711 == 1 						& employed == 1
-
-			replace social_security = 0 					if  v4711 == 2 						& employed == 1																	//a pessoa está ocupada mas não contribui para a previdência social
 										
 			gen 	hh_income 		= v4721   		   		if  v4721 < 999999999999
 
-			gen 	id  = 1 								if hh_member < 6 																																	//pessoas do domicílio exceto pensionistas, emprego doméstico e parente de empregado doméstico. 
+			gen 	id  = 1 								if hh_member < 6 																									//pessoas do domicílio exceto pensionistas, emprego doméstico e parente de empregado doméstico. 
 				
 			bysort  hh_id: egen t_ind = sum(id)
 				
@@ -463,20 +454,33 @@
 				replace `var' = . if age < 10 
 				
 			}
+			
+			if `year' < 2001 rename (v4709 v4710) (activity90s occupation90s)																									//atividade e setor de ocupação, definições usadas em 1998 e 1999.
 
-			gen 	agri_sector = 1 if !missing(type_work_agric)
+			gen 	agri_sector = 1 if !missing(type_work_agric)																												//dummy para identificar quem trabalha ou não com agricultura																					
 			
 			replace agri_sector = 0 if  missing(type_work_agric) & employed == 1
 				
 
-			*Identificação de quem já é mãe
+			*Women that are mothers
 			*------------------------------------------------------------------------------------------------------------------------*
 			gen     female_with_children         = 1   		if v1101 == 1 & female == 1																							//se já é mãe ou não
 			 
 			replace female_with_children         = 0   		if v1101 == 3 & female == 1
 
 			
-			*Carteira de trabalho e previdência social
+			*Labor Card and social security 
+			*------------------------------------------------------------------------------------------------------------------------*
+			gen     labor_card 		= 1       				if (v4706 == 1 | v4706 == 6) 		& employed == 1
+
+			replace labor_card 		= 0       				if  v4706 ~= 1 & v4706 ~= 6  		& employed == 1																	//a pessoa está ocupada mas não é trabalhador com carteira assinada.
+
+			gen     social_security = 1 					if  v4711 == 1 						& employed == 1
+
+			replace social_security = 0 					if  v4711 == 2 						& employed == 1																	//a pessoa está ocupada mas não contribui para a previdência social
+
+			
+			*Civil servants
 			*------------------------------------------------------------------------------------------------------------------------*
 			gen     civil_servant 			= 1        		if ( v4706 == 2 | v4706 == 3) 				& employed == 1
 
@@ -495,7 +499,7 @@
 			replace civil_servant_municipal = 0				if ((v9032 == 4 & v9033 != 5) | v9032 == 2) & employed == 1	& civil_servant == 1 
 			
 					
-			*Educação
+			*Education
 			*------------------------------------------------------------------------------------------------------------------------*
 			recode  v0606 (2 = 1) (4 = 0) (9 = .)			, gen (went_school)																									//já frequentou a escola alguma vez na vida
 			
@@ -561,8 +565,7 @@
 			
 			if `year' <  2001 keep  activity90s occupation90s   place_work type* work_home_consumption child_labor_bargain  uf age hh_member weight ref_week tar_3 tar_4 hours_worked years_current_work months_current_work hh_id-edu_level_enrolled v3031 v3032 v3033 v0404 v0406
 		
-		
-		}
+		} //fim da harmonização até 2001
 		
 		
 		**
@@ -592,7 +595,7 @@
 			}	
 			
 		
-			*Concluiu EM
+			*Finished high school
 			*------------------------------------------------------------------------------------------------------------------------*
 			gen 	highschool_degree = 1 							if inlist(edu_att, 5, 6, 7)
 			
@@ -705,7 +708,7 @@
 
 			gen 	dateofbirth = mdy(month_birth, day_birth, year_birth)
 					
-			gen no_dateofbirth = day(dateofbirth) == .
+			gen 	no_dateofbirth = day(dateofbirth) == .
 
 
 			*------------------------------------------------------------------------------------------------------------------------*
@@ -824,7 +827,7 @@
 			}
 			
 
-			*Cor de pele
+			*Color of the skin
 			*------------------------------------------------------------------------------------------------------------------------*
 			gen		color    = v0404
 			
@@ -851,7 +854,7 @@
 			replace yellow   = 0  											if v0404 ~= 6 & v0404 ~= 9 & !missing(v0404)
 		
 		
-			*Total de membros do domicílio
+			*Number of relevant household members
 			*------------------------------------------------------------------------------------------------------------------------*
 			gen 	hh_ind = 1 												if hh_member < 5						//relevant hh members
 
@@ -880,7 +883,7 @@
 			drop 	temp
 			
 			
-			*Área
+			*Area
 			*------------------------------------------------------------------------------------------------------------------------*
 			gen 	area = 1 												if urban == 1 & metro == 0		//Urbana
 
@@ -898,7 +901,7 @@
 			recode uf (11/19 = 1) (20/29 = 2) (30/39 = 3) (40/49 = 4) (50/59 = 5), gen (region)
 			
 			
-			*Head of household years of schooling, gender, age
+			*Years of schooling, gender, and age of the head of the household
 			*------------------------------------------------------------------------------------------------------------------------*
 			gen 	temp = yrs_school 			if hh_head == 1
 			
@@ -1114,9 +1117,20 @@
 													4 "Em domicílio de empregador, patrão, sócio ou freguês" 						 ///
 													5 "Outros"
 
+			label define actitity90s 				1  "Agrícola" 						 2 "Indústria de transformação"	    3  "Indústria de construção" 			///
+													4  "Outras atividades industriais"	 5 "Comércio de mercadorias"		6  "Prestação de serviços"      	 	/// 
+													7  "Serviços auxiliares da atividade econômica"							 										///  
+													8  "Transporte e comunicação"		 9 "Social"						    10 "Adm pública"						/// 
+													11 "Atividades mal definidas"
+																						
+			label define occupation90s 				1  "Técnica, científica, artística"  2 "Administrativa"	   				  3  "Agropecuária e produção extrativa vegetal e animal" 			///
+													4  "Indústria de transformação "	 5 "Comércio e atividades auxiliares" 6  "Transporte e comunicação"      	 							/// 
+													7  "Prestação de serviços"							 																						///  
+													8  "Outra ocupação, ocupação mal definida ou não declarada"		 
+			
 													label define region						1 "Norte" 2 "Nordeste" 3 "Sudeste" 4 "Sul" 5 "Centro-Oeste" 
 
-			foreach x in work_home_consumption place_work type_work_agric type_work_noagric region goes_public_school  activity occupation female college_degree male informal kid6 kid13 kid17 kid17f kid17m civil_servant_federal civil_servant_state civil_servant_municipal highschool_degree out_labor hh_head spouse formal female coduf type_work edu_att edu_att2 mom_edu_att2 two_parent hh_member  schoolatt urban metro area color went_school female_with_children labor_card social_security civil_servant employed unemployed eap edu_level_enrolled {
+			foreach x in activity90s occupation90s work_home_consumption place_work type_work_agric type_work_noagric region goes_public_school  activity occupation female college_degree male informal kid6 kid13 kid17 kid17f kid17m civil_servant_federal civil_servant_state civil_servant_municipal highschool_degree out_labor hh_head spouse formal female coduf type_work edu_att edu_att2 mom_edu_att2 two_parent hh_member  schoolatt urban metro area color went_school female_with_children labor_card social_security civil_servant employed unemployed eap edu_level_enrolled {
 
 				label val `x' `x'
 
@@ -1248,7 +1262,9 @@
 			label var type_work_agric							"Position in the agricultural sector"
 			label var type_work_noagric							"Position in the non-agricultural sector"
 			label var work_home_consumption						"Atividade de cultivo/construção para alimentação de moradores do domicílio" 
-
+			label var agri_sector								"Agricultural sector"
+			label var no_dateofbirth							"Data of birth not available"
+			
 			*------------------------------------------------------------------------------------------------------------------------*
 			sort 	year hh_id
 			compress

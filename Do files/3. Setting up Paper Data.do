@@ -26,10 +26,10 @@
 		
 	*Treatment dummy
 	*--------------------------------------------------------------------------------------------------------------------------------*
-		gen 	D 	 = 1 		if zw >=  0							    //Children that turned 14 on December 16th, 1984 or after that 
+		gen 	D 	 = 1 		if zw >=  0							    //children that turned 14 on December 16th, 1984 or after that 
 		replace D	 = 0 		if zw <   0			
-		gen 	zwD  = zw*D
-		gen 	zw2  = zw^2
+		gen 	zwD  = zw*D												//running variable interacted with treatment
+		gen 	zw2  = zw^2												//running variable ^ 2
 		gen 	zw3  = zw^3
 		gen 	zw2D = zw2*D
 		gen 	dw2  = dw^2

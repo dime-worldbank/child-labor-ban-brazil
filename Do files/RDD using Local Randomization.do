@@ -26,7 +26,6 @@
 			
 		rdwinselect zw $covariates, obsmin(200) wstep(2) seed(2948)							// wstep()  is the window increase in each step
 			**Selected windon -10, +10												
-
 			
 		su pwork if xw >= -3 & xw < 0														//% of paid work for control group
 			
@@ -40,8 +39,6 @@
 
 		**The command rdrandinf estimates ATE, lower and upper bounds for a specific window around the cutoff. 
 	*--------------------------------------------------------------------------------------------------------------------------------*
-
-	
 	matrix results = (0,0,0,0,0,0) //store year, short-term variable, long-term variable, observed statistic, lower bound and upper bound. 
 	
 	use "$final/Child Labor Data.dta" if urban == 1 & male == 1, clear		//urban and male children 
@@ -50,7 +47,8 @@
 		**
 		*Short term outcomes
 		**
-	
+		*----------------------------------------------------------------------------------------------------------------------------*
+
 			foreach year in 1998 1999 2001 2002 2003 2004 2005 2006  {												//pnad waves 
 				preserve
 					keep if year == `year' 
@@ -67,6 +65,7 @@
 		**
 		*Long term outcomes
 		**	
+		*----------------------------------------------------------------------------------------------------------------------------*
 			foreach year in 2007 2008 2009 2011 2012 2013 2014      {												//pnad waves
 				preserve
 					keep if year == `year'
@@ -84,7 +83,7 @@
 		**
 		*Results
 		**
-
+		*----------------------------------------------------------------------------------------------------------------------------*
 			clear
 			svmat results																								//storing the results of our estimates so we can present the estimates in charts
 					
@@ -132,7 +131,9 @@
 		**
 		*Charts
 		**
-			**Shortterm outcomes
+		*----------------------------------------------------------------------------------------------------------------------------*
+			**
+			*Shortterm outcomes
 			use   "$final/Regression Results using RD under local randomization.dta" if shortterm_outcomes != 0, clear
 			local figure = 1
 			forvalues shortterm_outcomes = 1(1)6 {
@@ -156,7 +157,8 @@
 					local figure = `figure' + 1
 				restore
 			}
-		
+			
+			**
 			*Longterm outcomes
 			use   "$final/Regression Results using RD under local randomization.dta" if longterm_outcomes != 0, clear
 			local figure = 1
@@ -209,8 +211,9 @@
 		use "$final/Child Labor Data.dta" if urban == 1 & male == 1, clear
 
 		**
-		*1999		//using 1999, waves. Robustness check for variables in which we found significant effect of the child labor ban
+		*1999		//using 1999 wave. Robustness check for variables in which we found significant effect of the child labor ban
 		**
+		*----------------------------------------------------------------------------------------------------------------------------*
 			preserve
 			
 			keep if year == 1999
@@ -218,7 +221,7 @@
 				**
 				*EAP
 				**
-				rdrandinf 		pwork 		 zw, c(0) wl(-13) wr(12) interfci(0.05) seed(1029)
+				rdrandinf 		eap 		 zw, c(0) wl(-13) wr(12) interfci(0.05) seed(1029)
 				
 				local lower =  r(obs_stat) - 0.10
 				local upper =  r(obs_stat) + 0.10	
@@ -228,7 +231,7 @@
 				di `lower'
 				di `upper'
 
-				rdsensitivity  	pwork 		 zw, wlist(10(1)18) tlist(`lower' (0.01) `upper') verbose nodots saving("$inter/Robustness_eap") 			seed(93850)
+				rdsensitivity  	eap  		 zw, wlist(10(1)18) tlist(`lower' (0.01) `upper') verbose nodots saving("$inter/Robustness_eap") 		   seed(93850)	
 			
 				**
 				*Paid work
@@ -239,7 +242,7 @@
 				local upper =  r(obs_stat) + 0.10
 				local mean  =  r(obs_stat)
 
-				rdsensitivity  	pwork 		 zw, wlist(10(1)18) tlist(`lower' (0.01) `upper') verbose nodots saving("$inter/Robustness_pwork") 		seed(20468)
+				rdsensitivity  	pwork 		 zw, wlist(10(1)18) tlist(`lower' (0.01) `upper') verbose nodots saving("$inter/Robustness_pwork") 		   seed(20468)
 
 				**
 				*School attendance
@@ -250,13 +253,15 @@
 				local upper =  r(obs_stat) + 0.10
 				local mean  =  r(obs_stat)
 				
-				rdsensitivity  	schoolatt    zw, wlist(10(1)18) tlist(`lower' (0.01) `upper') verbose nodots saving("$inter/Robustness_schoolatt") 	seed(29273)
+				rdsensitivity  	schoolatt    zw, wlist(10(1)18) tlist(`lower' (0.01) `upper') verbose nodots saving("$inter/Robustness_schoolatt")     seed(29273)
 			
 			restore
 		
 		**
 		*2003
 		**
+		*----------------------------------------------------------------------------------------------------------------------------*
+
 			keep if year == 2003
 			
 				**
@@ -280,13 +285,12 @@
 				local upper =  r(obs_stat) + 0.10
 				local mean  =  r(obs_stat)
 				
-				rdsensitivity   lnwage_hour  zw, wlist(10(1)18) tlist(`lower' (0.01) `upper') verbose nodots saving("$inter/Robustness_lnwage_hour") 	 seed(93875)
+				rdsensitivity   lnwage_hour  zw, wlist(10(1)18) tlist(`lower' (0.01) `upper') verbose nodots saving("$inter/Robustness_lnwage_hour")   seed(93875)
 
-		
 		**
-		*Charts
+		*Figures
 		**
-		
+		*----------------------------------------------------------------------------------------------------------------------------*
 			foreach name in eap pwork schoolatt pwork_formal lnwage_hour {
 				
 				use "$inter/Robustness_`name'.dta", clear

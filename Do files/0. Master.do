@@ -1,6 +1,8 @@
-/*
-
-	*MASTER do file for Child Labor Ban Paper*
+	/*
+	*________________________________________________________________________________________________________________________________* 
+	**
+	MASTER do file for Child Labor Ban Paper
+	**
 	*________________________________________________________________________________________________________________________________* 
 	
 	Author: Vivian Amorim
@@ -9,14 +11,15 @@
 	
 	**
 	**
-	Short and Long-term effects of a Child Labor Ban in Brazil. 
+	Short and Long-term Effects of a Child Labor Ban in Brazil. 
 	**
 	
 	*--------------------------------------------------------------------------------------------------------------------------------*
-	**The Policy
+	**
+	The Policy
+	**
 	*--------------------------------------------------------------------------------------------------------------------------------*
-		On December 15th, 1998, the Brazilian Federal Government increased the minimum age of employment
-		from 14 to 16 years old.
+		On December 15th, 1998, the Brazilian Federal Government increased the minimum age of employment from 14 to 16 years old.
 		The law started being applied one day after that. 
 		Children that were already employed were not affected. 
 		Therefore, if the children turned 14 on December 16th, 1998, or after that, she/he could start working legally 
@@ -43,7 +46,9 @@
 		Use used PNAD waves of 1998, 1999 and 2001; and from 2007 to 2014. 
 		
 	*--------------------------------------------------------------------------------------------------------------------------------*
+	**
 	This master do file runs the following codes: 
+	**
 	*--------------------------------------------------------------------------------------------------------------------------------*
 		**
 		**
@@ -61,7 +66,8 @@
 						For 2001 and after: https://www.ibge.gov.br/estatisticas/sociais/trabalho/19897-sintese-de-indicadores-pnad2.html?=&t=microdados
 						Before 2001: 		https://loja.ibge.gov.br/pnad-1987-a-1999-microdados.html
 
-					We saved the raw data in our project folder: child-labor-ban-brazil/DataWork/Datasets/Raw
+					**
+					** We saved the raw data in our project folder: child-labor-ban-brazil/DataWork/Datasets/Raw
 
 					**
 					** The dictionaries to read .txt files: from 1998 to 2014, we used the DataZoom tool created by PUC/RIO University to import 
@@ -70,14 +76,14 @@
 						
 			-> What it creates? 
 				The code creates sixteen .dta files saved in: child-labor-ban-brazil/DataWork/Datasets/Intermediate. 
-				Each file is a wave of the survey. 
+				Each file is a wave of the household survey. 
 				
 			
 		**
 		**	
 		- 2. Harmonizing Household Survey (PNAD).do
 		
-			-> How long it takes to run?
+			-> How long does it take to run?
 				23 minutes. 
 	
 			-> What it does?
@@ -91,7 +97,7 @@
 		**	
 		- 3. Setting up Paper Data.do 
 		
-			-> How long it takes to run?
+			-> How long does it take to run?
 				Less than one minute. 
 	
 			-> What it does?
@@ -100,23 +106,40 @@
 			-> What it creates? 
 				One .dta file named Child Labor Ban saved in: child-labor-ban-brazil/DataWork/Datasets/Final.
 		
+		
+		**
+		**	
+		- 4. Descriptives.do 
+		
+			-> How long does it take to run?
+				Few minutes. 
+	
+			-> What it does?
+				Creates descriptives statistics and figures used in the paper. 
+						
+			-> What it creates? 
+				Figures saved in child-labor-ban-brazil/DataWork/Output/Figures.
+		
+		
 		**
 		**	
 		- Globals. 
 		
-		The code specifies: 
+		The code sets globals with: 
 			- The short and long term outcomes of the analysis.
 			- The variables used for balance checks between control and treatment groups.
-			- The dependent variables used in the regression.   	
+			- The control variables used in the regression 	
 
 			
 	*--------------------------------------------------------------------------------------------------------------------------------*
-	*Folder structure
+	**
+	Folder Structure
+	**
 	*--------------------------------------------------------------------------------------------------------------------------------*
 		
 		It is possible to reproduce all the analysis using only the codes available in GitHub. 
 		
-		Set up the folder structure. Create the following folders:
+		Set up the folder structure:
 		
 			- Create the folder "child-labor-ban-brazil". 
 				- inside this folder, create "DataWork"
@@ -131,17 +154,35 @@
 		For each wave, save the PNAD microdata in the respective folder. For example, for 1999 wave, save the .txt files in the folder:
 		child-labor-ban-brazil->DataWork->Datasets->Raw->1999. 
 		
-		After saving all PNAD waves from 1998 to 2015, you can run the codes and reproduce all the results. 
+		Make sure that the .txt files are saved with the following names:
+				- 1998 -> Pessoa98.txt Domicilio98.txt
+				- 1999 -> Pessoa99.txt Domicilio99.txt
+				- 2001 -> PES2001.txt  DOM2001.txt
+				- 2002 -> PES2002.txt  DOM2002.txt			
+				- 2003 -> PES2003.txt  DOM2003.txt			
+				- 2004 -> PES2004.txt  DOM2004.txt			
+				- 2005 -> PES2005.txt  DOM2005.txt			
+				- 2006 -> PES2006.txt  DOM2006.txt			
+				- 2007 -> PES2007.txt  DOM2007.txt			
+				- 2008 -> PES2008.txt  DOM2008.txt			
+				- 2009 -> PES2009.txt  DOM2009.txt			
+				- 2011 -> PES2011.txt  DOM2011.txt			
+				- 2012 -> PES2012.txt  DOM2012.txt			
+				- 2013 -> PES2013.txt  DOM2013.txt			
+				- 2014 -> PES2014.txt  DOM2014.txt			
+				- 2015 -> PES2015.txt  DOM2015.txt			
 		
-		*/
-			
-			
-   * INSTALLING PACKAGES AND STANDARDIZE SETTINGS
-   *________________________________________________________________________________________________________________________________*
-	   * - Install packages needed to run all dofiles called by this master dofile. 	 
-	   *(Note that this never updates outdated versions of already installed commands, to update commands use adoupdate)
-	   * - Use ieboilstart to harmonize settings across users
-	 
+		After setting up the folder structure and saving Household Survey Microdata (in .txt files), 
+		you can run the codes and reproduce all the results. a
+
+		
+	*--------------------------------------------------------------------------------------------------------------------------------*
+	**
+	*Installing Packages and Standardize Settings
+	**
+	*--------------------------------------------------------------------------------------------------------------------------------*
+	   Installing packages needed to run all dofiles called by this master dofile. */
+
 	   local user_commands ietoolkit labutil   
 	   foreach command of local user_commands  {
 		   cap which `command'
@@ -164,24 +205,28 @@
 		graph set window fontface "Times"
 		set scheme economist
 		
-		**Otherså
+		**Others
 		set matsize 11000
         set level 95
 		set seed 108474
 		
 		
-   * PREPARING FOLDER PATH GLOBALS
-   *________________________________________________________________________________________________________________________________*
+	*--------------------------------------------------------------------------------------------------------------------------------*
+	**
+	*Preparing Folder Paths
+	**
+	*--------------------------------------------------------------------------------------------------------------------------------*
 	   * Users
-	   * -----------
+	   * -------------------------*
 	   * Vivian                  1    
 	   * Next User               2    
 
 	   *Set this value to the user currently using this file
 	   global user  1
 
+	   **
 	   * Root folder globals
-	   * ---------------------
+	   * -------------------------*
 	   if $user == 1 {
 		   global dofiles       "/Users/vivianamorim/Documents/GitHub/child-labor-ban-brazil/Do files"
 		   global projectfolder	"/Users/vivianamorim/OneDrive/world-bank/Labor/child-labor-ban-brazil"		//Do not use folder's names with spaces, for example "World Bank" 
@@ -191,8 +236,9 @@
 		   global projectfolder ""  
 	   }
 	   
+	   **
 	   * Project folder globals
-	   * ---------------------
+	   * -------------------------*
 	   global datawork         	"$projectfolder/DataWork"
 	   global datasets         	"$datawork/Datasets"
 	   global raw	           	"$datasets/Raw"
@@ -201,17 +247,21 @@
 	   global tables			"$datawork/Output/Tables"
 	   global figures			"$datawork/Output/Figures"
 	   
-   
-   * SETTING UP GLOBALS
-   *________________________________________________________________________________________________________________________________*
+	*--------------------------------------------------------------------------------------------------------------------------------*
+	**
+	*Setting up Globals
+	**
+	*--------------------------------------------------------------------------------------------------------------------------------*
 		do "$dofiles/Globals.do"
 		  
-	 
-/*
-   * RUN DOFILES CALLED BY THIS MASTER DOFILE
-   *________________________________________________________________________________________________________________________________*
+	/*
+	*--------------------------------------------------------------------------------------------------------------------------------*
+	**
+	*Run the do-files
+	**
+	*--------------------------------------------------------------------------------------------------------------------------------*
 		do "$dofiles/1. Importing Household Survey (PNAD).do"
 		do "$dofiles/2. Harmonizing Household Survey (PNAD).do"
 		do "$dofiles/3. Setting up Paper Data.do"
-
+		do "$dofiles/4. Descriptives.do"
 	
