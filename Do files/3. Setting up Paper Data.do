@@ -11,22 +11,22 @@
 		**
 		*Months
 		* 
-		gen 	xw = mofd(dateofbirth  - mdy(12, 16, 1984)) 			//months between date of birth and December 15th  1984
+		gen 	xw = mofd(dateofbirth  - mdy(12, 16, 1984)) 			//months between date of birth and December 16th, 1984
 	
 		**
 		*Weeks
 		*
-		gen 	zw = wofd(dateofbirth  - mdy(12, 16, 1984))				//weeks between date of birth  and December 15th 1984
+		gen 	zw = wofd(dateofbirth  - mdy(12, 16, 1984))				//weeks between date of birth  and December 16th, 1984
 
 		**
 		*Days
 		*
-		gen 	dw = 	  dateofbirth  - mdy(12, 16, 1984)				//days between date of birth  and December 15th 1984
+		gen 	dw = 	  dateofbirth  - mdy(12, 16, 1984)				//days between date of birth   and December 16th, 1984
 		
 		
 	*Treatment dummy
 	*--------------------------------------------------------------------------------------------------------------------------------*
-		gen 	D 	 = 1 		if zw >=  0
+		gen 	D 	 = 1 		if zw >=  0							    //Children that turned 14 on December 16th, 1984 or after that 
 		replace D	 = 0 		if zw <   0			
 		gen 	zwD  = zw*D
 		gen 	zw2  = zw^2
@@ -36,6 +36,12 @@
 		gen 	dw3  = dw^3
 		
 		format 	zw2* zw3* %20.0fc
+		
+		
+	*Reducing the sample by keeping the xw >= -12 & xw < 12 			//12 months bandwidth 
+	*--------------------------------------------------------------------------------------------------------------------------------*
+		keep if xw >= -12 & xw < 12
+		
 		
 	*--------------------------------------------------------------------------------------------------------------------------------*
 		label var D   "ITT"
@@ -52,7 +58,9 @@
 	*--------------------------------------------------------------------------------------------------------------------------------*
 		drop 	age_31_march children_income labor_card spouse female_with_children social_security activity* kid* female occupation goes_public_school went_school civil_servant_federal civil_servant_state civil_servant_municipal
 		compress
+		format  dateofbirth %td
+
 		save 	"$final/Child Labor Data.dta", replace
-	
+		
 		sort zw month_birth day_birth
 		*br year day_birth month_birth year_birth xw zw if year == 1999 & zw > -3 & zw < 3			

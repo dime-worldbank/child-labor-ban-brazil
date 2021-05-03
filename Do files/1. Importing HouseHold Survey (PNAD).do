@@ -8,12 +8,12 @@
 	/*
 	1 - Run:
 	net from http://www.econ.puc-rio.br/datazoom/portugues  
+	net install datazoom_pnad
 
-	2 - Click datazoom_pnad, and then install
+	2 - Save PNAD microdata (in txt format). For example: "C:\Vivian\PNAD\2014", "C:\Vivian\PNAD\2008". 
+	DO NOT USE FOLDER's NAMES WITH SPACES
 
-	3 - Save PNAD microdata (in txt format). for example: "C:\Vivian\PNAD\2014", "C:\Vivian\PNAD\2008". DO NOT USE FOLDER's NAMES WITH SPACES
-
-	4 - Check if the name of the files (in txt format) are the same as especified in datazoom: help datazoom_pnad
+	4 - Check if the name of the files (in txt format) are the same as especified in DataZoom: help datazoom_pnad
 
 	5 - Run the code bellow. 
 	*/
