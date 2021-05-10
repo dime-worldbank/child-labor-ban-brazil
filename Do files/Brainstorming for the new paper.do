@@ -5,50 +5,50 @@
 	**
 	*________________________________________________________________________________________________________________________________*
 	
-	foreach year in 1999 2001 {																		//pnad waves
+	foreach year in 1999 {											//pnad waves
 		
-		foreach variable in eap pwork uwork schoolatt child_labor_bargain {							//short-term outcomes
+		foreach variable in eap pwork employ_bargain {							//short-term outcomes
 		
 			if "`variable'" == "eap"   				 local title = "Eco. Act. Pop"
 			if "`variable'" == "pwork" 				 local title = "Paid work"
 			if "`variable'" == "schoolatt" 			 local title = "School attendance"
 			if "`variable'" == "uwork" 				 local title = "Unpaid work"
-			if "`variable'" == "child_labor_bargain" local title = "Child Labor/Bargain"
+			if "`variable'" == "employ_bargain" 	 local title = "Child Labor/Bargain"
 			estimates clear
 				
-				foreach sample in 1 2 3 4 {
-					if `sample' == 1 use "$final/Child Labor Data.dta"								, clear
-					if `sample' == 2 use "$final/Child Labor Data.dta" if urban		== 1			, clear
-					if `sample' == 3 use "$final/Child Labor Data.dta" if 				   male == 1, clear
-					if `sample' == 4 use "$final/Child Labor Data.dta" if urban 	== 1 & male == 1, clear
+				foreach sample in  4 {  //1 2 3
+					if `sample' == 1 use "$final/child-labor-ban-brazil.dta"							, clear
+					if `sample' == 2 use "$final/child-labor-ban-brazil.dta" if urban	== 1			, clear
+					if `sample' == 3 use "$final/child-labor-ban-brazil.dta" if 			   male == 1, clear
+					if `sample' == 4 use "$final/child-labor-ban-brazil.dta" if urban 	== 1 & male == 1, clear
 										
 					if `year' == 1999 keep if year == 1999											//only 1999 sample
 					if `year' == 2001 keep if year == 1999 | year == 2001							//checking robustness by pooling 1999 and 2001 waves
 									
 						foreach bdw in 3 6 9 12 {													//bandwidths, in months
 					
-							reg `variable' $dep_vars1 mom_yrs_school 	i.urban i.male i.year 	[pw = weight] if xw >= -`bdw' & xw < `bdw', cluster(zw)		//linear
+							reg `variable' $dep_vars1 mom_yrs_school 	i.urban i.male i.year 	[aw = weight_bargain] if cohort84_`bdw' == 1, cluster(cluster_bargain)		//linear
 							eststo, title("Linear")
 							
-							reg `variable' $dep_vars2 mom_yrs_school 	i.urban i.male i.year 	[pw = weight] if xw >= -`bdw' & xw < `bdw', cluster(zw)		//quadratic
+							reg `variable' $dep_vars2 mom_yrs_school 	i.urban i.male i.year 	[aw = weight_bargain] if cohort84_`bdw' == 1, cluster(cluster_bargain)		//quadratic
 							eststo, title("Quadratic")
 							
-							reg `variable' $dep_vars1 $bargain_controls i.year 					[pw = weight] if xw >= -`bdw' & xw < `bdw', cluster(zw)		//linear with the controls used in Bargain/Boutin
+							reg `variable' D gap84 $bargain_controls i.year 					[aw = weight_bargain] if cohort84_`bdw' == 1, cluster(cluster_bargain)		//linear with the controls used in Bargain/Boutin
 							eststo, title("Linear, Bargain")
 							
 							if `bdw' == 3 {
-							reg `variable' $dep_vars3  						    i.year			[pw = weight] if xw >= -`bdw' & xw < `bdw', cluster(zw)		//no controls
+							reg `variable' $dep_vars3  						    i.year			[aw = weight_bargain] if cohort84_`bdw' == 1, cluster(cluster_bargain)		//no controls
 							eststo, title("No controls")
 							}
 						}
 				}
-				if "`variable'" == "eap" estout * using "$tables/NewPaper`year'.xls",  keep(D*)  title("`title'") label mgroups("3-months" "5-months" "9-months" "12-months" "3-months" "5-months" "9-months" "12-months" "3-months" "5-months" "9-months" "12-months" "3-months" "5-months" "9-months" "12-months", pattern(1 0 0 0 1 0 0 1 0 0 1 0 0  1 0 0 0 1 0 0 1 0 0 1 0 0  1 0 0 0 1 0 0 1 0 0 1 0 0  1 0 0 0 1 0 0 1 0 0 1 0 0)) cells(b(star fmt(3)) se(fmt(2))) starlevels(* 0.10 ** 0.05 *** 0.01) stats(N r2, labels("Obs" "R2") fmt(%9.0g %9.3f %9.3f)) replace
-				if "`variable'" != "eap" estout * using "$tables/NewPaper`year'.xls",  keep(D*)  title("`title'") label mgroups("3-months" "5-months" "9-months" "12-months" "3-months" "5-months" "9-months" "12-months" "3-months" "5-months" "9-months" "12-months" "3-months" "5-months" "9-months" "12-months", pattern(1 0 0 0 1 0 0 1 0 0 1 0 0  1 0 0 0 1 0 0 1 0 0 1 0 0  1 0 0 0 1 0 0 1 0 0 1 0 0  1 0 0 0 1 0 0 1 0 0 1 0 0)) cells(b(star fmt(3)) se(fmt(2))) starlevels(* 0.10 ** 0.05 *** 0.01) stats(N r2, labels("Obs" "R2") fmt(%9.0g %9.3f %9.3f)) append
+				if "`variable'" == "eap" estout * using "$tables/NewPaper`year'.tex", style(tex) keep(D*)  title("`title'") label mgroups("3-months" "5-months" "9-months" "12-months" "3-months" "5-months" "9-months" "12-months" "3-months" "5-months" "9-months" "12-months" "3-months" "5-months" "9-months" "12-months", pattern(1 0 0 0 1 0 0 1 0 0 1 0 0  1 0 0 0 1 0 0 1 0 0 1 0 0  1 0 0 0 1 0 0 1 0 0 1 0 0  1 0 0 0 1 0 0 1 0 0 1 0 0)) cells(b(star fmt(4)) se(fmt(4))) starlevels(* 0.10 ** 0.05 *** 0.01) stats(N r2, labels("Obs" "R2") fmt(%9.0g %9.3f %9.3f)) replace
+				if "`variable'" != "eap" estout * using "$tables/NewPaper`year'.tex", style(tex) keep(D*)  title("`title'") label mgroups("3-months" "5-months" "9-months" "12-months" "3-months" "5-months" "9-months" "12-months" "3-months" "5-months" "9-months" "12-months" "3-months" "5-months" "9-months" "12-months", pattern(1 0 0 0 1 0 0 1 0 0 1 0 0  1 0 0 0 1 0 0 1 0 0 1 0 0  1 0 0 0 1 0 0 1 0 0 1 0 0  1 0 0 0 1 0 0 1 0 0 1 0 0)) cells(b(star fmt(4)) se(fmt(4))) starlevels(* 0.10 ** 0.05 *** 0.01) stats(N r2, labels("Obs" "R2") fmt(%9.0g %9.3f %9.3f)) append
 				estimates clear
 			}	
 		}
 		
-		
+	/*
 	*________________________________________________________________________________________________________________________________*
 	**
 	*Local Randomization Inference
@@ -63,10 +63,10 @@
 		*----------------------------------------------------------------------------------------------------------------------------*
 		foreach variable in eap pwork uwork child_labor_bargain {		//short-term outcomes
 			foreach sample in 1 2 3 4 {									//testing the results with different samples
-				if `sample' == 1 use "$final/Child Labor Data.dta" if							   year == 1999, clear		//all sample
-				if `sample' == 2 use "$final/Child Labor Data.dta" if urban		== 1			 & year == 1999, clear		//boys and girls, urban and rural
-				if `sample' == 3 use "$final/Child Labor Data.dta" if 				   male == 1 & year == 1999, clear		//only boys
-				if `sample' == 4 use "$final/Child Labor Data.dta" if urban 	== 1 & male == 1 & year == 1999, clear		//only boys in urban areas
+				if `sample' == 1 use "$final/child-labor-ban-brazil.dta" if							   year == 1999, clear		//all sample
+				if `sample' == 2 use "$final/child-labor-ban-brazil.dta" if urban		== 1		 & year == 1999, clear		//boys and girls, urban and rural
+				if `sample' == 3 use "$final/child-labor-ban-brazil.dta" if 			   male == 1 & year == 1999, clear		//only boys
+				if `sample' == 4 use "$final/child-labor-ban-brazil.dta" if urban 	== 1 & male == 1 & year == 1999, clear		//only boys in urban areas
 				
 				su `variable', detail
 				local mean = r(mean)									//mean of the shor-term outcome
@@ -181,10 +181,10 @@
 		
 
 		
-			use "$final/Child Labor Data.dta" if year == 1999 & urban == 1, clear		//urban and male children 
+			use "$final/child-labor-ban-brazil.dta" if year == 1999 & urban == 1, clear		//urban and male children 
 			rdrandinf pwork dw, wl(-90) wr(90) interfci(0.05) seed(94757)
 
-			use "$final/Child Labor Data.dta" if year == 1999 & hh_member == 3, clear		//urban and male children 
+			use "$final/child-labor-ban-brazil.dta" if year == 1999 & hh_member == 3, clear		//urban and male children 
 			drop if hh_head_age < 18 & hh_head_age > 60
 			rdrandinf child_labor_bargain dw, wl(-90) wr(90) interfci(0.05) seed(94757)
 

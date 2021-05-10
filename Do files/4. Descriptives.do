@@ -1,10 +1,44 @@
+		
+	**
+	*____________________________________________________________________________________________________________________________________*
+	**
+	*Visualization RDD
+	*____________________________________________________________________________________________________________________________________*
+	**
+		
+		use "$final/child-labor-ban-brazil.dta" if urban == 1 & male == 1 & year == 1999 & xw >= - 12 & xw < 12, clear	
 
+			foreach v of varlist $shortterm_outcomes {
+				local `v'_label: var label `v'
+			}
+			collapse $shortterm_outcomes [pw = weight], by(xw)
+			foreach v of varlist $shortterm_outcomes {
+				replace   `v' = `v'*100
+				label var `v' `"``v'_label'"'
+			}
+
+			foreach var of varlist $shortterm_outcomes {
+				tw  (lpolyci `var' xw if xw >= 0, degree(0) bw(1) acolor(gs12) fcolor(gs12) clcolor(gray) clwidth(0.3)) 		///
+					(lpolyci `var' xw if xw <  0, degree(0) bw(1) acolor(gs12) fcolor(gs12) clcolor(gray) clwidth(0.3)) 		///
+					(scatter `var' xw if xw >= -12 & xw <  0 , sort msymbol(circle) msize(small) mcolor(navy))         		 	///
+					(scatter `var' xw if xw >=   0 & xw <= 12, sort msymbol(circle) msize(small) mcolor(cranberry)), xline(0) 	///
+					legend(off) 																								///
+					title({bf:`: variable label `var''}, pos(11) span size(large))												///
+					ytitle("%") xtitle("Age difference from the cutoff (in months)") 											/// 
+					note("Source: PNAD 1999. 95% CI.", color(black) fcolor(background) pos(7) size(small)) saving(short_`var'.gph, replace) 
+			}
 			
+			graph combine short_eap.gph short_pwork.gph short_uwork.gph short_schoolatt.gph, graphregion(fcolor(white)) ysize(5) xsize(7) title(, fcolor(white) size(medium) color(cranberry))
+			graph export "$figures/RDD_shortterm-outcomes.pdf", as(pdf) replace
+			foreach var of varlist $shortterm_outcomes {
+			erase short_`var'.gph
+			}	
+		
 	**
 	*____________________________________________________________________________________________________________________________________*
 	**
 	*Overall descriptive statistics
-	*I used these statistics in the presentation to justify the choice of our sample of analysis: boys in urban areas. 
+	*We used these statistics to justify the choice of our sample of analysis: boys in urban areas. 
 	*____________________________________________________________________________________________________________________________________*
 	**
 	
@@ -17,38 +51,38 @@
 			**
 			*Hours worked in paid and unpaid jobs
 			use "$inter/Pooled_PNAD.dta" if year == 1999 & age == 14, clear
-			bys nonpaid_work: su hours_worked  [w = weight]
+				bys unpaid_work: su hours_worked  	[w = weight]
 				
 			**
 			*Among those working, % in paid jobs and in unpaid jobs
 			replace pwork = . if working == 0
 			replace uwork = . if working == 0
-			collapse (mean)working pwork uwork [pw = weight]
+			collapse (mean)working pwork uwork 	[pw = weight]
 			
 			**
 			*Unpaid jobs, agriculture
 			use "$inter/Pooled_PNAD.dta" if year == 1999 & age == 14, clear
-				tab 	agri_sector 	 if nonpaid_work == 1 [w = weight], mis						//non paid jobs in agriculture
-				tab 	type_work_agric  if nonpaid_work == 1 & agri_sector == 1 [w = weight], mis	//non paid jobs in agriculture, % that are members of the household
+				tab 	agric_sector 	 if unpaid_work == 1 					 [w = weight], mis						//unpaid jobs in agriculture
+				tab 	type_work_agric  if unpaid_work == 1 & agric_sector == 1 [w = weight], mis						//unpaid jobs in agriculture, % that are members of the household
 			
 			**
 			*Unpaid jobs, non agriculture sector
-			use "$inter/Pooled_PNAD.dta" if year == 1999 & age == 14 & agri_sector == 0 & nonpaid_work == 1, clear
-				tab 	type_work_noagric 	[w = weight], mis											//% that are members of the household
-				tab 	place_work 		  	[w = weight], mis											//where do they work?
-				tab 	activity90s		  	[w = weight], mis 										//5 = commerce, 6 = services
+			use "$inter/Pooled_PNAD.dta" if year == 1999 & age == 14 & agric_sector == 0 & unpaid_work == 1, clear
+				tab type_work_noagric 		[w = weight], mis															//% that are members of the household
+				tab place_work 		  		[w = weight], mis															//where do they work?
+				tab activity90s		  		[w = weight], mis 															//5 = commerce, 6 = services
 			
 			**
 			*Paid jobs
-			use "$inter/Pooled_PNAD.dta" if year == 1999 & age == 14 & nonpaid_work == 0, clear
-				tab place_work 				[w = weight], mis										//40% working in stores, factories, offices
+			use "$inter/Pooled_PNAD.dta" if year == 1999 & age == 14 & unpaid_work == 0, clear
+				tab place_work 				[w = weight], mis															//40% working in stores, factories, offices
 				tab type_work_noagric 		[w = weight], mis	
 				tab type_work_agric 		[w = weight], mis	
 				
 			**
 			*Girls and boys living in urban areas
 			use "$inter/Pooled_PNAD.dta" if year == 1999 & age == 14, clear
-			tab urban [w = weight]
+				tab urban [w = weight]
 			
 			*----------------------------------------------------------------------------------------------------------------------------*
 			**
@@ -64,18 +98,18 @@
 
 			**
 			**Girls paid work, urban areas
-			use "$inter/Pooled_PNAD.dta" if year == 1999 & age == 14 & male == 0 & nonpaid_work == 0 & urban == 1, clear
-				tab working		[w = weight]
-				tab agri_sector [w = weight], mis												//99% in non-agriculture sectors
-				tab type_work_noagric, mis														//majority as housekeepers
-				tab activity90s if type_work_noagric !=2 [w = weight], mis						//activity sector for those not working as housekeepers
-				tab place_work  if type_work_noagric !=2 [w = weight], mis
+			use "$inter/Pooled_PNAD.dta" if year == 1999 & age == 14 & male == 0 & unpaid_work == 0 & urban == 1, clear
+				tab working												[w = weight]
+				tab agric_sector 										[w = weight], mis				//99% in non-agriculture sectors
+				tab type_work_noagric, mis																//majority as housekeepers
+				tab activity90s if type_work_noagric !=2 				[w = weight], mis				//activity sector for those not working as housekeepers
+				tab place_work  if type_work_noagric !=2 				[w = weight], mis
 			
 			**
-			**Girls non paid work, rural areas. 
-			use "$inter/Pooled_PNAD.dta" if year == 1999 & age == 14 & male == 0 & nonpaid_work == 1 & urban == 0, clear
-				tab 		agri_sector [w = weight], mis										//% of girls working in agriculture sector in rural areas
-					tab 	type_work_agric   if agri_sector == 1 [w = weight], mis				//% of these girls that are member of the household. 
+			**Girls unpaid work, rural areas. 
+			use "$inter/Pooled_PNAD.dta" if year == 1999 & age == 14 & male == 0 & unpaid_work == 1 & urban == 0, clear
+				tab 		agric_sector 								[w = weight], mis				//% of girls working in agriculture sector in rural areas
+					tab 	type_work_agric   if agric_sector == 1 		[w = weight], mis				//% of these girls that are member of the household. 
 
 			
 			
@@ -93,113 +127,138 @@
 			
 			**
 			*Boys paid work, urban areas
-			use "$inter/Pooled_PNAD.dta" if year == 1999 & age == 14 & male == 1 & nonpaid_work == 0 & urban == 1, clear
-				tab agri_sector [w = weight], mis												//in urban areas, still we have some boys working with agriculture sector
-				tab activity90s 	if agri_sector == 1	 [w = weight], mis
-				tab occupation90s 	if agri_sector == 1	 [w = weight], mis
-						
-				tab type_work, mis																//20% self-employee a, 60% employees
-				tab activity90s if type_work_noagric != 3, mis									//activity sector then the boy is not a self-employee
+			use "$inter/Pooled_PNAD.dta" if year == 1999 & age == 14 & male == 1 & unpaid_work == 0 & urban == 1, clear
+				tab agric_sector	 									[w = weight], mis				//in urban areas, still we have some boys working with agriculture sector
+				tab activity90s 	if agric_sector == 1	 			[w = weight], mis
+				tab occupation90s 	if agric_sector == 1	 			[w = weight], mis
+				tab type_work 											[w = weight], mis				//20% self-employee a, 60% employees
+				tab activity90s 	if type_work_noagric != 3 			[w = weight], mis				//activity sector then the boy is not a self-employee
 
 			**		
-			**Boys non paid work, rural areas. 
-			use "$inter/Pooled_PNAD.dta" if year == 1999 & age == 14 & male == 1 & nonpaid_work == 1 & urban == 0, clear
-				tab 		agri_sector [w = weight], mis										//% of boys working in agriculture sector in rural areas
-					tab 	type_work_agric   if agri_sector == 1 [w = weight], mis				//% of these boys that are member of the household
-	
-							
+			**Boys unpaid work, rural areas. 
+			use "$inter/Pooled_PNAD.dta" if year == 1999 & age == 14 & male == 1 & unpaid_work == 1 & urban == 0, clear
+				tab 		agric_sector 								[w = weight], mis				//% of boys working in agriculture sector in rural areas
+					tab 	type_work_agric   if agric_sector == 1 		[w = weight], mis				//% of these boys that are member of the household
+		
+				
+				
 	**
 	*____________________________________________________________________________________________________________________________________*
 	*
-	*PNAD sample: out of labor market, employed (paid and non paid), and unemployed. 
+	*PNAD sample: out of labor market, employed (paid and unpaid), and unemployed children
 	*____________________________________________________________________________________________________________________________________*
 	**
-				
+		use "$final/child-labor-ban-brazil.dta" if year == 1999 & age == 14, clear
+			tab  unpaid_work member_household_self_consu [w = weight], mis 																//majority of kids in nonpaid activities are member of the household/self consumption
+
+			collapse (sum) member_household_self_consu-no_working_children employed unemployed out_labor paid_workers[pw = weight]
+
 			*----------------------------------------------------------------------------------------------------------------------------*
 			**
-			*Total number of children in paid and unpaid jobs
+			*Out of the labor force, employed and unemployed
 			*----------------------------------------------------------------------------------------------------------------------------*
-
-				use "$inter/Pooled_PNAD.dta" if year == 1999 & age == 14, clear
-					gen  member_household_self_consu = 1 if inlist(type_work_noagric, 5, 7) |  inlist(type_work_agric, 4, 6)
-					gen  others_nonpaid 			 = 1 if nonpaid_work == 1 & member_household_self_consu != 1
-					gen  paid_work_girls_urban		 = 1 if nonpaid_work == 0 & male == 0 & urban == 1
-					gen  paid_work_girls_rural		 = 1 if nonpaid_work == 0 & male == 0 & urban == 0
-					gen  paid_work_boys_urban		 = 1 if nonpaid_work == 0 & male == 1 & urban == 1
-					gen  paid_work_boys_rural		 = 1 if nonpaid_work == 0 & male == 1 & urban == 0
-					gen  no_employed_children		 = 1 if working      == 0 
-					egen paid_workers				 = rsum(paid_work_girls_urban paid_work_girls_rural paid_work_boys_urban paid_work_boys_rural)  
-					tab  nonpaid_work member_household_self_consu, mis //majority of kids in nonpaid activities are member of the household/self consumption
-
-					
-					**Each row must have the value 1 for at least of variable we defined
-						**If the children has a non-paid job and is member of the household
-						**If the children has a non-paid job and it is not member of the household
-						**Girls in paid jobs in urban areas
-						**Girls in paid jobs in rural areas
-						**Boys in paid jobs in urban areas
-						**Boys  in paid jobs in rural areas
-						**No employed children
-				egen test = rsum(member_household_self_consu-no_employed_children) 
-				tab  test, mis			//okkkk
-				drop test
-
-				**Total
-				collapse (sum) member_household_self_consu-no_employed_children employed unemployed out_labor paid_workers[pw = weight]
-
-				**
-				*Out of the labor force, employed and unemployed
-				graph pie out_labor employed unemployed, pie(1, explode color(gs12) )  pie(2, explode color(cranberry))  pie(3, explode color(navy*0.6) ) pie(4, explode color(gs8))  pie(5, explode color(cranberry)) pie(6, explode color(olive_teal*1.4))						   					///
+				graph pie out_labor employed unemployed, pie(1, explode color(gs12))  pie(2, explode color(cranberry))  pie(3, explode color(navy*0.6)) 				///
 				plabel(_all percent,   gap(-15) format(%2.1fc) size(small)) 																 							///
-				plabel(1 "Out labor force",  	 color(black)  gap(-1) format(%2.1fc) size(large)) 																 		///
-				plabel(2 "Employed",  		 	 color(white) gap(2) format(%2.1fc) size(large)) 																 		///
-				plabel(3 "Unemployed",  		 color(black) gap(2) format(%2.1fc) size(large)) 																 		///
-				title("", pos(12) size(huge) color(black)) 																												///
+				plabel(1 "Out labor force",  	 color(black) gap(-1) format(%2.1fc) size(large)) 																 		///
+				plabel(2 "Employed",  		 	 color(white) gap(2)  format(%2.1fc) size(large)) 																 		///
+				plabel(3 "Unemployed",  		 color(black) gap(2)  format(%2.1fc) size(large)) 																 		///
 				legend(off) 																																			///
 				graphregion(color(white) fcolor(white) lcolor(white) icolor(white) ifcolor(white) ilcolor(white))	 					 								///
-				plotregion(color(white) fcolor(white) lcolor(white) icolor(white) ifcolor(white) ilcolor(white)) 						 								///
-				note("Source: PNAD 1999. 14 year olds.", span color(black) fcolor(background) pos(7) size(small))														///
+				plotregion( color(white) fcolor(white) lcolor(white) icolor(white) ifcolor(white) ilcolor(white)) 						 								///
+				note("Source: PNAD 1999. 14-year-olds.", span color(black) fcolor(background) pos(7) size(small))														///
 				ysize(5) xsize(5) 	
 				graph export "$figures/out-labor-market-employed-unemployed.pdf", as(pdf) replace	
 				
-				**
-				*Non-paid worker member of the household, other non-paid workers and paid workers
-				graph pie member_household_self_consu others_nonpaid paid_workers, pie(1, explode  color(emidblue)) pie(2, explode color(cranberry))  pie(3, explode color(gs12)) pie(4, explode color(gs8))  pie(5, explode color(cranberry)) pie(6, explode color(olive_teal*1.4))						   					///
+				
+			*----------------------------------------------------------------------------------------------------------------------------*
+			**
+			*Non-paid worker member of the household, other non-paid workers and paid workers
+			*----------------------------------------------------------------------------------------------------------------------------*
+				graph pie member_household_self_consu  others_unpaid paid_workers, pie(1, explode  color(emidblue)) pie(2, explode color(cranberry))  pie(3, explode color(gs12)) pie(4, explode color(gs8))  pie(5, explode color(cranberry)) pie(6, explode color(olive_teal*1.4))						   					///
 				plabel(_all percent,   gap(10) format(%2.0fc) size(small)) 																 								///
-				plabel(1 "Household member/self-consumption", color(black)  gap(-10) format(%2.0fc) size(small)) 														///
-				plabel(2 "Other non-paid workers", color(black)  gap(-5) format(%2.0fc) size(small)) 																 	///
-				plabel(3 "Paid-workers", color(black)  gap(-2) format(%2.0fc) size(small)) 																 				///
-				title("", pos(12) size(huge) color(black)) 																												///
+				plabel(1 "Household member/self-consumption", 	color(black)  gap(-10) format(%2.0fc) size(small)) 														///
+				plabel(2 "Other non-paid workers", 				color(black)  gap(-5)  format(%2.0fc) size(small)) 														///
+				plabel(3 "Paid-workers", 						color(black)  gap(-2)  format(%2.0fc) size(small)) 														///
 				legend(off) 																																			///
 				graphregion(color(white) fcolor(white) lcolor(white) icolor(white) ifcolor(white) ilcolor(white))	 					 								///
-				plotregion(color(white) fcolor(white) lcolor(white) icolor(white) ifcolor(white) ilcolor(white)) 						 								///
-				note("Source: PNAD 1999. 14 year olds.", span color(black) fcolor(background) pos(7) size(small))														///
+				plotregion( color(white) fcolor(white) lcolor(white) icolor(white) ifcolor(white) ilcolor(white)) 						 								///
+				note("Source: PNAD 1999. 14-year-olds.", span color(black) fcolor(background) pos(7) size(small))														///
 				ysize(5) xsize(5) 	
 				graph export "$figures/member-household-self-consumption.pdf", as(pdf) replace	
 
-				**
-				*Paid workers: boys, girls, rural and urban. 
+			*----------------------------------------------------------------------------------------------------------------------------*
+			**
+			*Paid workers: boys, girls, rural and urban. 
+			*----------------------------------------------------------------------------------------------------------------------------*
 				graph pie paid_work_boys_urban paid_work_boys_rural paid_work_girls_urban paid_work_girls_rural, pie(1, explode  color(gs12)) pie(2, explode color(gs8))   pie(3, explode color(olive_teal))  pie(4, explode color(olive_teal*1.6)) pie(5, explode color(cranberry))						   					///
 				plabel(_all percent,   gap(12) format(%2.0fc) size(small)) 																 								///
 				plabel(1 "Boys, paid work, urban" 	,  color(black) gap(-10) format(%2.0fc) size(small)) 																///
-				plabel(2 "Boys, paid work, rural" 	,  color(black) gap(-5) format(%2.0fc) size(small)) 																///
+				plabel(2 "Boys, paid work, rural" 	,  color(black) gap(-5)  format(%2.0fc) size(small)) 																///
 				plabel(3 "Girls, paid work, urban" 	,  color(black) gap(-10) format(%2.0fc) size(small)) 																///
-				plabel(4 "Girls, paid work, rural" 	,  color(black) gap(5) format(%2.0fc) size(small)) 																 	///
-				title("", pos(12) size(huge) color(black)) 																												///
+				plabel(4 "Girls, paid work, rural" 	,  color(black) gap(5)   format(%2.0fc) size(small)) 																///
 				legend(off) 																																			///
 				graphregion(color(white) fcolor(white) lcolor(white) icolor(white) ifcolor(white) ilcolor(white))	 					 								///
-				plotregion(color(white) fcolor(white) lcolor(white) icolor(white) ifcolor(white) ilcolor(white)) 						 								///
-				note("Source: PNAD 1999. 14 year olds.", span color(black) fcolor(background) pos(7) size(small))														///
+				plotregion( color(white) fcolor(white) lcolor(white) icolor(white) ifcolor(white) ilcolor(white)) 						 								///
+				note("Source: PNAD 1999. 14-year-olds.", span color(black) fcolor(background) pos(7) size(small))														///
 				ysize(5) xsize(5) 	
 				graph export "$figures/employed-by-type.pdf", as(pdf) replace	
 
+		
+	**
+	*____________________________________________________________________________________________________________________________________*
+	*
+	*Safety in the workplace, available for 2001 wave
+	*____________________________________________________________________________________________________________________________________*
+	**		
+
+			*Why are these children working?
+			*----------------------------------------------------------------------------------------------------------------------------*
+			use "$inter/Pooled_PNAD.dta" if year == 2001 & age == 14, clear
+				
+				tab reason_work  unpaid_work if working == 1 [w = weight], mis
+				tab happy_work   unpaid_work if working == 1 [w = weight], mis
+				
+				gen childrens_want = reason_work == 1		//children wants to work
+				gen parents_want   = reason_work == 2 		//parents want them to work
+				
+				label define 	unpaid_work 					1 "Unpaid work" 0 "Paid work"
+				label val		unpaid_work unpaid_work
+				
+				graph pie childrens_want parents_want [w = weight], by(unpaid_work,   note("") legend(off) graphregion(color(white)) cols(3)) pie(1, explode  color(emidblue)) pie(2, explode color(gs8))   pie(3, explode color(olive_teal))  pie(4, explode color(olive_teal*1.6)) pie(5, explode color(cranberry))						   					///
+				plabel(_all percent,   gap(12) format(%2.0fc) size(small)) 																 								///
+				plabel(1 "They want to work" 			,  color(black) gap(-10) format(%2.0fc) size(large)) 															///
+				plabel(2 "Parents want them to work" 	,  color(black) gap(-5)  format(%2.0fc) size(medsmall)) 														///
+				legend(off) 																																			///
+				graphregion(color(white) fcolor(white) lcolor(white) icolor(white) ifcolor(white) ilcolor(white))	 					 								///
+				plotregion( color(white) fcolor(white) lcolor(white) icolor(white) ifcolor(white) ilcolor(white)) 						 								///
+				note("Source: PNAD 2001. 14-year-olds.", span color(black) fcolor(background) pos(7) size(small))														///
+				ysize(3) xsize(5) 	
+				graph export "$figures/reason-work.pdf", as(pdf) replace	
+
+
+	**
+	*____________________________________________________________________________________________________________________________________*
+	*
+	*Boutin/Bargain definition of visible/invisible work
+	*____________________________________________________________________________________________________________________________________*
+	**
+		use "$final/child-labor-ban-brazil.dta" if year == 1999, clear
+
+			tab visible_activities 				  if working == 1 [w = weight], mis									//percentage of children working on visible activities
+			
+			tab visible_activities work_home 	  if working == 1 [w = weight], mis									//visible actitivies & home/work in the same area
+				
+			tab member_household_self_consu		  if working == 1 &  visible_activities == 1 [w = weight], mis		//60% children in these defined visible actitivies are members of the household/self-consumption
+				
+								
+				
 	**
 	*____________________________________________________________________________________________________________________________________*
 	*
 	*Time in service
 	*____________________________________________________________________________________________________________________________________*
 	**
-			use "$final/Child Labor Data.dta" if urban == 1 & male == 1 & year == 1999 & xw >= - 1 & xw < 1, clear	
+			use "$final/child-labor-ban-brazil.dta" if urban == 1 & male == 1 & year == 1999 & xw >= - 1 & xw < 1, clear	
 
 			gen 	time_job = 12*years_current_work + months_current_work if !missing(years_current_work)
 	
