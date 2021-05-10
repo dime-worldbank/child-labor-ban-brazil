@@ -453,6 +453,8 @@
 				replace agric_sector = 0 if  missing(type_work_agric) & employed == 1
 				
 				
+				
+				
 				*Labor Card and social security 
 				*------------------------------------------------------------------------------------------------------------------------*
 				gen     labor_card 		= 1       				if (v4706 == 1 | v4706 == 6) 		& employed == 1

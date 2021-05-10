@@ -27,28 +27,30 @@
 									
 						foreach bdw in 3 6 9 12 {													//bandwidths, in months
 					
-							reg `variable' $dep_vars1 mom_yrs_school 	i.urban i.male i.year 	[aw = weight_bargain] if cohort84_`bdw' == 1, cluster(cluster_bargain)		//linear
-							eststo, title("Linear")
+							reg `variable' D gap84 			mom_yrs_school 	i.urban i.male	i.year 	[aw = weight] if cohort84_`bdw' == 1, cluster(cluster_bargain)		//linear
+							eststo, title("Linear")	
 							
-							reg `variable' $dep_vars2 mom_yrs_school 	i.urban i.male i.year 	[aw = weight_bargain] if cohort84_`bdw' == 1, cluster(cluster_bargain)		//quadratic
+							reg `variable' D gap84 gap84_2 	mom_yrs_school 	i.urban i.male 	i.year 	[aw = weight] if cohort84_`bdw' == 1, cluster(cluster_bargain)		//quadratic
 							eststo, title("Quadratic")
 							
-							reg `variable' D gap84 $bargain_controls i.year 					[aw = weight_bargain] if cohort84_`bdw' == 1, cluster(cluster_bargain)		//linear with the controls used in Bargain/Boutin
+							reg `variable' D gap84 $bargain_controls_our_def		   		i.year 	[aw = weight] if cohort84_`bdw' == 1, cluster(cluster_bargain)		//linear with the controls used in Bargain/Boutin
 							eststo, title("Linear, Bargain")
 							
 							if `bdw' == 3 {
-							reg `variable' $dep_vars3  						    i.year			[aw = weight_bargain] if cohort84_`bdw' == 1, cluster(cluster_bargain)		//no controls
+							reg `variable' $dep_vars3  						   		   		i.year  [aw = weight] if cohort84_`bdw' == 1, cluster(cluster_bargain)		//no controls
 							eststo, title("No controls")
 							}
 						}
 				}
+				if "`variable'" == "eap" estout * using "$tables/NewPaper`year'.xls",  			 keep(D*)  title("`title'") label mgroups("3-months" "5-months" "9-months" "12-months" "3-months" "5-months" "9-months" "12-months" "3-months" "5-months" "9-months" "12-months" "3-months" "5-months" "9-months" "12-months", pattern(1 0 0 0 1 0 0 1 0 0 1 0 0  1 0 0 0 1 0 0 1 0 0 1 0 0  1 0 0 0 1 0 0 1 0 0 1 0 0  1 0 0 0 1 0 0 1 0 0 1 0 0)) cells(b(star fmt(4)) se(fmt(4))) starlevels(* 0.10 ** 0.05 *** 0.01) stats(N r2, labels("Obs" "R2") fmt(%9.0g %9.3f %9.3f)) replace
+				if "`variable'" != "eap" estout * using "$tables/NewPaper`year'.xls", 			 keep(D*)  title("`title'") label mgroups("3-months" "5-months" "9-months" "12-months" "3-months" "5-months" "9-months" "12-months" "3-months" "5-months" "9-months" "12-months" "3-months" "5-months" "9-months" "12-months", pattern(1 0 0 0 1 0 0 1 0 0 1 0 0  1 0 0 0 1 0 0 1 0 0 1 0 0  1 0 0 0 1 0 0 1 0 0 1 0 0  1 0 0 0 1 0 0 1 0 0 1 0 0)) cells(b(star fmt(4)) se(fmt(4))) starlevels(* 0.10 ** 0.05 *** 0.01) stats(N r2, labels("Obs" "R2") fmt(%9.0g %9.3f %9.3f)) append
 				if "`variable'" == "eap" estout * using "$tables/NewPaper`year'.tex", style(tex) keep(D*)  title("`title'") label mgroups("3-months" "5-months" "9-months" "12-months" "3-months" "5-months" "9-months" "12-months" "3-months" "5-months" "9-months" "12-months" "3-months" "5-months" "9-months" "12-months", pattern(1 0 0 0 1 0 0 1 0 0 1 0 0  1 0 0 0 1 0 0 1 0 0 1 0 0  1 0 0 0 1 0 0 1 0 0 1 0 0  1 0 0 0 1 0 0 1 0 0 1 0 0)) cells(b(star fmt(4)) se(fmt(4))) starlevels(* 0.10 ** 0.05 *** 0.01) stats(N r2, labels("Obs" "R2") fmt(%9.0g %9.3f %9.3f)) replace
 				if "`variable'" != "eap" estout * using "$tables/NewPaper`year'.tex", style(tex) keep(D*)  title("`title'") label mgroups("3-months" "5-months" "9-months" "12-months" "3-months" "5-months" "9-months" "12-months" "3-months" "5-months" "9-months" "12-months" "3-months" "5-months" "9-months" "12-months", pattern(1 0 0 0 1 0 0 1 0 0 1 0 0  1 0 0 0 1 0 0 1 0 0 1 0 0  1 0 0 0 1 0 0 1 0 0 1 0 0  1 0 0 0 1 0 0 1 0 0 1 0 0)) cells(b(star fmt(4)) se(fmt(4))) starlevels(* 0.10 ** 0.05 *** 0.01) stats(N r2, labels("Obs" "R2") fmt(%9.0g %9.3f %9.3f)) append
 				estimates clear
 			}	
 		}
 		
-	/*
+	
 	*________________________________________________________________________________________________________________________________*
 	**
 	*Local Randomization Inference
@@ -140,51 +142,3 @@
 			note("Source: PNAD. 1999", span color(black) fcolor(background) pos(7) size(vsmall))
 			graph export "$figures/paid-work-effects-1999.pdf", as(pdf) replace	
 		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-
-		
-			use "$final/child-labor-ban-brazil.dta" if year == 1999 & urban == 1, clear		//urban and male children 
-			rdrandinf pwork dw, wl(-90) wr(90) interfci(0.05) seed(94757)
-
-			use "$final/child-labor-ban-brazil.dta" if year == 1999 & hh_member == 3, clear		//urban and male children 
-			drop if hh_head_age < 18 & hh_head_age > 60
-			rdrandinf child_labor_bargain dw, wl(-90) wr(90) interfci(0.05) seed(94757)
-

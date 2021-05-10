@@ -37,7 +37,6 @@
 		gen 	zw2D = zw2*D
 		gen 	dw2  = dw^2
 		gen 	dw3  = dw^3
-		
 		format 	zw2* zw3* %20.0fc
 		
 		
@@ -170,20 +169,6 @@
 			gen 		cohort84_9	= (abs(gap84)<=`dist9')
 			gen 		cohort84_6	= (abs(gap84)<=`dist6')
 			gen 		cohort84_3	= (abs(gap84)<=`dist3')
-				
-			/*	
-			*Defined only for children (hhlink=3, daugher/son)
-			replace 	gap84		=. 	if hh_member!=3
-			replace 	cohort84_9	=.  if hh_member!=3
-			replace 	cohort84_6	=.  if hh_member!=3
-			replace 	cohort84_3	=.  if hh_member!=3
-
-			*Defined only for those with no pb (date of birth)
-			replace 	gap84	 	=. 	if no_dateofbirth==1
-			replace 	cohort84_3	=. 	if no_dateofbirth==1
-			replace 	cohort84_6	=. 	if no_dateofbirth==1
-			replace 	cohort84_9	=. 	if no_dateofbirth==1
-			*/
 					
 			
 		*----------------------------------------------------------------------------------------------------------------------------*
@@ -192,8 +177,8 @@
 			gen 	 employ_bargain   		= (v9001 == 1  | v9004 == 2 | v9002  == 2 | v9003 == 1) 
 			replace  employ_bargain   		= 0 														if v9008 == 13  | v9029 == 7
 				
-			gen	 	 visible_activities	   		= (employ_bargain == 1) & (v9054 == 1 | v9054 == 2 | v9054 == 5) 																// shop+school+manufacture, farm, local
-			gen 	 invisible_activities   	= (employ_bargain == 1) & (v9054 == 3 | v9054 == 4 | v9054 == 6 | v9054 == 7) 													// "domicile" (residence), employer's redidence, motor, vehicule, public area
+			gen	 	 visible_activities	   	= (employ_bargain == 1) & (v9054 == 1 | v9054 == 2 | v9054 == 5) 																// shop+school+manufacture, farm, local
+			gen 	 invisible_activities   = (employ_bargain == 1) & (v9054 == 3 | v9054 == 4 | v9054 == 6 | v9054 == 7) 													// "domicile" (residence), employer's redidence, motor, vehicule, public area
 
 			
 		*----------------------------------------------------------------------------------------------------------------------------*
@@ -210,7 +195,7 @@
 		*========================================*
 		*----------------------------------------------------------------------------------------------------------------------------*
 
-			 gen str surveyi="1999 09 01" if year==1999	
+			 gen str surveyi="1999 09 01" if year==1999
 			 replace surveyi="1998 09 01" if year==1998
 			 gen 	 survey = date(surveyi, "YMD")
 			 format  survey %td 
@@ -242,7 +227,7 @@
 			}
 
 			bys year hh_id: gen couple = (hh_m==1 & hh_f==1)        //both parents present
-			bys year hh_id: gen singm  = (hh_m==1 & hh_f==0)        //single mother ***** Wouldnt this one be single mother?
+			bys year hh_id: gen singm  = (hh_m==1 & hh_f==0)        //single mother ***** Wouldnt this one be single mother ?
 			bys year hh_id: gen singf  = (hh_m==0 & hh_f==1)        //single father ***** Wouldnt this one be single father?
 			drop hh_m hh_f											
 				
@@ -435,124 +420,131 @@
 
 			
 		*----------------------------------------------------------------------------------------------------------------------------*
-		*----------------------------------------------------------------------------------------------------------------------------*
 		*Child Labor Ban Data
 		*----------------------------------------------------------------------------------------------------------------------------*
 			keep if cohort84_12 == 1									//reduce the size of the dataset
+			gen 	gap84_2 = gap84*gap84
 			compress
 			save 	"$final/child-labor-ban-brazil.dta", replace
 		*----------------------------------------------------------------------------------------------------------------------------*
 	
 	
-	
+		/*
 		*----------------------------------------------------------------------------------------------------------------------------*
-		**Sample exclusions as suggested by Bargain/Boutin
+		**
+		**Comparing our and Bargain/Boutin datasets
 		*----------------------------------------------------------------------------------------------------------------------------*		
 			keep if (cohort84_6 > 0)  
 			
-			**Son/daughter of the head of the household
-			keep if hh_member ==  3
+			
+			*------------------------------------------------------------------------------------------------------------------------*		
+			*===========================*
+			*Sample exclusions
+			*===========================*
+				**Son/daughter of the head of the household
+				keep if hh_member ==  3
 
-			*Date of birth
-			gen 	ppb	=	(no_dateofbirth	==	1)
-			bys 	year	 hh_id: egen spb=sum(ppb)
-			drop 	if  spb > 0
-			drop 	spb ppb			
-			keep 	if no_dateofbirth == 0
-			
-			**Age of the head of the household
-		    drop 	if hh_head_age_bargain < 18 | hh_head_age_bargain > 60
-			
-				*Affected and unaffected cohorts
-				gen   treat = (gap84 >= 1)
-
-				*Comparing the sample size using ours and theirs treatment dummy
-				tab   D treat if year == 1999 & hh_member == 3	& cohort84_3 == 1			//same number of observations! GOOD
-			
-			
-		*----------------------------------------------------------------------------------------------------------------------------*
-		**Comparing our and their dataset
-		*----------------------------------------------------------------------------------------------------------------------------*		
-			**We downloaded Bargain/Boutin data for replication "lhz047_supplemental_files". 
-			**The files .dta are saved inside the folder data_for_replication
-			**Below we compared our and their datasets
-			
-			keep if year == 1999
-			
-			global bargaindata "/Users/vivianamorim/OneDrive/world-bank/Labor/child-labor-ban-brazil/Documentation/Literature/Bargain, Boutin/lhz047_supplemental_files/data_for_replication"
-			
-			preserve
-				use "$bargaindata/PNAD_same_cohort.dta" if year == 1999, clear
-				egen hhinc = rowtotal(m_inc f_inc)
-				tab  region, gen(reg)
-				tab  ethnie, gen(eth) 
+				*Date of birth
+				gen 	ppb	=	(no_dateofbirth	==	1)
+				bys 	year	 hh_id: egen spb=sum(ppb)
+				drop 	if  spb > 0
+				drop 	spb ppb			
+				keep 	if no_dateofbirth == 0
 				
-				*keep 	id_dom id_pes year dob employ					reg1 reg2 reg3 reg4 			 eth2 eth5 		head_edu 			head_moth 	head_age 			 hhinc 					rural hhsize 			cohort* gap* sex peso_pes ///
+				**Age of the head of the household
+				drop 	if hh_head_age_bargain < 18 | hh_head_age_bargain > 60
 				
-				tempfile bargain
-				save	`bargain'
-			restore
-			
-			*keep 	 	id_dom id_pes year dateofbirth employ_bargain 	region1 region2 region3 region4  		 color_bargain* hh_head_edu_bargain hh_head_male hh_head_age_bargain adults_income_bargain 	urban hh_size_bargain	
+					*Affected and unaffected cohorts
+					gen   treat = (gap84 >= 1)
 
-			merge 1:1 id_dom id_pes using `bargain'
-			/*
+					*Comparing the sample size using ours and theirs treatment dummy
+					tab   D treat if year == 1999 & hh_member == 3	& cohort84_3 == 1			//same number of observations! GOOD
 			
-			*===================================================*
-			*Child Labor
-			tab employ employ_bargain, mis
-			*===================================================*
 			
-			*===================================================*
-			*Region
-			tab region1 reg1, mis
-			tab region2 reg2, mis
-			tab region3 reg3, mis
-			tab region4 reg4, mis
-			*===================================================*
-			
-			*===================================================*
-			*Skin color
-			tab color_bargain2 eth2, mis			
-			tab color_bargain5 eth5, mis
-			*===================================================*
-			
-			*===================================================*
-			*Household head education
-			gen  teste  = hh_head_edu_bargain - head_edu
-			br 	 hh_head_edu_bargain head_edu  if teste == . 
-			tab  teste, mis	
-			drop teste
-			*===================================================*
+			*===========================*
+			*Bargain and Boutin dta file
+			*===========================*
+				keep if year == 1999
+				
+				/*
+				-> We downloaded Bargain/Boutin data for replication "lhz047_supplemental_files". 
+				-> The files .dta are saved inside the folder data_for_replication
+				-> Below we compared our data (with the controls defined the same way the authors did) and their dataset. 
+				-> We can see that we were able to perform the same harmonization Bargain/Boutin did.
+				*/
+				
+				global bargaindata "/Users/vivianamorim/OneDrive/world-bank/Labor/child-labor-ban-brazil/Documentation/Literature/Bargain, Boutin/lhz047_supplemental_files/data_for_replication"
+				
+				preserve
+					use "$bargaindata/PNAD_same_cohort.dta" if year == 1999, clear
+					egen hhinc = rowtotal(m_inc f_inc)
+					tab  region, gen(reg)
+					tab  ethnie, gen(eth) 
+									
+					tempfile bargain
+					save	`bargain'
+				restore
+				
+				merge 1:1 id_dom id_pes using `bargain'
+				
+				**
+				**We can see that all variables match:
+				
+				*===================================================*
+				*Child Labor
+				tab employ employ_bargain, mis			
+				*===================================================*
+				
+				*===================================================*
+				*Region
+				tab region1 reg1, mis
+				tab region2 reg2, mis
+				tab region3 reg3, mis
+				tab region4 reg4, mis
+				*===================================================*
+				
+				*===================================================*
+				*Skin color
+				tab color_bargain2 eth2, mis			
+				tab color_bargain5 eth5, mis
+				*===================================================*
+				
+				*===================================================*
+				*Household head education
+				gen  teste  = hh_head_edu_bargain - head_edu
+				br 	 hh_head_edu_bargain head_edu  if teste == . 
+				tab  teste, mis	
+				drop teste
+				*===================================================*
 
-			*===================================================*
-			*Household head gender 
-			tab   hh_head_male head_moth, mis
-			*===================================================*
-			
-			*===================================================*
-			*Household head age
-			gen  teste  = hh_head_age_bargain - head_age
-			tab  teste, mis			
-			drop teste
-			*===================================================*
-	
-			*===================================================*
-			*Rural
-			tab urban rural, mis
-			*===================================================*
-			
-			*===================================================*
-			*Household size
-			gen  teste  = hh_size_bargain - hhsize
-			tab  teste, mis			
-			drop teste
-			*===================================================*
-			
-			*===================================================*
-			*Household income
-			gen  teste  = int(adults_income_bargain -  hhinc)
-			tab  teste, mis	
-			drop teste
-			*===================================================*
-			
+				*===================================================*
+				*Household head gender 
+				tab   hh_head_male head_moth, mis
+				*===================================================*
+				
+				*===================================================*
+				*Household head age
+				gen  teste  = hh_head_age_bargain - head_age
+				tab  teste, mis			
+				drop teste
+				*===================================================*
+		
+				*===================================================*
+				*Rural
+				tab urban rural, mis
+				*===================================================*
+				
+				*===================================================*
+				*Household size
+				gen  teste  = hh_size_bargain - hhsize
+				tab  teste, mis			
+				drop teste
+				*===================================================*
+				
+				*===================================================*
+				*Household income
+				gen  teste  = int(adults_income_bargain -  hhinc)
+				tab  teste, mis	
+				drop teste
+				*===================================================*
+				

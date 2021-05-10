@@ -8,15 +8,12 @@
 	**
 	*We reproduce the main result found by Bargain/Boutin.
 	*We work with the same:
-		* -> dependent variables, 'child_labor_bargain'
+		* -> dependent variables, 'child_labor_bargain' and 'paid_work'
 		* -> control variables,   `controls_bargain'
 		* -> sample exclusions, program `bargain_sample'
 		* -> cluster for standard errors
-		* -> running variable (difference in days between date of birth and December 15th, 1984. 
+		* -> running variable (difference in days between date of birth and December 15th, 1984).
 		* -> PNAD survey sample weight. 
-	*Does the results change if we do not apply the sample exclusions Bargain/Boutin did?
-		* -> the authors work with 14-year-olds that are son/daughter of the head of the household
-		* -> 
 	*________________________________________________________________________________________________________________________________*
 	
 		*A*
@@ -28,7 +25,7 @@
 			program define   bargain_sample
 			
 				**Son/daughter of the head of the household
-				keep if hh_member ==  3
+				keep if hh_member ==  3											//the authors work with 14-year-olds that are son/daughter of the head of the household
 				
 				
 				*Date of birth
@@ -122,7 +119,7 @@
 											reg `variable' gap84 `controls' D [aw = weight] if cohort84_`bandwidth' == 1, 						   cluster(cluster_bargain)			//boys/girls, rural/urban
 											eststo, title("All")
 											
-											reg `variable' gap84 `controls' D [aw = weight] if cohort84_`bandwidth' == 1 & urban	== 1		 , cluster(cluster_bargain)			//boys/girls, urban
+											reg `variable' gap84 `controls' D [aw = weight] if cohort84_`bandwidth' == 1 & urban == 1		 	 , cluster(cluster_bargain)			//boys/girls, urban
 											eststo, title("Urban")
 											
 											reg `variable' gap84 `controls' D [aw = weight] if cohort84_`bandwidth' == 1 & urban == 1 & male == 1, cluster(cluster_bargain)			//boys, urban
@@ -138,8 +135,7 @@
 						}
 					}
 				}
-			
-				
+						
 		*----------------------------------------------------------------------------------------------------------------------------*		
 		**
 		**Testing adding gender as control

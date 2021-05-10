@@ -83,6 +83,30 @@
 			*Girls and boys living in urban areas
 			use "$inter/Pooled_PNAD.dta" if year == 1999 & age == 14, clear
 				tab urban [w = weight]
+				
+				
+			**
+			*Member of the household, self-consumption, statistic for the APPENDIX
+			use "$final/child-labor-ban-brazil.dta" if year == 1999 & age == 14 & unpaid_work == 1, clear
+			tab working member_household_self_consu [w = weight], mis //% of 14-year-olds in unpaid work that are member of the household/self-consumption
+
+			**
+			*% of children in upaid jobs in rural areas
+			use "$final/child-labor-ban-brazil.dta" if year == 1999 & age == 14 & urban == 0, clear
+			tab working unpaid_work					[w = weight], mis
+			
+			
+			**
+			*ttest for a 9-month bandwidth
+			use "$final/child-labor-ban-brazil.dta" if year == 1999 & cohort84_9 == 1, clear	
+			
+			foreach var of varlist $bargain_controls_our_def {
+				ttest `var', by(D)
+			}	
+			
+			
+			
+			
 			
 			*----------------------------------------------------------------------------------------------------------------------------*
 			**
