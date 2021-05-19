@@ -7,7 +7,7 @@
 	
 	Author: Vivian Amorim
 	vivianamorim5@gmail.com/vamorim@worldbank.org
-	Last Update: April 2021
+	Last Update: May 2021
 	
 	**
 	**
@@ -173,7 +173,7 @@
 				- 2015 -> PES2015.txt  DOM2015.txt			
 		
 		After setting up the folder structure and saving Household Survey Microdata (in .txt files), 
-		you can run the codes and reproduce all the results. a
+		you can run the codes and reproduce all the results. 
 
 		
 	*--------------------------------------------------------------------------------------------------------------------------------*
