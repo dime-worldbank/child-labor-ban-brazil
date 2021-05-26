@@ -49,6 +49,20 @@
 			*----------------------------------------------------------------------------------------------------------------------------*
 			
 			**
+			*Households in which the head is younger than 18 or older than 60 years old 
+			use "$inter/Pooled_PNAD.dta" if year == 1999 & age == 14, clear
+			
+			gen 	sample_hh_18_60 = hh_head_age < 18 | hh_head_age > 60
+			replace sample_hh_18_60 = . if hh_head_age == .
+			tab 	sample_hh_18_60 
+			
+			**
+			*Children not listed as son/daughters of the head of the household
+			use "$inter/Pooled_PNAD.dta" if year == 1999 & age == 14, clear
+			tab hh_member //12% are not son/daughter of the head of the household
+			
+			
+			**
 			*Hours worked in paid and unpaid jobs
 			use "$inter/Pooled_PNAD.dta" if year == 1999 & age == 14, clear
 				bys unpaid_work: su hours_worked  	[w = weight]

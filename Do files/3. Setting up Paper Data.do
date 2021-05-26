@@ -425,6 +425,11 @@
 			keep if cohort84_12 == 1									//reduce the size of the dataset
 			gen 	gap84_2 = gap84*gap84
 			compress
+			
+			label var visible_activities		"Visible activities, according to Bargain/Boutin, 2019"
+			label var invisible_activities		"Not visible activities, according to Bargain/Boutin, 2019"
+			label var child_labor_bargain 		"EAP according to Bargain/Boutin Paper"
+			
 			save 	"$final/child-labor-ban-brazil.dta", replace
 		*----------------------------------------------------------------------------------------------------------------------------*
 	

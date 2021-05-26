@@ -39,6 +39,11 @@
 				**Age of the head of the household
 				drop 	if hh_head_age_bargain < 18 | hh_head_age_bargain > 60 //if we do not apply this restriction, the results are significant even considering only household members son/daughter of the head of the household. 
 			end 
+			
+			use "$final/child-labor-ban-brazil.dta" if year == 1999, clear
+			count
+			bargain_sample
+			count
 		
 		*B*
 		*----------------------------------------------------------------------------------------------------------------------------*		

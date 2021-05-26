@@ -896,7 +896,7 @@
 				
 				bys	 	hh_id: egen children_income = sum(temp) 		if hh_member < 6 			
 				
-				replace children_income = 0 if missing(children_income) if hh_member < 6 		
+				replace children_income = 0 if missing(children_income) &  hh_member < 6 		
 				
 				gen 	adults_income = hh_income - children_income		if hh_member < 6
 				
@@ -959,11 +959,11 @@
 		*Pooled data
 		*___________________________________________________________________________________________________________ _____________________*
 			
-			foreach wave in  1999 {
+			foreach wave in  1999 2001 {
 				harmonizar_pnad, year(`wave')
 			}
 			clear
-			foreach wave in  1999 {
+			foreach wave in  1999 2001 {
 				append using "$inter/pnad_harm_`wave'.dta"
 				erase 		 "$inter/pnad_harm_`wave'.dta"
 			}
@@ -1159,17 +1159,20 @@
 				
 				label define region						1 "Norte" 2 "Nordeste" 3 "Sudeste" 4 "Sul" 5 "Centro-Oeste" 
 
-				/*
-				foreach x in reason_not_like_work reason_work activity90s occupation90s work_household_consumption place_work type_work_agric type_work_noagric region goes_public_school  activity occupation female college_degree male informal kid6 kid13 kid17 kid17f kid17m civil_servant_federal civil_servant_state civil_servant_municipal highschool_degree out_labor hh_head spouse formal female coduf type_work edu_att edu_att2 mom_edu_att2 two_parent hh_member  schoolatt urban metro area color went_school female_with_children labor_card social_security civil_servant employed unemployed eap edu_level_enrolled {
+				
+				foreach x in reason_not_like_work reason_work activity90s occupation90s work_household_consumption place_work type_work_agric type_work_noagric region goes_public_school   female college_degree male informal kid6 kid13 kid17 kid17f kid17m civil_servant_federal civil_servant_state civil_servant_municipal highschool_degree out_labor hh_head spouse formal female coduf type_work edu_att edu_att2 mom_edu_att2 two_parent hh_member  schoolatt urban metro area color went_school female_with_children labor_card social_security civil_servant employed unemployed eap edu_level_enrolled {
 
 					label val `x' `x'
 
 				}
+				
+				*label val activity   activity
+				*label val occupation occupation
 			
 				label val mom_edu_att2 edu_att2 
 				
 				label define simnao 0 "Não" 1 "Sim"
-				foreach var of varlist *visible* no_dateofbirth agric_sector happy_work work_home mom_working white black pardo indigena yellow unpaid_work working-nemnem work_household_consumption {
+				foreach var of varlist no_dateofbirth agric_sector happy_work work_home mom_working white black pardo indigena yellow unpaid_work working-nemnem work_household_consumption {
 					label val `var' simnao
 				}
 				
@@ -1201,7 +1204,7 @@
 				label var kid17m 									"Household with boys between 6 and 17 years-old"
 				label var two_parent 								"1 for household with both parents and 0, otherwise"
 				label var adults_income 							"Household income desconsidering wages of people < 18 years-old"
-				label var hh_head_school 							"Years of schooling of the head of the household"
+				label var hh_head_edu 								"Years of schooling of the head of the household"
 				label var age_31_march								"Age in March 31th" 
 				label var inf 										"Household member identification"
 				label var weight 									"Sample weight, person"
@@ -1245,7 +1248,6 @@
 				label var hours_worked 								"Number of hours worked in the reference week"
 				label var years_current_work 						"Number of years in the current job"
 				label var months_current_work 						"Number of months in the current job"
-				label var child_labor_bargain 						"EAP according to Bargain/Boutin Paper"
 				label var type_work 								"1: employee. 2: self-employed. 3: employeer. 4: non-paid employee"
 				label var wage 										"Wage (current BRL)"
 				label var wage_all_jobs 							"Wage of all jobs (current BRL)"
@@ -1268,12 +1270,10 @@
 				label var study_only 								"Only studying"
 				label var nemnem 									"Neither working or studying"
 				label var mom_working 								"Mother's working"
-				label var hh_head_school 							"Years of schooling of the head of the household"
+				label var hh_head_edu								"Years of schooling of the head of the household"
 				label var hh_head_age 								"Age of the head of the household "
 				label var hh_head_male 								"1 if head of the household is male and 0, otherwise"
 				label var region 									"Brazilian region"
-				label var worked_last_year 							"1 if the person has worked last year and 0, otherwise"
-				label var n_jobs_last_year 							"Number of jobs the person had last year"
 				label var real_wage 								"Wage (2020 BRL)"
 				label var real_per_capita_inc 						"Household per capita income (2020 BRL)"
 				label var real_hh_income 							"Household total income (2020 BRL)"
@@ -1298,10 +1298,8 @@
 				label var work_home									"The job was in the same land/area of the household"
 				label var reason_not_like_work						"Reason the children do not like their work"
 				label var reason_work								"Reason to work"
-				label var visible_activities						"Visible activities, according to Bargain/Boutin, 2019"
-				label var invisible_activities						"Not visible activities, according to Bargain/Boutin, 2019"
-				label var activity 									"Activity sector (after 2006)"
-				label var occupation								"Occupation sector (after 2006)"
+				*label var activity 									"Activity sector (after 2006)"
+				*label var occupation								"Occupation sector (after 2006)"
 				label var activity90s								"Actitivity sector, (1998-1999)"
 				label var occupation90s								"Occupation sector, (1998-1999)"
 				label var goes_public_school						"Public school"
