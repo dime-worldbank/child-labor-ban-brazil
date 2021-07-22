@@ -4,9 +4,8 @@
 	
 	*Using Pooled PNAD to set up our bandwidths. 
 	*________________________________________________________________________________________________________________________________*
-	
+		
 	use "$inter/Pooled_PNAD.dta", clear		//harmonized PNAD
-
 	
 	*Bandwidths
 	*--------------------------------------------------------------------------------------------------------------------------------*
@@ -14,23 +13,23 @@
 		**
 		*Months
 		* 
-		gen 	xw = mofd(dateofbirth  - mdy(12, 15, 1984)) 			//months between date of birth and December 15th, 1984
+		gen 	xw = mofd(dateofbirth  - mdy(12, 16, 1984)) 			//months between date of birth and December 16th, 1984
 	
 		**
 		*Weeks
 		*
-		gen 	zw = wofd(dateofbirth  - mdy(12, 15, 1984))				//weeks between date of birth  and December 15th, 1984
+		gen 	zw = wofd(dateofbirth  - mdy(12, 16, 1984))				//weeks between date of birth  and December 16th, 1984
 
 		**
 		*Days
 		*
-		gen 	dw = 	  dateofbirth  - mdy(12, 15, 1984)				//days between date of birth   and December 15th, 1984
+		gen 	dw = 	  dateofbirth  - mdy(12, 16, 1984)				//days between date of birth   and December 16th, 1984
 		
 		
 	*Treatment dummy
 	*--------------------------------------------------------------------------------------------------------------------------------*
-		gen 	D 	 = 1 		if dw >  0							    //children that turned 14 on December 16th, 1984 or after that 
-		replace D	 = 0 		if dw <= 0			
+		gen 	D 	 = 1 		if dw >= 0							    //children that turned 14 on December 16th, 1984 or after that 
+		replace D	 = 0 		if dw <  0			
 		gen 	zwD  = zw*D												//running variable interacted with treatment
 		gen 	zw2  = zw^2												//running variable ^ 2
 		gen 	zw3  = zw^3
@@ -39,30 +38,26 @@
 		gen 	dw3  = dw^3
 		format 	zw2* zw3* %20.0fc
 		
+		destring  v0102 v0103 v0301, replace
 		
+
 	*Children in our sample	
 	*--------------------------------------------------------------------------------------------------------------------------------*
-			gen  member_household_self_consu = 1 if inlist(type_work_noagric, 5, 7) |  inlist(type_work_agric, 4, 6)
+		gen  member_household_self_consu = 1 if inlist(type_work_noagric, 5, 7) |  inlist(type_work_agric, 4, 6)
 			
-			gen  others_unpaid			 = 1 if unpaid_work == 1 & member_household_self_consu != 1
+		gen  others_unpaid			 	 = 1 if unpaid_work == 1 & member_household_self_consu != 1 & working == 1
 			
-			gen  paid_work_girls_urban		 = 1 if unpaid_work == 0 & female == 1 & urban == 1 
+		gen  paid_work_girls_urban		 = 1 if unpaid_work == 0 & female == 1 & urban == 1 & working == 1
 			
-			gen  paid_work_girls_rural		 = 1 if unpaid_work == 0 & female == 1 & urban == 0 
+		gen  paid_work_girls_rural		 = 1 if unpaid_work == 0 & female == 1 & urban == 0 & working == 1
 			
-			gen  paid_work_boys_urban		 = 1 if unpaid_work == 0 & female == 0 & urban == 1 
+		gen  paid_work_boys_urban		 = 1 if unpaid_work == 0 & female == 0 & urban == 1 & working == 1
 			
-			gen  paid_work_boys_rural		 = 1 if unpaid_work == 0 & female == 0 & urban == 0 
+		gen  paid_work_boys_rural		 = 1 if unpaid_work == 0 & female == 0 & urban == 0 & working == 1
 			
-			gen  no_working_children		 = 1 if working == 0 
+		gen  no_working_children		 = 1 if working == 0 
 			
-			egen paid_workers				 = rsum(paid_work_girls_urban paid_work_girls_rural paid_work_boys_urban paid_work_boys_rural)  
-
-			
-	/*		
-	*Reducing the sample by keeping the xw >= -12 & xw < 12 			//12 months bandwidth 
-	*--------------------------------------------------------------------------------------------------------------------------------*
-		keep if xw >= -12 & xw < 12
+		egen paid_workers				 = rsum(paid_work_girls_urban paid_work_girls_rural paid_work_boys_urban paid_work_boys_rural)  
 
 					**Each row must have the value 1 for at least of variable we defined
 						**If the children has a non-paid job and is member of the household
@@ -73,12 +68,18 @@
 						**Boys  in paid jobs in rural areas
 						**No employed children
 
-			egen   test = rsum(member_household_self_consu-no_working_children) 
-			assert test == 1
-			tab    test, mis			//okkkk
-			drop   test
-			
-	*/
+		preserve
+		keep if zw > -13 & zw < 13 & year == 1999
+		egen   test = rsum(member_household_self_consu-no_working_children) 
+		assert test == 1
+		tab    test, mis			//okkkk
+		drop   test
+		restore
+		
+		gen	 	working_for_household = 1 if member_household_self_consu == 1 & unpaid_work == 1
+		replace working_for_household = 0 if missing(working_for_household)   & unpaid_work == 1 
+		gen 	housekeeper 		  = 1 if type_work_noagric == 2		 	  & pwork == 1
+		replace housekeeper 		  = 0 if missing(housekeeper)  		      & pwork == 1
 		
 	*--------------------------------------------------------------------------------------------------------------------------------*
 		label var D    								"ITT"											//affected cohort
@@ -99,21 +100,22 @@
 		label var paid_work_boys_rural  			"Paid work, boy, rural"
 		label var paid_workers						"Paid work"
 		label var no_working_children				"Not working"
-		
-		label define D 0 "Control" 1 "Treatment"
-		label val 	 D D
-		
-	*--------------------------------------------------------------------------------------------------------------------------------*
-		*drop 	age_31_march children_income labor_card spouse female_with_children social_security activity* kid* female occupation goes_public_school went_school civil_servant_federal civil_servant_state civil_servant_municipal
-		compress
+		label var working_for_household 			"Working for their household (unpaid)" 
+		label var housekeeper						"Working as housekeepers (paid)" 
+		label drop urban male
+		label define D     0 "Control" 1 "Treatment"
+		label define urban 1 "Urban"   0 "Rural"
+		label define male  1 "Boys"    0 "Girls"
+		label val urban urban
+		label val male  male
+		label val D     D
 		format  dateofbirth %td
-		save 	"$final/child-labor-ban-brazil.dta", replace
-		
-		
-		
+				
 	*________________________________________________________________________________________________________________________________*
-	**
-	*Bargain/Boutin Paper
+	
+	*Comparing our data size and covariates with the ones of Bargain/Boutin Paper (2021). 
+	*________________________________________________________________________________________________________________________________*
+				
 	**Checking if our sample size and treatment status are the same as those used in their paper. 
 		* -> Applying the same exclusions the authors did, we got the same number of observations. 
 		* -> Treatment status is the same. 
@@ -124,24 +126,34 @@
 		
 		**The replication package for Bargain/Boutin Paper is available for download: https://academic.oup.com/wber/article-abstract/35/1/234/5681375
 	*________________________________________________________________________________________________________________________________*
-		use "$final/child-labor-ban-brazil.dta", clear
-		destring  v0102 v0103 v0301, replace
-				
+
+	
+		preserve
+		drop  v*
+		keep 		if year != 1999
+		tempfile 	data
+		save 		`data'
+		restore
+		
+		keep if year == 1999			//we compare our and Bargain/Boutin dataset using 1999 wave 
+	
+		**	
 		*----------------------------------------------------------------------------------------------------------------------------*
 		**Household Id and Id of the respondent as defined by Bargain/Boutin. 
 		**Using the variables "id_dom" and "id_pes", we merged our and theirs datasets to compare: sample size and treatment status
 		*----------------------------------------------------------------------------------------------------------------------------*
 			replace  v0101 = 99 if v0101 == 1999
 			tostring v0101, replace  
-			rename 	 coduf uf
+			gen 	 uf = coduf
 			tostring uf	  , replace     			 	//  unidade da federacao: uf
 			tostring v0102, replace   					//  control: v0102
 			tostring v0103, replace   					//  serie: v0103
 			tostring v0301, replace  					//  ordem : v0301
-			gen 	id_dom = v0101 + "00" + uf + "00" + v0102 + "00" + v0103
+			gen 	id_dom = v0101  + "00"  + uf + "00" + v0102 + "00" + v0103
 			gen str id_pes = id_dom + "000" + v0301
 			drop  uf v0102 v0103 v0301 
-				
+			
+		**	
 		*----------------------------------------------------------------------------------------------------------------------------*
 		**Affected and unaffected cohorts
 		*========================================*
@@ -170,7 +182,7 @@
 			gen 		cohort84_6	= (abs(gap84)<=`dist6')
 			gen 		cohort84_3	= (abs(gap84)<=`dist3')
 					
-			
+		**	
 		*----------------------------------------------------------------------------------------------------------------------------*
 		*Child employment according to Bargain/Boutin paper
 		*----------------------------------------------------------------------------------------------------------------------------*
@@ -180,7 +192,7 @@
 			gen	 	 visible_activities	   	= (employ_bargain == 1) & (v9054 == 1 | v9054 == 2 | v9054 == 5) 																// shop+school+manufacture, farm, local
 			gen 	 invisible_activities   = (employ_bargain == 1) & (v9054 == 3 | v9054 == 4 | v9054 == 6 | v9054 == 7) 													// "domicile" (residence), employer's redidence, motor, vehicule, public area
 
-			
+		**	
 		*----------------------------------------------------------------------------------------------------------------------------*
 		**Age of the head of the household
 		*========================================*
@@ -212,7 +224,7 @@
 			** -> "hh_head_age_bargain" as defined in Bargain/Boutin Paper
 			*=============================================================*
 
-
+		**	
 		*----------------------------------------------------------------------------------------------------------------------------*
 		**Household with head/spouse, only with female head, or only with male head
 		**One potential problem with the definition adopted by Bargain/Boutin are the cases in which the head of the household/spouse
@@ -234,7 +246,8 @@
 			egen 	 test = rsum(couple singm singf)				//test = 0 when the head of the household and spouse have the same gender. 
 			tab year test 
 			drop 	 test	
-				
+			
+		**	
 		*----------------------------------------------------------------------------------------------------------------------------*
 		**Household size
 		*========================================*
@@ -251,7 +264,7 @@
 			** -> "hh_size_bargain" as defined in Bargain/Boutin Paper
 			*=============================================================*
 
-			
+		**	
 		*----------------------------------------------------------------------------------------------------------------------------*
 		**Years of schooling
 		*========================================*
@@ -326,7 +339,7 @@
 			** -> "hh_head_edu_bargain" as defined in Bargain/Boutin Paper
 			*=============================================================*
 
-
+		**	
 		*----------------------------------------------------------------------------------------------------------------------------*
 		**Household income (adults income)
 		*========================================*
@@ -376,14 +389,14 @@
 			quiet replace 	CPI		=	0.849501390026204 		if year	==	1999
 			quiet replace 	salario	=	salario/CPI
 				
-			gen mm_inc	=	salario*(employ_bargain==1)	 		if m==1 
-			gen ff_inc	=	salario*(employ_bargain==1) 		if f==1 
+			gen	   mm_inc	=	salario*(employ_bargain==1)	 		if m==1 
+			gen    ff_inc	=	salario*(employ_bargain==1) 		if f==1 
 			
-			bys hh_id year: egen m_inc = sum(mm_inc)
-			bys hh_id year: egen f_inc = sum(ff_inc)
-			drop mm_inc ff_inc
+			bys    hh_id year: egen m_inc = sum(mm_inc)
+			bys    hh_id year: egen f_inc = sum(ff_inc)
+			drop   mm_inc ff_inc
 			
-			egen adults_income_bargain = rowtotal(m_inc f_inc)
+			egen   adults_income_bargain = rowtotal(m_inc f_inc)
 			
 			*=============================================================*
 			*Now we have two variables for adults income
@@ -391,7 +404,7 @@
 			** -> "adults_income_bargain" as defined in Bargain/Boutin Paper
 			*=============================================================*
 		
-
+		**	
 		*----------------------------------------------------------------------------------------------------------------------------*
 		**Color of the skin
 		*========================================*
@@ -403,7 +416,7 @@
 			quiet gen 	color_bargain = v0404
 			tab 		color_bargain, gen(color_bargain)
 			
-			
+		**	
 		*----------------------------------------------------------------------------------------------------------------------------*
 		*Sample weight
 		*----------------------------------------------------------------------------------------------------------------------------*
@@ -412,25 +425,28 @@
 			gen 	weight_bargain	=	weight/sweight
 			drop sweight
 			
-			
+		**	
 		*----------------------------------------------------------------------------------------------------------------------------*
 		*Cluster Bargain
 		*----------------------------------------------------------------------------------------------------------------------------*
 			gen 	cluster_bargain = round((gap84/365)*12) 			//standard errors clustered at the level of variability of age, i.e. cohort x day of birth (default)
 
-			
+		**	
 		*----------------------------------------------------------------------------------------------------------------------------*
-		*Child Labor Ban Data
-		*----------------------------------------------------------------------------------------------------------------------------*
-			keep if cohort84_12 == 1									//reduce the size of the dataset
-			gen 	gap84_2 = gap84*gap84
-			compress
-			
+			gen  gap84_2 = gap84*gap84
 			label var visible_activities		"Visible activities, according to Bargain/Boutin, 2019"
-			label var invisible_activities		"Not visible activities, according to Bargain/Boutin, 2019"
-			label var child_labor_bargain 		"EAP according to Bargain/Boutin Paper"
+			label var invisible_activities		"No visible activities, according to Bargain/Boutin, 2019"
+			label var employ_bargain 			"EAP according to Bargain/Boutin Paper"
+	
+		drop  v*
+		append using `data'
+		
 			
-			save 	"$final/child-labor-ban-brazil.dta", replace
+		*Reducing the sample	
+		*----------------------------------------------------------------------------------------------------------------------------*
+		compress
+		keep if xw > -24 & xw < 24
+		save 	"$final/child-labor-ban-brazil.dta", replace
 		*----------------------------------------------------------------------------------------------------------------------------*
 	
 	
@@ -439,8 +455,9 @@
 		**
 		**Comparing our and Bargain/Boutin datasets
 		*----------------------------------------------------------------------------------------------------------------------------*		
-			keep if (cohort84_6 > 0)  
-			
+		use "$final/child-labor-ban-brazil.dta", clear
+		keep if year == 1999
+			keep if (cohort84_6 == 1)  
 			
 			*------------------------------------------------------------------------------------------------------------------------*		
 			*===========================*
@@ -469,7 +486,6 @@
 			*===========================*
 			*Bargain and Boutin dta file
 			*===========================*
-				keep if year == 1999
 				
 				/*
 				-> We downloaded Bargain/Boutin data for replication "lhz047_supplemental_files". 
@@ -490,7 +506,7 @@
 					save	`bargain'
 				restore
 				
-				merge 1:1 id_dom id_pes using `bargain'
+				merge 1:1 id_dom id_pes using `bargain', keep (3)
 				
 				**
 				**We can see that all variables match:

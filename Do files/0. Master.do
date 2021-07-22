@@ -7,12 +7,14 @@
 	
 	Author: Vivian Amorim
 	vivianamorim5@gmail.com/vamorim@worldbank.org
-	Last Update: May 2021
+	Last Update: July 2021
 	
 	**
 	**
 	Short and Long-term Effects of a Child Labor Ban in Brazil. 
 	**
+	
+	**YOU NEED STATA 16 TO REPLICATE THE RESULTS**
 	
 	*--------------------------------------------------------------------------------------------------------------------------------*
 	**
@@ -22,7 +24,7 @@
 		On December 15th, 1998, the Brazilian Federal Government increased the minimum age of employment from 14 to 16 years old.
 		The law started being applied one day after that. 
 		Children that were already employed were not affected. 
-		Therefore, if the children turned 14 on December 16th, 1998, or after that, she/he could start working legally 
+		Therefore, if the children turned 14 on December 16th, 1998, or after that, she/he could not start working legally 
 		as opposed to before the law changed. 
 		
 		We work on regression discontinuity design and on a local randomization inference to explore the effects of this policy.
@@ -33,11 +35,12 @@
 			zw = 2   if the children turned 14 two weeks after  the law changed, and so on. 
 			zw = -1  if the children turned 14 one week  before the law changed,
 			zw = -2  if the children turned 14 two weeks before the law changed, and so on. 
+			We also defined the running variable (dw) which is the number of days between the date of birth and December 16, 1984. 
 		
 		We used the Brazilian Household Survey (Pesquisa Nacional por Amostra de Domicílios, PNAD) to assess the effect
 		of the policy on the following outcomes:
 		
-			- Economically Active Population.
+			- Economically Active Children.
 			- Share of children in paid jobs.
 			- Share of children in unpaid jobs.
 			- School attendance. 
@@ -58,22 +61,24 @@
 				12 minutes. 
 	
 			-> What it does?
-				The code imports the microdata of the Brazilian Household Survey.
+				The code imports the microdata of the Brazilian Household Survey (Pesquisa Nacional por Amostra de Domicílios). 
+				This survey was collected annualy on a representative sample of Brazilian households. 
 				
 					**
 					** The .txt files are available in IBGE (Brazilian Institute od Geography and Statistics) website. 
 					
-						For 2001 and after: https://www.ibge.gov.br/estatisticas/sociais/trabalho/19897-sintese-de-indicadores-pnad2.html?=&t=microdados
-						Before 2001: 		https://loja.ibge.gov.br/pnad-1987-a-1999-microdados.html
+						Since  2001 waves, download the microdata in: https://www.ibge.gov.br/estatisticas/sociais/trabalho/19897-sintese-de-indicadores-pnad2.html?=&t=microdados
+						Before 2001		 , download the microdata in: https://loja.ibge.gov.br/pnad-1987-a-1999-microdados.html
 
 					**
 					** We saved the raw data in our project folder: child-labor-ban-brazil/DataWork/Datasets/Raw
 
 					**
-					** The dictionaries to read .txt files: from 1998 to 2014, we used the DataZoom tool created by PUC/RIO University to import 
-					the data without having to manually create the dictionary of the variables. For 2015, we created our own dictionary due to an error we identified in the tool. 
+					** The dictionaries to read .txt files: 
+					
+						Between 1998 to 2014: we used the DataZoom tool created by PUC/RIO University to import the data without having to manually create the dictionary of the variables. 
+						For 2015, we created our own dictionary due to an error we identified in the tool. 
 				
-						
 			-> What it creates? 
 				The code creates sixteen .dta files saved in: child-labor-ban-brazil/DataWork/Datasets/Intermediate. 
 				Each file is a wave of the household survey. 
@@ -102,6 +107,9 @@
 	
 			-> What it does?
 				The code creates the running variable of our study. 
+				The code defines the same covariates used in the Bargain/Boutin Paper (2021) 'Minimum Age Regulation and Child Labor'. 
+				Therefore, we can compare our and their sample sizes, as well as explain why some results differ. 
+				
 						
 			-> What it creates? 
 				One .dta file named Child Labor Ban saved in: child-labor-ban-brazil/DataWork/Datasets/Final.
@@ -122,13 +130,28 @@
 		
 		
 		**
+		**		
+			5. RDD using Local Randomization	
+		
+			-> How long does it take to run?
+				
+	
+			-> What it does?
+				Run RDD using local Randomization
+						
+			-> What it creates? 
+				.dta file with estimates 'Regression Results using RD under local randomization.dta' saved in child-labor-ban-brazil/DataWork/Datasets/Final.
+				Figures saved in child-labor-ban-brazil/DataWork/Output/Figures.
+		
+		
+		**
 		**	
 		- Globals. 
 		
 		The code sets globals with: 
 			- The short and long term outcomes of the analysis.
-			- The variables used for balance checks between control and treatment groups.
-			- The control variables used in the regression 	
+			- The variables used for balance checks between comparison and treatment groups.
+			- The covariates used in the regression 	
 
 			
 	*--------------------------------------------------------------------------------------------------------------------------------*
@@ -182,8 +205,7 @@
 	**
 	*--------------------------------------------------------------------------------------------------------------------------------*
 	   Installing packages needed to run all dofiles called by this master dofile. */
-
-	   local user_commands ietoolkit labutil   
+		*local user_commands ietoolkit labutil   
 	   foreach command of local user_commands  {
 		   cap which `command'
 		   if _rc == 111 {
@@ -193,9 +215,19 @@
 		**Local Randomization Inference Package
 		net install rdlocrand, from(https://raw.githubusercontent.com/rdpackages/rdlocrand/master/stata) replace
 		
+		**RD densitity and LP density Packages
+		net install rddensity,  from(https://raw.githubusercontent.com/rdpackages/rddensity/master/stata) replace
+		net install lpdensity,  from(https://raw.githubusercontent.com/nppackages/lpdensity/master/stata) replace
+		
+		**MC Crary test
+		sysdir  //locations
+		copy https://eml.berkeley.edu/~jmccrary/DCdensity/DCdensity.ado  `"`c(sysdir_plus)'/DCdensity.ado"', public replace
+		discard // you have to discard to see installed adofiles
+		which DCdensity
+		
 		**DataZoom Package
-		net from http://www.econ.puc-rio.br/datazoom/portugues  
-		net install datazoom_pnad
+		*net from http://www.econ.puc-rio.br/datazoom/portugues  
+		*net install datazoom_pnad, replace
 		 
 		**Stata version
 		ieboilstart, version(15)          	
@@ -203,12 +235,12 @@
 		
 		**Figure settings
 		graph set window fontface "Times"
-		set scheme economist
+		set scheme s1mono
 		
 		**Others
 		set matsize 11000
-        set level 95
-		set seed 108474
+        set level   95
+		set seed    108474
 		
 		
 	*--------------------------------------------------------------------------------------------------------------------------------*
@@ -222,7 +254,7 @@
 	   * Next User               2    
 
 	   *Set this value to the user currently using this file
-	   global user  1
+	   global user  1			
 
 	   **
 	   * Root folder globals
@@ -233,7 +265,7 @@
 	   }
 
 	   if $user == 2 {
-		   global projectfolder ""  
+		   global projectfolder ""  //project file path in your computer
 	   }
 	   
 	   **

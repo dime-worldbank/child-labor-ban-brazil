@@ -618,6 +618,9 @@
 				
 				replace highschool_degree = 0  							if edu_att     < 5
 
+				gen 	lowersec_degree   = 1							if inlist(edu_att, 3, 4, 5, 6, 7)
+				
+				replace lowersec_degree   = 0							if edu_att     < 3
 				
 				*College degree
 				*------------------------------------------------------------------------------------------------------------------------*
@@ -753,47 +756,35 @@
 				
 				*Non paid work, Work and study status
 				*------------------------------------------------------------------------------------------------------------------------*
-				gen 	working 		= employed == 1
+				gen 	working 		= employed ==  1 //employed is a variable that is only defined for people in economically active population
 
 				gen 	unpaid_work 	= type_work == 4 
 				
-				replace unpaid_work 	= 1 					if type_work != 4 & wage_all_jobs == .  | wage_all_jobs == 0
+				replace unpaid_work 	= 1 if  working  == 1 & type_work  != 4 & wage_all_jobs == 0
 
-				gen 	pwork 			= 1 					if  working == 1 & unpaid_work == 0
-					
-				replace pwork 			= 0 					if (working == 1 & unpaid_work == 1) 	| working == 0 
-					
-				gen 	uwork 			= 1 					if  working == 1 & unpaid_work == 1						
-					
-				replace uwork 			= 0 					if (working == 1 & unpaid_work == 0) 	| working == 0 
-					
-				gen 	pwork_formal 	= 1 					if (pwork   == 1 & formal == 1)
-					
-				replace pwork_formal 	= 0 					if (pwork   == 1 & formal == 0) 		| pwork == 0
-					
-				gen 	pwork_informal 	= 1 					if (pwork   == 1 & formal == 0)
-					
-				replace pwork_informal 	= 0 					if (pwork   == 1 & formal == 1) 		| pwork == 0
+				gen 	pwork 			= working == 1  & unpaid_work 	== 0
+										
+				gen 	uwork 			= working == 1  & unpaid_work 	== 1						
+										
+				gen 	pwork_formal 	= pwork   == 1  & formal 		== 1
+										
+				gen 	pwork_informal 	= pwork   == 1  & formal 		== 0
+									
+				gen 	work_formal		= working == 1  & formal 		== 1
+								
+				gen 	work_informal	= working == 1  & formal 		== 0
+									
+				gen 	pwork_sch  		= pwork   == 1  & schoolatt 	== 1
 				
-				gen 	work_formal		= 1 					if (working == 1 & formal == 1)
-				
-				replace work_formal     = 0						if (working == 1 & formal == 0) 		| working == 0
-				
-				gen 	work_informal	= 1 					if (working == 1 & formal == 0)
-				
-				replace work_informal   = 0						if (working == 1 & formal == 1) 		| working == 0
-					
-				gen 	pwork_sch  		= pwork   == 1 & schoolatt == 1
-				
-				gen 	uwork_sch  		= uwork   == 1 & schoolatt == 1
+				gen 	uwork_sch  		= uwork   == 1  & schoolatt 	== 1
 
-				gen 	pwork_only 		= pwork   == 1 & schoolatt == 0
+				gen 	pwork_only 		= pwork   == 1  & schoolatt 	== 0
 
-				gen 	uwork_only 		= uwork   == 1 & schoolatt == 0
+				gen 	uwork_only 		= uwork   == 1  & schoolatt 	== 0
 
-				gen 	study_only 		= working == 0 & schoolatt == 1
+				gen 	study_only 		= working == 0  & schoolatt 	== 1
 
-				gen 	nemnem	   		= working == 0 & schoolatt == 0
+				gen 	nemnem	   		= working == 0  & schoolatt 	== 0
 
 				foreach var of varlist pwork_sch uwork_sch pwork_only uwork_only study_only nemnem* {
 					
@@ -959,11 +950,11 @@
 		*Pooled data
 		*___________________________________________________________________________________________________________ _____________________*
 			
-			foreach wave in  1999 2001 {
+			foreach wave in 1998 1999 2001 2002 2003 2004 2005 2006 2007 2008 2009 2011 2012 2013 2014 {
 				harmonizar_pnad, year(`wave')
 			}
 			clear
-			foreach wave in  1999 2001 {
+			foreach wave in 1998 1999 2001 2002 2003 2004 2005 2006 2007 2008 2009 2011 2012 2013 2014 {
 				append using "$inter/pnad_harm_`wave'.dta"
 				erase 		 "$inter/pnad_harm_`wave'.dta"
 			}
@@ -1086,9 +1077,9 @@
 				
 				label define male						0 "Mulher"							1 "Homem" 
 				
-				label define formal						0 "Trabalhador informal"			1 "Trabalhador formal" 
+				label define formal						0 "Informal"						1 "Formal" 
 				
-				label define informal					1 "Trabalhador informal"			0 "Trabalhador formal" 
+				label define informal					1 "Informal"						0 "Formal" 
 				
 				label define nemnem 					1 "Não estuda e não trabalha"
 				
@@ -1109,6 +1100,8 @@
 				label define spouse						0 "Não é o cônjuge"      			1 "É cônjuge" 
 				
 				label define highschool_degree			0 "Não concluiu o EM"				1 "Concluiu o EM" 
+				
+				label define lowersec_degree			0 "Não concluiu o EF"				1 "Concluiu o EF" 
 				
 				label define college_degree				0 "Não concluiu a faculdade"		1 "Concluiu a faculdade" 
 				
@@ -1203,7 +1196,7 @@
 				label var kid17f									"Household with girls between 6 and 17 years-old"
 				label var kid17m 									"Household with boys between 6 and 17 years-old"
 				label var two_parent 								"1 for household with both parents and 0, otherwise"
-				label var adults_income 							"Household income desconsidering wages of people < 18 years-old"
+				label var adults_income 							"Household income without wages of people < 18 years-old"
 				label var hh_head_edu 								"Years of schooling of the head of the household"
 				label var age_31_march								"Age in March 31th" 
 				label var inf 										"Household member identification"
@@ -1254,6 +1247,7 @@
 				label var civil_servant 							"Civil Servant"
 				label var highschool_degree 						"High school degree"
 				label var college_degree 							"Reached college"
+				label var lowersec_degree							"Finished lower secondary education"
 				label var wage_hour 								"Wage per hour (current BRL)"
 				label var unpaid_work 								"Unpaid work"
 				label var working 									"Working"
@@ -1298,14 +1292,19 @@
 				label var work_home									"The job was in the same land/area of the household"
 				label var reason_not_like_work						"Reason the children do not like their work"
 				label var reason_work								"Reason to work"
-				*label var activity 									"Activity sector (after 2006)"
-				*label var occupation								"Occupation sector (after 2006)"
+				label var activity 									"Activity sector (after 2006)"
+				label var occupation								"Occupation sector (after 2006)"
 				label var activity90s								"Actitivity sector, (1998-1999)"
 				label var occupation90s								"Occupation sector, (1998-1999)"
 				label var goes_public_school						"Public school"
 				label var happy_work								"Children is happy with their work"
-				*/
+				
 				*------------------------------------------------------------------------------------------------------------------------*
 				sort 	year hh_id
 				compress
 				save 	"$inter/Pooled_PNAD.dta", replace
+
+				clear
+				unicode encoding set ISO-8859-1 
+				cd "$inter"
+				unicode translate Pooled_PNAD.dta
