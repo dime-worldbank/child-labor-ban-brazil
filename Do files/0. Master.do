@@ -212,6 +212,7 @@
 			   ssc install `command'
 		   }
 	   }
+		/*
 		**Local Randomization Inference Package
 		net install rdlocrand, from(https://raw.githubusercontent.com/rdpackages/rdlocrand/master/stata) replace
 		
@@ -226,9 +227,10 @@
 		which DCdensity
 		
 		**DataZoom Package
-		*net from http://www.econ.puc-rio.br/datazoom/portugues  
-		*net install datazoom_pnad, replace
-		 
+		net from http://www.econ.puc-rio.br/datazoom/portugues  
+		net install datazoom_pnad, replace
+		*/ 
+		
 		**Stata version
 		ieboilstart, version(15)          	
 		`r(version)' 

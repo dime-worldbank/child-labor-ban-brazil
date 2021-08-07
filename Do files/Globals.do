@@ -3,7 +3,7 @@
 	*________________________________________________________________________________________________________________________________*
 
 		global shortterm_outcomes  		"eap pwork pwork_informal schoolatt study_only lnwage_hour"								//short-term outcomes
-		global longterm_outcomes   		"lowersec_degree highschool_degree eap working pwork_formal lnwage_hour"								//long-term outcomes
+		global longterm_outcomes   		" highschool_degree working pwork_formal lnwage_hour"									//long-term outcomes
 		global dep_vars1 				D gap84 	  																			//linear model
 		global dep_vars2 				D gap84 gap84_2																			//quadratic model
 		global dep_vars3 				D 																						//without including the running variable, just the treatment dummy

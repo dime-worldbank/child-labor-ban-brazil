@@ -1,5 +1,5 @@
 
-											*REGRESSION DISCONTINUITY UNDER LOCAL RANDOMIZATION*
+													*REGRESSION DISCONTINUITY UNDER LOCAL RANDOMIZATION*
 	*____________________________________________________________________________________________________________________________________*
 
 	*global final "C:\Users\wb495845\Downloads"
@@ -10,9 +10,9 @@
 	**======================================================>>
 	**
 	*SAMPLE: ALL 14-YEAR-OLDS IN URBAN AND RURAL AREAS
-		*	 ALL 14 YEAR-OLDS IN URBAN AREAS
-		*	 ALL 14 YEAR-OLD MALES
-		*    ALL 14 YEAR-OLD MALES IN URBAN AREAS
+		*	 ALL 14 YEAR-OLDS MALES IN URBAN AREAS
+		*	 ALL 14 YEAR-OLDS FEMALES IN URBAN AREAS
+		*    ALL 14 YEAR-OLD RURAL AREAS
  	**
 		
 	
@@ -37,16 +37,15 @@
 			*1*
 			rdwinselect zw $covariates, obsmin(400) 		 seed(2198)							// obsmin() is the minimum number of observations below and above the cutoff. 
 				**Selected windon -12, +11
-			keep if zw >= -12 & zw <= 11
-			sort dateofbirth
-			br dateofbirth zw
-			
+					*keep if zw >= -12 & zw <= 11
+					*sort dateofbirth
+					*br   dateofbirth zw
+					
 			*2*
 			rdwinselect dw $covariates, obsmin(200) wstep(2) seed(2948)							// wstep()  is the window increase in each step
 				**Selected windon -12, +12												
 				
-			su pwork if xw >= -3 & xw < 0														//% of paid work for control group
-					
+				
 		
 		*________________________________________________________________________________________________________________________________*
 		**
@@ -60,9 +59,9 @@
 			**
 			*Estimates using Cattaneo
 			*----------------------------------------------------------------------------------------------------------------------------*
-			foreach variable in eap pwork uwork pwork_formal pwork_informal schoolatt nemnem {			//short-term outcomes
-				foreach year in 1998 1999 {																//1998 -> 14 year-olds unaffected (robustness) and 1999
-					foreach sample in 1 2 3 4 {															//testing the results with different samples
+			foreach variable in eap pwork uwork pwork_formal pwork_informal schoolatt pwork_only study_only nemnem {			//short-term outcomes
+				foreach year in 1998 1999 {																								//1998 -> 14 year-olds unaffected (robustness) and 1999
+					foreach sample in 1 2 3 4 {																							//testing the results with different samples
 						
 						if `sample' == 1 use "$final/child-labor-ban-brazil.dta" if							  year == `year', clear		//all sample
 						if `sample' == 2 use "$final/child-labor-ban-brazil.dta" if urban  == 1	& male == 1 & year == `year', clear		//only boys, urban areas
@@ -87,8 +86,10 @@
 			drop  	in 1
 			rename (results1-results8) (year dep_var sample ATE pvalue lower upper mean_outcome)	
 
-			label 	define dep_var 1 "Economically Active Children"  2 "Paid work"  3  "Unpaid work" 	 4 "Formal paid work"  5 "Informal paid work" 6 "School attainment" 7 "Neither working or studying" 
+			label 	define dep_var 1 "Economically Active Children"  2 "Paid work"  	  3  "Unpaid work" 	 4 "Formal paid work"  5 "Informal paid work" 6 "School attendance" ///
+								   7 "Only paid work" 				 8 "Studying only" 	  9 "Neither working or studying" 								   
 			label	val    dep_var dep_var
+		
 			
 			foreach var of varlist ATE lower upper mean_outcome	{
 				replace `var'  = `var' *100
@@ -111,16 +112,20 @@
 			
 			order 	dep_var year ATE CI mean_outcome att_perc_mean
 			reshape wide ATE CI mean_outcome att_perc_mean, i(year dep_var) j(sample)
-
-			set 	 obs 21 
+			
+			
+			********==> Setting up the table with main results
+			local num_dp_var  = 9				//number of dependent variables
+			local number_rows = `num_dp_var'*3	//total number of rows in the table
+			
+			set 	 obs `number_rows'
 			replace  year 	 = 0 		if year == .
-			replace  dep_var = 1 in 15
-			replace  dep_var = 2 in 16
-			replace  dep_var = 3 in 17
-			replace  dep_var = 4 in 18
-			replace  dep_var = 5 in 19
-			replace  dep_var = 6 in 20
-			replace  dep_var = 7 in 21	
+			
+			forvalues row = 1(1)`num_dp_var' {
+				local 	n_row 	= `row' + `num_dp_var'*2
+				replace dep_var = `row'  in `n_row'
+			}
+			
 			sort     dep_var  year
 			decode   dep_var, gen(var)
 			drop     dep_var
@@ -133,7 +138,7 @@
 			gen space2 = .
 			gen space3 = .
 			order year *1 *2 *3 *4
-			export excel using "$tables/local-randomization-1998-1999.xlsx",  replace
+			export excel using "$tables/table1.xlsx",  replace
 	
 	
 

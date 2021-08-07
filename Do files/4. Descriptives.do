@@ -28,7 +28,7 @@
 				
 				tab working informal 	if D == 1 						[w = weight]	// 1/100 in formal sector
 				
-				**Thus, among those working, the unaffected 14-year-olds were 4 times more likely to be in the formal sector than the affected ones. 
+				**Thus, among those working, the unaffected 14-year-olds were 3 times more likely to be in the formal sector than the affected ones. 
 			
 			**
 			*% of 14-year-olds in the formal market
@@ -40,7 +40,10 @@
 			*% of 14-year-olds that already finished lower secondary education (9th grade)
 			**
 				use "$final/child-labor-ban-brazil.dta" if year == 1999 & age == 14, clear	
-					su lowersec_degree, detail						//3.3% of 14-year-olds in 1999 had already finished lower secondary education
+					su lowersec_degree, detail						//Only 3.3% of 14-year-olds in 1999 had finished lower secondary education
+					
+	
+					
 		}	
 			
 		//-------------->>
@@ -68,8 +71,8 @@
 			*Part of the unaffected cohort that was still studying by the age of 19 
 			**
 				use "$final/child-labor-ban-brazil.dta" if year == 2004 & zw >= - 12 & zw < 12 & schoolatt == 1, clear	
-				tab edu_level_enrolled 			[w = weight]	
-				bys D: tab edu_level_enrolled 	[w = weight]						//the majority of them still in primary and secondary education, suggesting delays
+				tab 		edu_level_enrolled 			[w = weight]	
+				bys D: tab 	edu_level_enrolled 			[w = weight]						//the majority of them still in primary and secondary education, suggesting delays
 			
 			**
 			*Unemployment rate in Brasil in 1998
@@ -101,18 +104,17 @@
 			**
 				use "$final/child-labor-ban-brazil.dta" if year == 1998 & age == 14, clear	
 				gen share_chidren_income = children_income/hh_income
-				
-				su share_chidren_income, detail
+				su 	share_chidren_income, detail
 				
 				
 			**
 			*14-year-olds attending school
 			**				
-			use "$final/child-labor-ban-brazil.dta" if year == 1998 & age == 14, clear	
+				use "$final/child-labor-ban-brazil.dta" if year == 1998 & age == 14, clear	
 				tab schoolatt									[w = weight]
 				tab edu_level_enrolled 		if schoolatt == 1	[w = weight]
 				
-				tab schoolatt  				if working == 1 	[w = weight]
+				tab schoolatt  				if working   == 1 	[w = weight]
 				tab edu_att										[w = weight]					
 				
 		}
@@ -123,14 +125,14 @@
 		{
 			**Educational attainment of the affected cohorts by 2003
 			**				
-
-			use "$final/child-labor-ban-brazil.dta" if year == 2003 & zw >= - 12 & zw < 12, clear	
-			
-			bys D: tab edu_att
-			bys D: tab lowersec_degree
-			bys D: tab highschool_degree
+				use "$final/child-labor-ban-brazil.dta" if year == 2003 & zw >= - 12 & zw < 12, clear	
+				bys D: tab edu_att
+				bys D: tab lowersec_degree
+				bys D: tab highschool_degree
 		
 		}
+	
+	
 	
 	
 	**
@@ -275,6 +277,43 @@
 			graph export "$figures/FigureA1`fig'.pdf", as(pdf) replace
 		}
 	}		
+	
+	
+	**
+	*____________________________________________________________________________________________________________________________________*
+	**
+	*Table
+	*____________________________________________________________________________________________________________________________________*
+	**
+	{
+		use "$final/child-labor-ban-brazil.dta" if (zw >= -12 & zw < 12) & formal == 1, clear	
+		
+		gen id = 1
+		
+		collapse (sum)id [pw = weight], by(year D)
+		reshape wide id, i(year) j(D)
+		
+	}	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	**
 	*____________________________________________________________________________________________________________________________________*

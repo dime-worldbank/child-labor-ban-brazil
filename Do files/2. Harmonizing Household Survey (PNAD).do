@@ -472,20 +472,43 @@
 				}
 				
 
-				*In 2001, there is a series of questions regarding the work safety for children/teenagers
+				*In 2001, there is a series of questions regarding the work safety for children/teenagers and also education
 				*------------------------------------------------------------------------------------------------------------------------*
 				if `year' == 2001 { 
 						
 						recode  v1605 (1 = 1) (3 = 0) (9 = .), gen (happy_work)
 						
-						rename (v1606 v1607) (reason_not_like_work reason_work)
+						rename (v1606 v1607 v1504 v1562 v1507 v1508) (reason_not_like_work reason_work hours_school missing_school_days reason_not_go_school reason_not_attend_school)
 						
-						replace reason_not_like_work= . 		if reason_not_like_work== 9 
+						replace reason_not_like_work= . 		if reason_not_like_work == 9 
 						
-						replace reason_work			= . 		if reason_work == 9
+						replace reason_work			= . 		if reason_work 			== 9
 						
-						replace reason_work         = 2 		if reason_work == 3
-
+						replace reason_work         = 2 		if reason_work 			== 3
+						
+						replace hours_school		= . 		if hours_school 		== 9
+						
+						foreach var of varlist missing_school_days reason_not_go_school reason_not_attend_school {
+						
+							replace `var' = . 		if `var' 	== 99
+						}
+						
+						replace reason_not_go_school 	 = 0 if reason_not_go_school 	 != 2
+						
+						replace reason_not_go_school 	 = 1 if reason_not_go_school 	 == 2 
+						
+						replace reason_not_attend_school = 0 if reason_not_attend_school != 2
+						
+						replace reason_not_attend_school = 1 if reason_not_attend_school == 2 
+					
+						gen 	more4hours_school 		 = 1 if schoolatt 				 == 1 & (hours_school == 4 | hours_school == 6)
+				
+						replace more4hours_school 		 = 0 if schoolatt 				 == 1 & (hours_school == 2)
+				
+						gen 	more6hours_school 		 = 1 if schoolatt 			     == 1 & (hours_school == 6)
+					
+						replace more6hours_school 	     = 0 if schoolatt 				 == 1 & (hours_school == 4 | hours_school == 2 )
+												
 				} 
 				
 					
@@ -577,7 +600,7 @@
 
 				tab v4701 edu_level_enrolled
 	
-				if `year' == 2001 keep  																																happy_work reason_not_like_work reason_work	 		 work_home place_work type* work_household_consumption   uf age hh_member weight hours_worked years_current_work months_current_work hh_id-edu_level_enrolled v3031 v3032 v3033 v0404 v0406
+				if `year' == 2001 keep 	hours_school missing_school_days reason_not_go_school reason_not_attend_school happy_work reason_not_like_work reason_work	 		 												 work_home place_work type* work_household_consumption   uf age hh_member weight hours_worked years_current_work months_current_work hh_id-edu_level_enrolled v3031 v3032 v3033 v0404 v0406
 				
 				*if `year' <  2001 keep   v0404 v0101 v0102 v0103 v0301 v0602 v0603 v0605 v0606 v0607 v0610 v0601 v4718 v4719 v4720  v9001 v9004 v9002 v9003 v9008 v9029 v9054 activity90s occupation90s  					 work_home place_work type* work_household_consumption   uf age hh_member weight hours_worked years_current_work months_current_work hh_id-edu_level_enrolled v3031 v3032 v3033 v0404 v0406
 
@@ -896,11 +919,11 @@
 				
 				*Area
 				*------------------------------------------------------------------------------------------------------------------------*
-				gen 	area = 1 												if urban == 1 & metro == 0		//Urbana
+				gen 	area = 1 										if urban == 1 & metro == 0		//Urbana
 
-				replace area = 2 												if urban == 0 & metro == 0		//Rural	
+				replace area = 2 										if urban == 0 & metro == 0		//Rural	
 
-				replace area = 3 												if metro == 1					//Metropolitana
+				replace area = 3 										if metro == 1					//Metropolitana
 
 				tab 	area
 				
@@ -940,7 +963,6 @@
 				
 				replace wage_hour			= . 	if wage_hour 		== 0
 					
-				
 			save "$inter/pnad_harm_`year'.dta", replace
 			*----------------------------------------------------------------------------------------------------------------------------*
 			end
@@ -1153,7 +1175,18 @@
 				label define region						1 "Norte" 2 "Nordeste" 3 "Sudeste" 4 "Sul" 5 "Centro-Oeste" 
 
 				
-				foreach x in reason_not_like_work reason_work activity90s occupation90s work_household_consumption place_work type_work_agric type_work_noagric region goes_public_school   female college_degree male informal kid6 kid13 kid17 kid17f kid17m civil_servant_federal civil_servant_state civil_servant_municipal highschool_degree out_labor hh_head spouse formal female coduf type_work edu_att edu_att2 mom_edu_att2 two_parent hh_member  schoolatt urban metro area color went_school female_with_children labor_card social_security civil_servant employed unemployed eap edu_level_enrolled {
+										
+				label define hours_school				 2 "Até 4 horas"  4 "Entre 4 e 6 horas" 6 "Mais de 6 horas"
+			
+				label define reason_not_attend_school	 0 "Outro motivo" 1 "Precisa trabalhar ou procurar trabalho" 
+				
+				label define reason_not_go_school 		 0 "Outro motivo" 1 "Precisa trabalhar ou procurar trabalho" 
+				
+				
+				
+				
+
+				foreach x in hours_school reason_not_attend_school reason_not_go_school  reason_not_like_work reason_work activity90s occupation90s work_household_consumption place_work type_work_agric type_work_noagric region goes_public_school   female college_degree male informal kid6 kid13 kid17 kid17f kid17m civil_servant_federal civil_servant_state civil_servant_municipal highschool_degree out_labor hh_head spouse formal female coduf type_work edu_att edu_att2 mom_edu_att2 two_parent hh_member  schoolatt urban metro area color went_school female_with_children labor_card social_security civil_servant employed unemployed eap edu_level_enrolled {
 
 					label val `x' `x'
 
@@ -1298,7 +1331,13 @@
 				label var occupation90s								"Occupation sector, (1998-1999)"
 				label var goes_public_school						"Public school"
 				label var happy_work								"Children is happy with their work"
-				
+				label var hours_school 								"Number of hours in school, available 2001"
+				label var missing_school_days  						"Missing school days between August 1 and September 30, available 2001"
+				label var reason_not_attend_school  				"Couldnt attend school because of work, available 2001"
+				label var reason_not_go_school						"Couldnt go to school because of work, available 2001"
+				label var more4hours_school			 				"Children spends more than 4 hours in school, available in 2001"
+				label var more6hours_school 						"Children spends more than 6 hours in school, available in 2001"
+							
 				*------------------------------------------------------------------------------------------------------------------------*
 				sort 	year hh_id
 				compress
