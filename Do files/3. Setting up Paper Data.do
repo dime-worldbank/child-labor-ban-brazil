@@ -446,6 +446,14 @@
 		*----------------------------------------------------------------------------------------------------------------------------*
 		compress
 		keep if xw > -24 & xw < 24
+
+		
+		*Per capita income, considering only adults income
+		*----------------------------------------------------------------------------------------------------------------------------*
+		gen 	 per_cap_adults_income = adults_income/hh_size
+		su  	 per_cap_adults_income, detail
+		replace  per_cap_adults_income = . if  per_cap_adults_income <=r(p1) |  per_cap_adults_income >= r(p99)
+		
 		save 	"$final/child-labor-ban-brazil.dta", replace
 		*----------------------------------------------------------------------------------------------------------------------------*
 	

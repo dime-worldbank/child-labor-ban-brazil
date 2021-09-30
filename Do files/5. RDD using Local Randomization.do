@@ -141,6 +141,99 @@
 			export excel using "$tables/table1.xlsx",  replace
 	
 	
+	
+		*________________________________________________________________________________________________________________________________*
+		**
+		**
+		*Estimate of ATE disaggregating by mother education
+																																																																																			**
+		*________________________________________________________________________________________________________________________________*
+			estimates clear
+			matrix results = (0,0,0,0,0,0,0) 									//storing dependent variable, sample, observed statistic, lower bound and upper bounds, and mean of the dependent outcome
+
+			
+			**
+			*Estimates using Cattaneo
+			*----------------------------------------------------------------------------------------------------------------------------*
+			foreach model in 1 2 3 4 {
+			local   dep_var = 1													//we attributed a model number for each specification we tested
+			
+				use "$final/child-labor-ban-brazil.dta" if year == 1999 & urban == 1 & male == 1 & (zw >= -12 & zw <= 11), clear
+				
+					if `model' == 1 keep if inlist(mom_edu_att2,1,2)
+					if `model' == 2 keep if inlist(mom_edu_att2,3,4)
+					
+					su 						per_cap_adults_income  ,  detail 
+					if `model' == 3 keep if per_cap_adults_income <=  r(p50)
+					if `model' == 4 keep if per_cap_adults_income >   r(p50)  & per_cap_adults_income  != .
+					
+					foreach variable in eap pwork uwork pwork_formal pwork_informal schoolatt pwork_only study_only nemnem {	
+						su `variable', detail
+						local mean = r(mean)									//mean of the shor-term outcome
+						
+						rdrandinf `variable' zw,  wl(-12) wr(11) interfci(0.05) seed(8474085)	
+						matrix results = results \ (`dep_var', `model', r(obs_stat), r(randpval), r(int_lb), r(int_ub), `mean')
+						local dep_var = `dep_var' + 1		
+					}
+			}
+			
+			
+			**
+			*Results
+			*----------------------------------------------------------------------------------------------------------------------------*
+			clear
+			svmat 	results						//storing the results of our estimates so we can present the estimates in charts
+			drop  	in 1
+
+			rename (results1-results7) (dep_var model ATE pvalue lower upper mean_outcome)	
+
+			label 	define dep_var 1 "Economically Active Children"   2 "Paid work"  	  	  3 "Unpaid work" 	 				4 "Formal paid work"  5 "Informal paid work" 6 "School attendance" ///
+								   7 "Only paid work" 				  8 "Studying only" 	  9 "Neither working or studying" 								   
+			label	val    dep_var dep_var
+						 
+			label   define model   1 "Mother without High School"	  2 "Mother with High School" ///
+								   3 "Per capita income below median" 4 "Per capita income above median"
+			label   val    model model
+		
+			
+			foreach var of varlist ATE lower upper mean_outcome	{
+				replace `var'  = `var' *100
+			}
+			gen 	 att_perc_mean = (ATE/mean_outcome)*100	 if pvalue  <= 0.10
+			format   ATE-att_perc_mean %4.2fc
+		
+			gen 	 CI  = "[" + substr(string(lower),1,4) + "," + substr(string(upper),1,4) + "]" if substr(string(lower),1,1) == "-" & substr(string(upper),1,1) == "-"
+			replace  CI  = "[" + substr(string(lower),1,4) + "," + substr(string(upper),1,3) + "]" if substr(string(lower),1,1) == "-" & substr(string(upper),1,1) != "-"
+			replace  CI  = "[" + substr(string(lower),1,3) + "," + substr(string(upper),1,3) + "]" if substr(string(lower),1,1) != "-" & substr(string(upper),1,1) != "-"
+			replace  CI  = "[" + substr(string(lower),1,3) + "," + substr(string(upper),1,4) + "]" if substr(string(lower),1,1) != "-" & substr(string(upper),1,1) == "-"
+			tostring ATE, force replace
+			replace  ATE = substr(ATE, 1, 5) 
+
+			replace ATE = ATE + "*"    if pvalue <= 0.10 & pvalue > 0.05
+			replace ATE = ATE + "**"   if pvalue <= 0.05 & pvalue > 0.01
+			replace ATE = ATE + "***"  if pvalue <= 0.01
+
+			drop  	lower upper pvalue
+			
+			order 	dep_var  ATE CI mean_outcome att_perc_mean
+			reshape wide ATE CI mean_outcome att_perc_mean, i(dep_var) j(model)
+			
+			expand 2, gen(REP)
+			sort 	dep_var REP
+			
+			foreach  var of varlist ATE* CI* {
+			replace `var' = "" if REP == 1
+			}
+			
+			foreach  var of varlist dep_var mean* att* {
+			replace `var' = . if REP == 1
+			}			
+			
+			export  excel using "$tables/tableA1.xlsx",  replace
+	
+			
+	
+	
 
 		*________________________________________________________________________________________________________________________________*
 		**
