@@ -133,8 +133,6 @@
 		}
 	
 	
-	
-	
 	**
 	*____________________________________________________________________________________________________________________________________*
 	**
@@ -202,7 +200,7 @@
 		global  balance eap unemployed schoolatt lower_sec_enrollment working pwork hours_worked_pwork real_wage_all_jobs place_work_factory place_work_employer_house housekeeper pwork_formal 	///
 				uwork hours_worked_uwork  agriculture working_for_household pwork_only uwork_only pwork_sch uwork_sch study_only nemnem  
 
-		iebaltab $balance [pw = weight], format(%12.2fc) grpvar(urban) savetex("$tables/Table2.tex") rowvarlabels 																///
+		iebaltab $balance [pw = weight], format(%12.2fc) grpvar(urban) savetex("$tables/TableA2.tex") rowvarlabels 																///
 		tblnote("Source: PNAD, 1998.") notecombine texdocument  texcaption("Balance test for 14-year-olds in urban and rural areas (1998)") replace
 	}
 	
@@ -213,7 +211,7 @@
 	*____________________________________________________________________________________________________________________________________*
 	**
 	{	
-		iebaltab $balance if urban == 1 [pw = weight], format(%12.2fc) grpvar(male) savetex("$tables/Table3.tex") rowvarlabels 													///
+		iebaltab $balance if urban == 1 [pw = weight], format(%12.2fc) grpvar(male) savetex("$tables/TableA3.tex") rowvarlabels 													///
 		tblnote("Source: PNAD, 1998.") notecombine texdocument  texcaption("Balance test for 14-year-olds boys and girls in urban areas (1998)") replace
 	}
 	
@@ -224,10 +222,68 @@
 	*____________________________________________________________________________________________________________________________________*
 	**
 	{
-		iebaltab $balance if urban == 0 [pw = weight], format(%12.2fc) grpvar(male) savetex("$tables/Table4.tex") rowvarlabels 													///
+		iebaltab $balance if urban == 0 [pw = weight], format(%12.2fc) grpvar(male) savetex("$tables/TableA4.tex") rowvarlabels 													///
 		tblnote("Source: PNAD, 1998.") notecombine texdocument  texcaption("Balance test for14-year-olds boys and girls in rural areas (1998)") replace
 	}
 		
+	**
+	*____________________________________________________________________________________________________________________________________*
+	**
+	*Table A7
+	*____________________________________________________________________________________________________________________________________*
+	**
+	
+		use "$final/RAIS.dta" if amostra == 1 & (dw >= -84 & dw < 84) & sexo != ., clear
+		
+		**
+		gen id_total = 1
+		gen id_atdez = 1 if po_3112 == 1
+		
+		
+		**
+		*collapse (mean)id_total  id_atdez, by(ano sexo		D pis)
+		
+		**
+		collapse (sum) id_total  id_atdez, by(ano sexo 		D)
+	
+		**
+		reshape wide   id_total  id_atdez , i(ano sexo)   j(D)
+		reshape wide   id_total* id_atdez*, i(ano)  	  j(sexo)
+		
+		**
+		foreach name in total atdez {
+			gen 	p`name'01 = (id_`name'01/(id_`name'01 + id_`name'11))*100
+			gen 	p`name'11 = (id_`name'11/(id_`name'01 + id_`name'11))*100
+			gen 	p`name'02 = (id_`name'02/(id_`name'02 + id_`name'12))*100
+			gen 	p`name'12 = (id_`name'12/(id_`name'02 + id_`name'12))*100
+		}
+		
+		**
+		order 	ano *total01* *total11* *total02* *total12*  *atdez01* *atdez11* *atdez02* *atdez12*  
+					
+		drop 	*atdez*
+		
+		format 	p* %4.2fc
+		
+		export excel using "$tables/TableA7.xlsx", replace
+		
+
+	**
+	*____________________________________________________________________________________________________________________________________*
+	**
+	*Table
+	*____________________________________________________________________________________________________________________________________*
+	**
+	{
+		use "$final/child-labor-ban-brazil.dta" if (zw >= -12 & zw < 12) & formal == 1, clear	
+		
+		gen id = 1
+		
+		collapse (sum)id [pw = weight], by(year D)
+		reshape wide id, i(year) j(D)
+		
+	}	
+	
 	
 	**
 	*____________________________________________________________________________________________________________________________________*
@@ -278,43 +334,6 @@
 		}
 	}		
 	
-	
-	**
-	*____________________________________________________________________________________________________________________________________*
-	**
-	*Table
-	*____________________________________________________________________________________________________________________________________*
-	**
-	{
-		use "$final/child-labor-ban-brazil.dta" if (zw >= -12 & zw < 12) & formal == 1, clear	
-		
-		gen id = 1
-		
-		collapse (sum)id [pw = weight], by(year D)
-		reshape wide id, i(year) j(D)
-		
-	}	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	**
 	*____________________________________________________________________________________________________________________________________*
 	**
@@ -332,6 +351,8 @@
 			}
 			replace year = year - 1998 if year < 2001
 			replace year = year - 1999 if year > 2000 
+			
+		
 	 
 			tw 	///
 				(line pwork year		, msize(2) msymbol(T) lwidth(0.5) color(emidblue)  lp(solid) connect(direct) recast(connected) mlabel(pwork) 	 mlabcolor(black) mlabpos(12))   ///  
@@ -382,7 +403,7 @@
 				note("Source: PNAD.", span color(black) fcolor(background) pos(7) size(small))) 
 				graph export "$figures/FigureA3.pdf", as(pdf) replace	
 			}
-			
+
 	**
 	*____________________________________________________________________________________________________________________________________*
 	**
@@ -390,7 +411,7 @@
 	*____________________________________________________________________________________________________________________________________*
 	**
 	{
-		use "$final/child-labor-ban-brazil.dta" if year == 1999 & zw >= - 12 & zw < 12 & urban == 1 & male == 1, clear	
+		use "$final/child-labor-ban-brazil.dta" if year == 1999 & xw >= - 12 & xw < 12 & urban == 1 & male == 1, clear	
 
 		local outcomes pwork pwork_formal pwork_informal pwork_sch study_only nemnem
 		
@@ -404,49 +425,10 @@
 			}
 
 			foreach var of varlist `outcomes' {
-				tw  (lpolyci `var' zw if zw >= 0, kernel(triangle) degree(0) bw(1) acolor(gs12) fcolor(gs12) clcolor(gray) clwidth(0.3)) 		///
-					(lpolyci `var' zw if zw <  0, kernel(triangle) degree(0) bw(1) acolor(gs12) fcolor(gs12) clcolor(gray) clwidth(0.3)) 		///
-					(scatter `var' zw if zw >= -12 & zw <  0 , sort msymbol(circle) msize(small) mcolor(navy))         		 	///
-					(scatter `var' zw if zw >=   0 & zw <= 12,  sort msymbol(circle) msize(small) mcolor(cranberry)), xline(0) 	///
-					legend(off) 																								///
-					plotregion(color(white) fcolor(white) lcolor(white) icolor(white) ifcolor(white) ilcolor(white)) 			///						
-					title({bf:`: variable label `var''}, pos(11) color(navy) span size(medium))									///
-					ytitle("%") xtitle("Age difference from the cutoff (in weeks)") 											/// 
-					note("", color(black) fcolor(background) pos(7) size(small)) saving(short_`var'.gph, replace) 
-			}
-			
-			graph combine short_pwork.gph short_pwork_formal.gph short_pwork_informal.gph short_pwork_sch.gph short_study_only.gph short_nemnem.gph, cols(2) graphregion(fcolor(white)) ysize(7) xsize(5) title(, fcolor(white) size(medium) color(cranberry))
-			graph export "$figures/FigureA4.pdf", as(pdf) replace
-			foreach var of varlist `outcomes' {
-			erase short_`var'.gph
-			}	
-		}	
-		
-	**
-	*____________________________________________________________________________________________________________________________________*
-	**
-	*Figure A5
-	*____________________________________________________________________________________________________________________________________*
-	**
-	{
-		use "$final/child-labor-ban-brazil.dta" if year == 1999 & xw >= - 12 & xw < 12 & urban == 1 & male == 1, clear	
-
-		local outcomes pwork pwork_formal pwork_informal pwork_sch study_only nemnem
-		
-			foreach v of varlist `outcomes' {
-				local `v'_label: var label `v'
-			}
-			collapse 			 `outcomes' [pw = weight], by(xw)
-			foreach v of varlist `outcomes' {
-				replace   `v' = `v'*100
-				label var `v' `"``v'_label'"'
-			}
-
-			foreach var of varlist `outcomes' {
-				tw  (lpolyci `var' xw if xw >= 0, kernel(triangle) degree(0) bw(1) acolor(gs12) fcolor(gs12) clcolor(gray) clwidth(0.3)) 		///
-					(lpolyci `var' xw if xw <  0, kernel(triangle) degree(0) bw(1) acolor(gs12) fcolor(gs12) clcolor(gray) clwidth(0.3)) 		///
-					(scatter `var' xw if xw >= -12 & xw <  0 , sort msymbol(circle) msize(small) mcolor(navy))         		 	///
-					(scatter `var' xw if xw >=   0 & xw <= 12,  sort msymbol(circle) msize(small) mcolor(cranberry)), xline(0) 	///
+				tw  (lpolyci `var' zw if zw >= 0, kernel(triangle) degree(0) bw(12) acolor(gs12) fcolor(gs12) clcolor(gray) clwidth(0.3)) 		///
+					(lpolyci `var' zw if zw <  0, kernel(triangle) degree(0) bw(12) acolor(gs12) fcolor(gs12) clcolor(gray) clwidth(0.3)) 		///
+					(scatter `var' zw if zw >= -52 & zw <  0 ,  sort msymbol(circle) msize(small) mcolor(navy))         		 	///
+					(scatter `var' zw if zw >=   0 & zw <= 51,  sort msymbol(circle) msize(small) mcolor(cranberry)), xline(0) 	///
 					legend(off) 																								///
 					plotregion(color(white) fcolor(white) lcolor(white) icolor(white) ifcolor(white) ilcolor(white)) 			///						
 					title({bf:`: variable label `var''}, pos(11) color(navy) span size(medium))									///
@@ -455,7 +437,7 @@
 			}
 			
 			graph combine short_pwork.gph short_pwork_formal.gph short_pwork_informal.gph short_pwork_sch.gph short_study_only.gph short_nemnem.gph, cols(2) graphregion(fcolor(white)) ysize(7) xsize(5) title(, fcolor(white) size(medium) color(cranberry))
-			graph export "$figures/FigureA5.pdf", as(pdf) replace
+			graph export "$figures/FigureA4.pdf", as(pdf) replace
 			foreach var of varlist `outcomes' {
 			erase short_`var'.gph
 			}	
@@ -465,28 +447,16 @@
 	**
 	*____________________________________________________________________________________________________________________________________*
 	**
-	*Figure A6
+	*Figure A5
 	*____________________________________________________________________________________________________________________________________*
 	**
 	{			
 		use "$final/child-labor-ban-brazil.dta" if year == 1999 & xw >= - 6 & xw < 6, clear	
 		DCdensity zw, breakpoint(0) b(1) generate(Xj Yj r0 fhat se_fhat)
-		graph export "$figures/FigureA6.pdf", as(pdf) replace
+		graph export "$figures/FigureA5.pdf", as(pdf) replace
 	}
 			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
+	/*		
 	*____________________________________________________________________________________________________________________________________*
 	**
 	*Overall descriptive statistics

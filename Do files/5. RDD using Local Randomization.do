@@ -9,10 +9,10 @@
 	**=================================================================>>
 	**======================================================>>
 	**
-	*SAMPLE: ALL 14-YEAR-OLDS IN URBAN AND RURAL AREAS
-		*	 ALL 14 YEAR-OLDS MALES IN URBAN AREAS
-		*	 ALL 14 YEAR-OLDS FEMALES IN URBAN AREAS
-		*    ALL 14 YEAR-OLD RURAL AREAS
+	*SAMPLE: ALL 14-YEAR-OLDS 			IN URBAN AREAS AND RURAL AREAS
+		*	 ALL 14 YEAR-OLDS MALES   	IN URBAN AREAS
+		*	 ALL 14 YEAR-OLDS FEMALES 	IN URBAN AREAS
+		*    ALL 14 YEAR-OLD 							   RURAL AREAS
  	**
 		
 	
@@ -49,6 +49,7 @@
 		
 		*________________________________________________________________________________________________________________________________*
 		**
+		**
 		*Local Randomization Inference
 		**
 		*________________________________________________________________________________________________________________________________*
@@ -59,17 +60,25 @@
 			**
 			*Estimates using Cattaneo
 			*----------------------------------------------------------------------------------------------------------------------------*
-			foreach variable in eap pwork uwork pwork_formal pwork_informal schoolatt pwork_only study_only nemnem {			//short-term outcomes
+			foreach variable in eap pwork uwork pwork_formal pwork_informal schoolatt pwork_only study_only nemnem {					//short-term outcomes
+				
 				foreach year in 1998 1999 {																								//1998 -> 14 year-olds unaffected (robustness) and 1999
+					
 					foreach sample in 1 2 3 4 {																							//testing the results with different samples
 						
+						**
+						*Sample
 						if `sample' == 1 use "$final/child-labor-ban-brazil.dta" if							  year == `year', clear		//all sample
 						if `sample' == 2 use "$final/child-labor-ban-brazil.dta" if urban  == 1	& male == 1 & year == `year', clear		//only boys, urban areas
 						if `sample' == 3 use "$final/child-labor-ban-brazil.dta" if urban  == 1	& male == 0 & year == `year', clear		//only girls, urban areas
 						if `sample' == 4 use "$final/child-labor-ban-brazil.dta" if urban  == 0 &			  year == `year', clear		//rural areas
+						
+						**
+						*Mean of dependent variable
 						su `variable', detail
 						local mean = r(mean)									//mean of the shor-term outcome
 					
+						**
 						rdrandinf `variable' zw,  wl(-12) wr(11) interfci(0.05) seed(493734)	
 						matrix results = results \ (`year',`dep_var', `sample', r(obs_stat), r(randpval), r(int_lb), r(int_ub), `mean')
 					}
@@ -82,101 +91,137 @@
 			*Results
 			*----------------------------------------------------------------------------------------------------------------------------*
 			clear
-			svmat 	results						//storing the results of our estimates so we can present the estimates in charts
-			drop  	in 1
-			rename (results1-results8) (year dep_var sample ATE pvalue lower upper mean_outcome)	
+			svmat 		results						//storing the results of our estimates so we can present the estimates in charts
+			drop  		in 1
+			rename 		(results1-results8) (year dep_var sample ATE pvalue lower upper mean_outcome)	
 
-			label 	define dep_var 1 "Economically Active Children"  2 "Paid work"  	  3  "Unpaid work" 	 4 "Formal paid work"  5 "Informal paid work" 6 "School attendance" ///
-								   7 "Only paid work" 				 8 "Studying only" 	  9 "Neither working or studying" 								   
-			label	val    dep_var dep_var
+			**
+			**
+			label 		define dep_var 1 "Economically Active Children"  2 "Paid work"  	  	3  "Unpaid work" 					///
+									   4 "Formal paid work"  			 5 "Informal paid work" 6 "School attendance" 				///
+									   7 "Only paid work" 				 8 "Studying only" 	  	9 "Neither working or studying" 								   
+			label		val    dep_var dep_var
 		
-			
-			foreach var of varlist ATE lower upper mean_outcome	{
-				replace `var'  = `var' *100
+			**
+			**
+			foreach 	 var of varlist ATE lower upper mean_outcome	{
+			replace 	`var'  = `var' *100
 			}
-			gen 	 att_perc_mean = (ATE/mean_outcome)*100	 if pvalue  <= 0.05
-			format   ATE-att_perc_mean %4.2fc
+			
+			**
+			**
+			gen 	 	att_perc_mean = (ATE/mean_outcome)*100	 if pvalue  <= 0.05
+			format   	ATE-att_perc_mean %4.2fc
 		
-			gen 	 CI  = "[" + substr(string(lower),1,4) + "," + substr(string(upper),1,4) + "]" if substr(string(lower),1,1) == "-" & substr(string(upper),1,1) == "-"
-			replace  CI  = "[" + substr(string(lower),1,4) + "," + substr(string(upper),1,3) + "]" if substr(string(lower),1,1) == "-" & substr(string(upper),1,1) != "-"
-			replace  CI  = "[" + substr(string(lower),1,3) + "," + substr(string(upper),1,3) + "]" if substr(string(lower),1,1) != "-" & substr(string(upper),1,1) != "-"
-			replace  CI  = "[" + substr(string(lower),1,3) + "," + substr(string(upper),1,4) + "]" if substr(string(lower),1,1) != "-" & substr(string(upper),1,1) == "-"
-			tostring ATE, force replace
-			replace  ATE = substr(ATE, 1, 5) 
+		
+			**
+			**
+			gen 	 	CI  = "[" + substr(string(lower),1,4) + "," + substr(string(upper),1,4) + "]" if substr(string(lower),1,1) == "-" & substr(string(upper),1,1) == "-"
+			replace  	CI  = "[" + substr(string(lower),1,4) + "," + substr(string(upper),1,3) + "]" if substr(string(lower),1,1) == "-" & substr(string(upper),1,1) != "-"
+			replace  	CI  = "[" + substr(string(lower),1,3) + "," + substr(string(upper),1,3) + "]" if substr(string(lower),1,1) != "-" & substr(string(upper),1,1) != "-"
+			replace  	CI  = "[" + substr(string(lower),1,3) + "," + substr(string(upper),1,4) + "]" if substr(string(lower),1,1) != "-" & substr(string(upper),1,1) == "-"
+			
+			**
+			**
+			tostring 	ATE, force replace
+			replace  	ATE = substr(ATE, 1, 5) 
+			replace 	ATE = ATE + "*"    if pvalue <= 0.10 & pvalue > 0.05
+			replace 	ATE = ATE + "**"   if pvalue <= 0.05 & pvalue > 0.01
+			replace 	ATE = ATE + "***"  if pvalue <= 0.01
 
-			replace ATE = ATE + "*"    if pvalue <= 0.10 & pvalue > 0.05
-			replace ATE = ATE + "**"   if pvalue <= 0.05 & pvalue > 0.01
-			replace ATE = ATE + "***"  if pvalue <= 0.01
-
-			drop  	lower upper pvalue
+			**
+			**
+			drop  		lower upper pvalue
+			order 		dep_var year ATE CI mean_outcome att_perc_mean
+			reshape 	wide ATE CI mean_outcome att_perc_mean, i(year dep_var) j(sample)
 			
-			order 	dep_var year ATE CI mean_outcome att_perc_mean
-			reshape wide ATE CI mean_outcome att_perc_mean, i(year dep_var) j(sample)
+			**
+			*Setting up the table with main results
+			**
 			
+			**
+			local 		num_dp_var  = 9						//number of dependent variables
+			local 		number_rows = `num_dp_var'*3		//total number of rows in the table
 			
-			********==> Setting up the table with main results
-			local num_dp_var  = 9				//number of dependent variables
-			local number_rows = `num_dp_var'*3	//total number of rows in the table
+			**
+			**
+			set 	 	obs `number_rows'
+			replace  	year 	 = 0 		if year == .
 			
-			set 	 obs `number_rows'
-			replace  year 	 = 0 		if year == .
-			
-			forvalues row = 1(1)`num_dp_var' {
+			**
+			**
+			forvalues 	row = 1(1)`num_dp_var' {
 				local 	n_row 	= `row' + `num_dp_var'*2
-				replace dep_var = `row'  in `n_row'
+				replace dep_var = `row'  					in `n_row'
 			}
 			
-			sort     dep_var  year
-			decode   dep_var, gen(var)
-			drop     dep_var
-			replace  year = . 			if year == 0
-			tostring year, replace
-			replace  year = var 		if year == "."
-			drop     var
+			**
+			**
+			sort     	dep_var  year
+			decode   	dep_var, gen(var)
+			drop     	dep_var
+			replace  	year = . 			if year == 0
+			tostring 	year, replace
+			replace  	year = var 		if year == "."
+			drop     	var
 		
-			gen space1 = .
-			gen space2 = .
-			gen space3 = .
-			order year *1 *2 *3 *4
-			export excel using "$tables/table1.xlsx",  replace
+			**
+			**
+			gen 		space1 = .
+			gen 		space2 = .
+			gen 		space3 = .
+			order 		year *1 *2 *3 *4
+			export		excel using "$tables/Table1.xlsx",  replace
 	
 	
 	
 		*________________________________________________________________________________________________________________________________*
 		**
 		**
-		*Estimate of ATE disaggregating by mother education
+		*Estimate of ATE disaggregating by mother education and household per capita income
 																																																																																			**
 		*________________________________________________________________________________________________________________________________*
 			estimates clear
-			matrix results = (0,0,0,0,0,0,0) 									//storing dependent variable, sample, observed statistic, lower bound and upper bounds, and mean of the dependent outcome
+			matrix results = (0,0,0,0,0,0,0,0) 									//storing dependent variable, sample, observed statistic, lower bound and upper bounds, and mean of the dependent outcome
+			local   dep_var = 1													//we attributed a model number for each specification we tested
 
 			
 			**
 			*Estimates using Cattaneo
 			*----------------------------------------------------------------------------------------------------------------------------*
-			foreach model in 1 2 3 4 {
-			local   dep_var = 1													//we attributed a model number for each specification we tested
-			
-				use "$final/child-labor-ban-brazil.dta" if year == 1999 & urban == 1 & male == 1 & (zw >= -12 & zw <= 11), clear
+		
+			foreach variable in eap pwork uwork pwork_formal pwork_informal schoolatt {	
+
+				foreach year in 1999 2001 2003 {																
+
+					foreach sample in 1 2 3 4 {
 				
-					if `model' == 1 keep if inlist(mom_edu_att2,1,2)
-					if `model' == 2 keep if inlist(mom_edu_att2,3,4)
-					
-					su 						per_cap_adults_income  ,  detail 
-					if `model' == 3 keep if per_cap_adults_income <=  r(p50)
-					if `model' == 4 keep if per_cap_adults_income >   r(p50)  & per_cap_adults_income  != .
-					
-					foreach variable in eap pwork uwork pwork_formal pwork_informal schoolatt pwork_only study_only nemnem {	
-						su `variable', detail
-						local mean = r(mean)									//mean of the shor-term outcome
+						use "$final/child-labor-ban-brazil.dta" if year == `year' & urban == 1 & male == 1 & (zw >= -12 & zw <= 11), clear
 						
-						rdrandinf `variable' zw,  wl(-12) wr(11) interfci(0.05) seed(8474085)	
-						matrix results = results \ (`dep_var', `model', r(obs_stat), r(randpval), r(int_lb), r(int_ub), `mean')
-						local dep_var = `dep_var' + 1		
+							**
+							*Sample
+							if `sample' == 1 keep if inlist(mom_edu_att2,1,2)
+							if `sample' == 2 keep if inlist(mom_edu_att2,3,4)
+							
+							su 						 per_cap_adults_income  ,  detail 
+							if `sample' == 3 keep if per_cap_adults_income <=  r(p50)
+							if `sample' == 4 keep if per_cap_adults_income >   r(p50)  & per_cap_adults_income  != .
+							
+							
+							**
+							**Mean of dependent variable
+							su `variable', detail
+							local mean = r(mean)														//mean of the shor-term outcome
+							
+							**
+							**
+							rdrandinf `variable' zw,  wl(-12) wr(11) interfci(0.05) seed(8474085)	
+							matrix results = results \ (`year', `dep_var', `sample', r(obs_stat), r(randpval), r(int_lb), r(int_ub), `mean')
+								
 					}
+				}
+				local dep_var = `dep_var' + 1	
 			}
-			
 			
 			**
 			*Results
@@ -184,57 +229,105 @@
 			clear
 			svmat 	results						//storing the results of our estimates so we can present the estimates in charts
 			drop  	in 1
+			rename (results1-results8) (year dep_var sample ATE pvalue lower upper mean_outcome)	
 
-			rename (results1-results7) (dep_var model ATE pvalue lower upper mean_outcome)	
-
-			label 	define dep_var 1 "Economically Active Children"   2 "Paid work"  	  	  3 "Unpaid work" 	 				4 "Formal paid work"  5 "Informal paid work" 6 "School attendance" ///
-								   7 "Only paid work" 				  8 "Studying only" 	  9 "Neither working or studying" 								   
+			**
+			**
+			label 	define dep_var 	1 "Economically Active Children"   	2 "Paid work"  	  	  		3 "Unpaid work" 	 					///
+									4 "Formal paid work"  				5 "Informal paid work" 		6 "School attendance"				 	///
+									7 "Only paid work" 				  	8 "Studying only" 	  		9 "Neither working or studying" 								   
+					
+			label   define sample   1 "Mother without High School"	  	2 "Mother with High School" 										///
+									3 "Per capita income below median" 	4 "Per capita income above median"
+			
 			label	val    dep_var dep_var
-						 
-			label   define model   1 "Mother without High School"	  2 "Mother with High School" ///
-								   3 "Per capita income below median" 4 "Per capita income above median"
-			label   val    model model
+			label   val    sample  sample 
 		
 			
+			**
+			**
 			foreach var of varlist ATE lower upper mean_outcome	{
 				replace `var'  = `var' *100
 			}
+			
+			**
 			gen 	 att_perc_mean = (ATE/mean_outcome)*100	 if pvalue  <= 0.10
 			format   ATE-att_perc_mean %4.2fc
 		
+			**
+			**
 			gen 	 CI  = "[" + substr(string(lower),1,4) + "," + substr(string(upper),1,4) + "]" if substr(string(lower),1,1) == "-" & substr(string(upper),1,1) == "-"
 			replace  CI  = "[" + substr(string(lower),1,4) + "," + substr(string(upper),1,3) + "]" if substr(string(lower),1,1) == "-" & substr(string(upper),1,1) != "-"
 			replace  CI  = "[" + substr(string(lower),1,3) + "," + substr(string(upper),1,3) + "]" if substr(string(lower),1,1) != "-" & substr(string(upper),1,1) != "-"
 			replace  CI  = "[" + substr(string(lower),1,3) + "," + substr(string(upper),1,4) + "]" if substr(string(lower),1,1) != "-" & substr(string(upper),1,1) == "-"
+			
+			**
+			**
 			tostring ATE, force replace
 			replace  ATE = substr(ATE, 1, 5) 
+			replace  ATE = ATE + "*"    if pvalue <= 0.10 & pvalue > 0.05
+			replace  ATE = ATE + "**"   if pvalue <= 0.05 & pvalue > 0.01
+			replace  ATE = ATE + "***"  if pvalue <= 0.01
 
-			replace ATE = ATE + "*"    if pvalue <= 0.10 & pvalue > 0.05
-			replace ATE = ATE + "**"   if pvalue <= 0.05 & pvalue > 0.01
-			replace ATE = ATE + "***"  if pvalue <= 0.01
-
+			**
+			**
 			drop  	lower upper pvalue
-			
 			order 	dep_var  ATE CI mean_outcome att_perc_mean
-			reshape wide ATE CI mean_outcome att_perc_mean, i(dep_var) j(model)
+			reshape wide ATE CI mean_outcome att_perc_mean, i(dep_var year) j(sample)
 			
-			expand 2, gen(REP)
-			sort 	dep_var REP
 			
-			foreach  var of varlist ATE* CI* {
-			replace `var' = "" if REP == 1
+			
+			**
+			*Setting up the table with main results
+			**
+			
+			**
+			local 		num_dp_var  = 6 					//number of dependent variables
+			local 		number_rows = `num_dp_var'*4		//total number of rows in the table
+			
+			**
+			**
+			set 	 	obs `number_rows'
+			replace  	year 	 = 0 		if year == .
+			
+			**
+			**
+			forvalues 	row = 1(1)`num_dp_var' {
+				local 	n_row 	= `row' + `num_dp_var'*3
+				replace dep_var = `row'  					in `n_row'
 			}
 			
-			foreach  var of varlist dep_var mean* att* {
-			replace `var' = . if REP == 1
-			}			
+			**
+			**
+			sort     	dep_var  year
+			decode   	dep_var, gen(var)
+			drop     	dep_var
+			replace  	year = . 			if year == 0
+			tostring 	year, replace
+			replace  	year = var 			if year == "."
+			drop     	var
+		
+			**
+			**
+			gen 		space1 = .
+			gen 		space2 = .
+			gen 		space3 = .
+			order 		year *1 *2 
 			
-			export  excel using "$tables/tableA1.xlsx",  replace
-	
 			
+			**
+			**Table A5
+			preserve
+			keep 		year *1* *2*
+			export		excel using "$tables/TableA5.xlsx",  replace
+			restore
+			
+			**
+			**Table A6
+			keep 		year *3* *4*
+			export		excel using "$tables/TableA6.xlsx",  replace
 	
 	
-
 		*________________________________________________________________________________________________________________________________*
 		**
 		**
@@ -259,12 +352,16 @@
 					
 					preserve
 			
+						**
+						**
 						if `sample' == 1 use "$final/child-labor-ban-brazil.dta" if							  year == `year', clear		//all sample
 						if `sample' == 2 use "$final/child-labor-ban-brazil.dta" if urban == 1 & male == 1	& year == `year', clear		//boys, urban
 						if `sample' == 3 use "$final/child-labor-ban-brazil.dta" if urban == 1 & male == 0	& year == `year', clear		//girls, urban
 						
 							local variable = 1
 							
+							**
+							**
 							foreach var of varlist $shortterm_outcomes  {												//short term outcomes
 								
 								if "`var'" == "schoolatt" {
@@ -273,7 +370,6 @@
 								else {
 								rdrandinf `var' zw							, cutoff(0) wl(-13) wr(12) interfci(0.05) seed(94757)					//estimate of ATE
 								}
-								
 								matrix results = results \ (`year', `variable', 0, r(obs_stat), r(int_lb), r(int_ub), `sample')						//storing results
 								local variable = `variable' + 1
 							}
@@ -291,10 +387,14 @@
 					
 					preserve
 							
+							**
+							**
 							if `sample' == 1 use "$final/child-labor-ban-brazil.dta" if							  year == `year', clear		//all sample
 							if `sample' == 2 use "$final/child-labor-ban-brazil.dta" if urban == 1 & male == 1	& year == `year', clear		//boys, urban
 							if `sample' == 3 use "$final/child-labor-ban-brazil.dta" if urban == 1 & male == 0	& year == `year', clear		//girls, urban
 
+								**
+								**
 								local variable = 1
 								foreach var of varlist $longterm_outcomes   {												//long term outcomes					
 									rdrandinf `var' zw,  cutoff(0)  wl(-13) wr(12) interfci(0.05) seed(493734)	
@@ -311,47 +411,61 @@
 			**
 			*----------------------------------------------------------------------------------------------------------------------------*
 				clear
-				svmat results	//storing the results of our estimates so we can present the estimates in charts
-																												
-				drop  in 1
-				rename (results1-results7) (year shortterm_outcomes longterm_outcomes ATE lower upper sample)	
+				svmat 		results	//storing the results of our estimates so we can present the estimates in charts
+				drop  		in 1
+				rename 		(results1-results7) (year shortterm_outcomes longterm_outcomes ATE lower upper sample)	
 							
-							
-				label define shortterm_outcomes  1 "Economically Active Population" 		2 "Paid work" 						3 "Informal paid work" 	 ///
-												 4 "School attendance" 						5 "Only studying" 					6 "Wage per hour" 
-												 
-				label define longterm_outcomes   1 "At least High School degree" 						 ///
-												 2 "Employed" 								3 "Formal occupation" 				4 "Wage per hour" 
 				
-				label define sample				 1 "All" 								    2 "Boys, urban" 					3 "Girls, urban"
+				**
+				**
+				label 		define shortterm_outcomes  	1 "Economically Active Population" 			2 "Paid work" 						3 "Informal paid work" 	 ///
+														4 "School attendance" 						5 "Only studying" 					6 "Wage per hour" 
+						
+				**
+				**
+				label 		define longterm_outcomes   	1 "At least High School degree" 																		 ///
+														2 "Employed" 								3 "Formal occupation" 				4 "Wage per hour" 
+				
+				**
+				**
+				label define sample				 		1 "All" 								    2 "Boys, urban" 					3 "Girls, urban"
 													
-													
+					
+				**
+				**
 				label val shortterm_outcomes shortterm_outcomes
 				label val longterm_outcomes  longterm_outcomes
 				label val sample 			 sample
 				
-				
+				**
+				**
 				foreach var of varlist ATE lower upper {
 				replace `var' = `var'*100
 				}
 
-				label var ATE    "ATE"
-				label var lower  "Lower bound"
-				label var upper  "Upper bound"
-				format ATE lower upper %4.3fc
+				**
+				**
+				label var 	ATE    "ATE"
+				label var 	lower  "Lower bound"
+				label var 	upper  "Upper bound"
+				format 		ATE lower upper %4.3fc
 
-				gen	 	year_n1 = 0
-				gen 	year_n2 = 0
+				**
+				**
+				gen	 		year_n1 = 0
+				gen 		year_n2 = 0
 				
+				**
+				**
 				local 	ordem = 1
 				foreach year in 1998 1999 2001 2002 2003 2004 2005 2006 {		//organizing data for short-term outcomes	
-					replace year_n1 = `ordem' if year == `year'					//I am just doing this to adjust the years in the graph, otherwise xaxis would show 1999, 2000 and 2001, and we do not have data for 2000. 
-					local  ordem    = `ordem' + 1 
+				replace year_n1 = `ordem' if year == `year'						//I am just doing this to adjust the years in the graph, otherwise xaxis would show 1999, 2000 and 2001, and we do not have data for 2000. 
+				local  ordem    = `ordem' + 1 
 				}
 				local 	ordem = 1
 				foreach year in 2007 2008 2009 2011 2012 2013 2014      {		//organizing data for short-term outcomes	
-					replace year_n2 = `ordem' if year == `year'
-					local  ordem	= `ordem' + 1 
+				replace year_n2 = `ordem' if year == `year'
+				local  ordem	= `ordem' + 1 
 				}
 				save "$final/Regression Results using RD under local randomization.dta", replace
 				
@@ -476,13 +590,13 @@
 
 				*Graph with estimations for shortterm outcomes
 				graph combine short1.gph short2.gph short3.gph short4.gph short5.gph short6.gph, graphregion(fcolor(white)) ysize(5) xsize(10) title(, fcolor(white) size(medium) color(cranberry))
-				graph export "$figures/local-rando-short-term-outcomes.pdf", as(pdf) replace
+				graph export "$figures/Figure1.pdf", as(pdf) replace
 				forvalues figure = 1(1)6 {
 				erase short`figure'.gph
 				}	
 				*Graph with estimations for longterm outcomes
 				graph combine long1.gph long2.gph long3.gph long4.gph long5.gph long6.gph	  , graphregion(fcolor(white)) ysize(5) xsize(8) title(, fcolor(white) size(medium) color(cranberry))
-				graph export "$figures/local-rando-long-term-outcomes.pdf", as(pdf) replace
+				graph export "$figures/Figure3.pdf", as(pdf) replace
 				forvalues figure = 1(1)4  {
 				erase long`figure'.gph
 				}	
@@ -605,20 +719,19 @@
 			
 				**Robusteness check using 1999 PNAD wave
 				graph combine Robustness_eap.gph 			Robustness_pwork.gph Robustness_schoolatt.gph, graphregion(fcolor(white)) cols(3) ysize(5) xsize(12) title(, fcolor(white) size(medium) color(cranberry))
-				graph export "$figures/robustness-1999.pdf", as(pdf) replace
+				graph export "$figures/Figure2.pdf", as(pdf) replace
 				
 				
 				**Robusteness check using 2003 PNAD wave
 				graph combine Robustness_pwork_formal.gph 	Robustness_lnwage_hour.gph					 , graphregion(fcolor(white)) cols(2) ysize(5) xsize(7)  title(, fcolor(white) size(medium) color(cranberry))
-				graph export "$figures/robustness-2003.pdf", as(pdf) replace
+				*graph export "$figures/robustness-2003.pdf", as(pdf) replace
 
 				
 				foreach name in eap pwork schoolatt pwork_formal lnwage_hour {
 					erase Robustness_`name'.gph
 				}
 			
-			
-			
+	/*		
 	**=================================================================>>
 	**======================================================>>
 	**
