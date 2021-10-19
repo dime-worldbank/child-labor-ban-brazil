@@ -179,6 +179,7 @@
 				gen 	inf      = v0301
 
 				gen 	ninf_mom = v0407 																																			//número de ordem da mãe - vai ser últil para sabermos a escolaridade da mãe
+				gen 	ninf_mom = v0407 																																			//número de ordem da mãe - vai ser últil para sabermos a escolaridade da mãe
 				
 				sort 	hh_id inf uf
 
@@ -1263,7 +1264,7 @@
 				label var unemployed 								"Unemployed"
 				label var informal 									"Informal employee"
 				label var formal 									"Formal employee"
-				label var schoolatt 								"School attendance"
+				label var schoolatt 								"Attending school"
 				label var edu_level_enrolled	 					"Level student is enrolled"
 				label var yrs_school 								"Years of schooling"
 				label var edu_att 									"Educational attainment"
@@ -1290,12 +1291,12 @@
 				label var pwork_informal						 	"Informal paid work"
 				label var work_formal 								"Formal work"
 				label var work_informal 							"Informal work"
-				label var pwork_sch 								"Paid work and studying"
-				label var uwork_sch 								"Unpaid work and studying"
+				label var pwork_sch 								"Paid work and attending school"
+				label var uwork_sch 								"Unpaid work and attending school"
 				label var pwork_only 								"Only paid work"
 				label var uwork_only 								"Only unpaid work"
-				label var study_only 								"Only studying"
-				label var nemnem 									"Neither working or studying"
+				label var study_only 								"Only attending school"
+				label var nemnem 									"Neither working or attending school"
 				label var mom_working 								"Mother's working"
 				label var hh_head_edu								"Years of schooling of the head of the household"
 				label var hh_head_age 								"Age of the head of the household "

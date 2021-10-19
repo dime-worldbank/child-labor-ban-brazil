@@ -179,7 +179,7 @@
 		gen 	lower_sec_enrollment = 0 						if schoolatt == 1 & inlist(edu_level_enrolled, 6, 7, 8, 9)
 		replace lower_sec_enrollment = 1 						if schoolatt == 1 & missing(lower_sec_enrollment)
 		
-		label var lower_sec_enrollment							"Among those studying, share enrolled 1st to 9th grade"
+		label var lower_sec_enrollment							"Among those attending school, share enrolled 1st to 9th grade"
 		label var pwork_formal									"Among those paid, share in the formal sector"
 		label var eap											"Economically active children"
 		label var unemployed									"Share unemployed among the economically active"

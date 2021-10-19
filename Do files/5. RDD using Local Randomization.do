@@ -97,9 +97,9 @@
 
 			**
 			**
-			label 		define dep_var 1 "Economically Active Children"  2 "Paid work"  	  	3  "Unpaid work" 					///
-									   4 "Formal paid work"  			 5 "Informal paid work" 6 "School attendance" 				///
-									   7 "Only paid work" 				 8 "Studying only" 	  	9 "Neither working or studying" 								   
+			label 		define dep_var 1 "Economically Active Children"  2 "Paid work"  	  				3 "Unpaid work" 						///
+									   4 "Formal paid work"  			 5 "Informal paid work" 			6 "Attending school" 					///
+									   7 "Only paid work" 				 8 "Only attending school " 	  	9 "Neither working or attending school" 								   
 			label		val    dep_var dep_var
 		
 			**
@@ -346,7 +346,7 @@
 			*Short term outcomes
 			**
 			*----------------------------------------------------------------------------------------------------------------------------*
-			foreach sample in 1 2 3 {
+			foreach sample in 1 2 3 4 5 {
 			
 				foreach year in 1998 1999 2001 2002 2003 2004 2005 2006  {												//pnad waves 
 					
@@ -357,6 +357,14 @@
 						if `sample' == 1 use "$final/child-labor-ban-brazil.dta" if							  year == `year', clear		//all sample
 						if `sample' == 2 use "$final/child-labor-ban-brazil.dta" if urban == 1 & male == 1	& year == `year', clear		//boys, urban
 						if `sample' == 3 use "$final/child-labor-ban-brazil.dta" if urban == 1 & male == 0	& year == `year', clear		//girls, urban
+						if `sample' == 4 use "$final/child-labor-ban-brazil.dta" if urban == 1 & male == 1	& year == `year', clear		//boys, urban
+						if `sample' == 5 use "$final/child-labor-ban-brazil.dta" if urban == 1 & male == 1	& year == `year', clear		//boys, urban
+						
+							**
+							*Sample
+							if `sample' == 4 keep if inlist(mom_edu_att2,1,2)
+							if `sample' == 5 keep if inlist(mom_edu_att2,3,4)
+						
 						
 							local variable = 1
 							
@@ -381,7 +389,7 @@
 			*Long term outcomes
 			**	
 			*----------------------------------------------------------------------------------------------------------------------------*
-			foreach sample in 1 2 3 {
+			foreach sample in 1 2 3 4 5 {
 			
 				foreach year in 2007 2008 2009 2011 2012 2013 2014      {												//pnad waves
 					
@@ -393,7 +401,14 @@
 							if `sample' == 2 use "$final/child-labor-ban-brazil.dta" if urban == 1 & male == 1	& year == `year', clear		//boys, urban
 							if `sample' == 3 use "$final/child-labor-ban-brazil.dta" if urban == 1 & male == 0	& year == `year', clear		//girls, urban
 
-								**
+							if `sample' == 4 use "$final/child-labor-ban-brazil.dta" if urban == 1 & male == 1	& year == `year', clear		//boys, urban
+							if `sample' == 5 use "$final/child-labor-ban-brazil.dta" if urban == 1 & male == 1	& year == `year', clear		//boys, urban
+						
+							**
+							*Sample
+							if `sample' == 4 keep if inlist(mom_edu_att2,1,2)
+							if `sample' == 5 keep if inlist(mom_edu_att2,3,4)
+														**
 								**
 								local variable = 1
 								foreach var of varlist $longterm_outcomes   {												//long term outcomes					
