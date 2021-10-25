@@ -125,7 +125,7 @@
 		{
 			**Educational attainment of the affected cohorts by 2003
 			**				
-				use "$final/child-labor-ban-brazil.dta" if year == 2003 & zw >= - 12 & zw < 12, clear	
+				use "$final/child-labor-ban-brazil.dta" if year == 2004 & zw >= - 12 & zw < 12, clear	
 				bys D: tab edu_att
 				bys D: tab lowersec_degree
 				bys D: tab highschool_degree
