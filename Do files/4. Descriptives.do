@@ -115,7 +115,7 @@
 				tab edu_level_enrolled 		if schoolatt == 1	[w = weight]
 				
 				tab schoolatt  				if working   == 1 	[w = weight]
-				tab edu_att										[w = weight]					
+				tab edu_att										[w = weight]						
 				
 		}
 		
@@ -123,13 +123,40 @@
 		//6. Results
 		//
 		{
+			**
 			**Educational attainment of the affected cohorts by 2003
 			**				
-				use "$final/child-labor-ban-brazil.dta" if year == 2004 & zw >= - 12 & zw < 12, clear	
-				bys D: tab edu_att
+				use "$final/child-labor-ban-brazil.dta" if zw >= - 12 & zw < 12 & male == 1 & urban == 1, clear
+				
+				bys D: tab edu_level_enrolled 	  [w = weight] if year == 2003 
+				bys D: tab edu_att 				  [w = weight] if year == 2004 
+				bys D: tab lowersec_degree		  [w = weight] if year == 2004
+				bys D: tab highschool_degree	  [w = weight] if year == 2004
+				
+				bys year: su goes_public_school if schoolatt == 1 & inrange(edu_level_enrolled, 1,5) [w = weight]
+				
+								
+			**	
+			**Educational level of those affected and unaffected within time
+			**				
+				use "$final/child-labor-ban-brazil.dta" if zw >= - 12 & zw < 12 & male == 1 & urban == 1 & year < 2005, clear
+				
+				bys year: su schoolatt			  [w = weight] 	if D == 1
+				bys year: tab edu_level_enrolled  [w = weight]	if D == 1				
+				bys year: tab edu_att 			  [w = weight] 	if D == 1 & schoolatt == 0	// a maior parte dos que estavam fora da escola tinha EF incompleto
+				
+				bys year: su schoolatt			  [w = weight]  if D == 0
+				bys year: tab edu_level_enrolled  [w = weight]  if D == 0				
+				bys year: tab edu_att 			  [w = weight]  if D == 0 & schoolatt == 0	// a maior parte dos que estavam fora da escola tinha EF incompleto
+
+				
+				
+				use "$final/child-labor-ban-brazil.dta" if zw >= - 12 & zw < 12, clear
+								
+				bys D: tab edu_level_enrolled 		if year == 2003, mis
+				bys D: tab edu_att 					if year == 2003
 				bys D: tab lowersec_degree
 				bys D: tab highschool_degree
-		
 		}
 	
 	
@@ -142,10 +169,10 @@
 	{
 		estimates clear
 		use "$final/child-labor-ban-brazil.dta" if year == 1999 & (zw >= -12 & zw < 12 ), clear			//12 week bandwidth in 1999
-		iebaltab  mom_yrs_school hh_head_edu mom_age hh_size adults_income [pw = weight], format(%12.2fc) grpvar(D) savetex("$tables/TableA1.tex") rowvarlabels 			///
+		iebaltab  mom_yrs_school hh_head_edu mom_age hh_size adults_income [pw = weight],   pttest  format(%12.2fc) grpvar(D) savetex("$tables/TableA1.tex") rowvarlabels 			///
 		tblnote("Source: PNAD, 1999.") notecombine texdocument  texcaption("Balance test for affected and unaffected cohorts, 12-week bandwidth (1999)") replace
 	}	
-		
+			
 	**
 	*____________________________________________________________________________________________________________________________________*
 	**
@@ -229,7 +256,7 @@
 	**
 	*____________________________________________________________________________________________________________________________________*
 	**
-	*Table A7
+	*Table A6
 	*____________________________________________________________________________________________________________________________________*
 	**
 	

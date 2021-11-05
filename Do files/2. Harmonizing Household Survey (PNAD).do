@@ -1296,7 +1296,7 @@
 				label var pwork_only 								"Only paid work"
 				label var uwork_only 								"Only unpaid work"
 				label var study_only 								"Only attending school"
-				label var nemnem 									"Neither working or attending school"
+				label var nemnem 									"Neither working nor attending school"
 				label var mom_working 								"Mother's working"
 				label var hh_head_edu								"Years of schooling of the head of the household"
 				label var hh_head_age 								"Age of the head of the household "
