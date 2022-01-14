@@ -44,7 +44,7 @@
 			rdwinselect zw2  mom_yrs_school hh_head_edu hh_head_age hh_size ,   seed(2198)	nwin(50) plot						// obsmin() is the minimum number of observations below and above the cutoff. 
 			graph export "$figures/FigureA6.pdf", as(pdf) replace
 		
-		/*
+		
 		*________________________________________________________________________________________________________________________________*
 		**
 		**
@@ -91,8 +91,8 @@
 							matrix results = results \ (`year',`dep_var', `sample', r(obs_stat), r(randpval), r(int_lb), r(int_ub), `mean',0, `window')
 							
 							//We decided in the meeting not to use the polinomio of order 1
-							*rdrandinf `variable' zw`example',  wl(-`window') wr(`window' - 1) interfci(0.05) seed(493734) p(1)
-							*matrix results = results \ (`year',`dep_var', `sample', r(obs_stat), r(randpval), r(int_lb), r(int_ub), `mean',1, `window')
+							rdrandinf `variable' zw1,  wl(`wl') wr(`wr')  interfci(0.05) seed(356869) p(1)
+							matrix results = results \ (`year',`dep_var', `sample', r(obs_stat), r(randpval), r(int_lb), r(int_ub), `mean',1, `window')
 						}
 					}
 				}
@@ -344,7 +344,7 @@
 			**Table A13
 			keep 		year *1* *2*
 			export		excel using "$tables/TableA13.xlsx",  replace
-			*/
+			
 			
 		*________________________________________________________________________________________________________________________________*
 		**

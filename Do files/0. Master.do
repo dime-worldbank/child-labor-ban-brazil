@@ -212,7 +212,7 @@
 			   ssc install `command'
 		   }
 	   }
-		/*
+		
 		**Local Randomization Inference Package
 		net install rdlocrand, from(https://raw.githubusercontent.com/rdpackages/rdlocrand/master/stata) replace
 		
@@ -229,11 +229,14 @@
 		**DataZoom Package
 		net from http://www.econ.puc-rio.br/datazoom/portugues  
 		net install datazoom_pnad, replace
-		*/
+		
+		
 		**Stata version
 		*ieboilstart, version(16)          	
 		*`r(version)' 
 		version 16
+		
+	
 		**Figure settings
 		graph set window fontface "Times"
 		set scheme s1mono
