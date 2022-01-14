@@ -355,13 +355,14 @@
 			**
 			if `year' <= 2001 {
 			
+				if 	`year' == 1997 replace v0101 = 1997
 				if 	`year' == 1998 replace v0101 = 1998
 				if  `year' == 1999 replace v0101 = 1999
 				
 				
 				*Household Id
 				*------------------------------------------------------------------------------------------------------------------------*	
-				drop 	id_dom																																					//apenas excluí porque o primeiro comando abaixo irá fazer isso e não tenho ctza se a puc considera família = domicílio ou que um domicílio pode ser formado por mais de uma família. 
+				if `year' >  1997 drop 	id_dom																																					//apenas excluí porque o primeiro comando abaixo irá fazer isso e não tenho ctza se a puc considera família = domicílio ou que um domicílio pode ser formado por mais de uma família. 
 				
 				egen 	hh_id   = group(uf v0101 v0102 v0103)																													//identificação do domicílio
 
@@ -956,6 +957,11 @@
 				
 				drop 	temp
 				
+				gen 	temp = yrs_school			if spouse == 1 & male == 0
+				
+				bys 	hh_id year: egen hh_spouse_edu = max(temp)
+				
+				drop 	temp				
 				
 				*------------------------------------------------------------------------------------------------------------------------*
 				replace wage 				= . 	if wage 			== 0
@@ -968,6 +974,7 @@
 			*----------------------------------------------------------------------------------------------------------------------------*
 			end
 
+			
 		**
 		**
 		*Pooled data
@@ -1049,7 +1056,7 @@
 
 																		
 				*Labels					
-				*------------------------------------------------------------------------------------------------------------------------*
+				*------------------------------------------------------------------------------------------------------------------------*				
 				label define type_work 					1 "Empregado"   					2 "Trabalhador por conta própria"    3 "Empregador"    4 "Trabalhador não remunerado" 
 			
 				label define edu_att    				1 "Sem instrução"  		 			2 "EF incompleto" 					 3 "EF completo"   4 "EM incompleto" 			5 "EM completo"   6 "Ensino Superior incompleto"  7 "Ensino Superior completo"  
@@ -1174,20 +1181,15 @@
 						
 				
 				label define region						1 "Norte" 2 "Nordeste" 3 "Sudeste" 4 "Sul" 5 "Centro-Oeste" 
-
 				
-										
 				label define hours_school				 2 "Até 4 horas"  4 "Entre 4 e 6 horas" 6 "Mais de 6 horas"
 			
 				label define reason_not_attend_school	 0 "Outro motivo" 1 "Precisa trabalhar ou procurar trabalho" 
 				
 				label define reason_not_go_school 		 0 "Outro motivo" 1 "Precisa trabalhar ou procurar trabalho" 
-				
-				
-				
-				
 
-				foreach x in hours_school reason_not_attend_school reason_not_go_school  reason_not_like_work reason_work activity90s occupation90s work_household_consumption place_work type_work_agric type_work_noagric region goes_public_school   female college_degree male informal kid6 kid13 kid17 kid17f kid17m civil_servant_federal civil_servant_state civil_servant_municipal highschool_degree out_labor hh_head spouse formal female coduf type_work edu_att edu_att2 mom_edu_att2 two_parent hh_member  schoolatt urban metro area color went_school female_with_children labor_card social_security civil_servant employed unemployed eap edu_level_enrolled {
+
+				foreach x in hours_school region reason_not_attend_school reason_not_go_school  reason_not_like_work reason_work activity90s occupation90s work_household_consumption place_work type_work_agric type_work_noagric region goes_public_school   female college_degree male informal kid6 kid13 kid17 kid17f kid17m civil_servant_federal civil_servant_state civil_servant_municipal highschool_degree out_labor hh_head spouse formal female coduf type_work edu_att edu_att2 mom_edu_att2 two_parent hh_member  schoolatt urban metro area color went_school female_with_children labor_card social_security civil_servant employed unemployed eap edu_level_enrolled {
 
 					label val `x' `x'
 
@@ -1338,7 +1340,13 @@
 				label var reason_not_go_school						"Couldnt go to school because of work, available 2001"
 				label var more4hours_school			 				"Children spends more than 4 hours in school, available in 2001"
 				label var more6hours_school 						"Children spends more than 6 hours in school, available in 2001"
-							
+						
+				label var region1									"North"
+				label var region2									"Northeast"
+				label var region3									"Southeast"
+				label var region4									"Midwest"
+				label var region5									"South"
+				
 				*------------------------------------------------------------------------------------------------------------------------*
 				sort 	year hh_id
 				compress

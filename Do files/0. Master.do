@@ -198,15 +198,15 @@
 		After setting up the folder structure and saving Household Survey Microdata (in .txt files), 
 		you can run the codes and reproduce all the results. 
 
-		
+	
 	*--------------------------------------------------------------------------------------------------------------------------------*
 	**
 	*Installing Packages and Standardize Settings
 	**
 	*--------------------------------------------------------------------------------------------------------------------------------*
 	   Installing packages needed to run all dofiles called by this master dofile. */
-		*local user_commands ietoolkit labutil   
-	   foreach command of local user_commands  {
+	   local user_commands ietoolkit labutil
+	   foreach command of local user_commands   {
 		   cap which `command'
 		   if _rc == 111 {
 			   ssc install `command'
@@ -220,7 +220,7 @@
 		net install rddensity,  from(https://raw.githubusercontent.com/rdpackages/rddensity/master/stata) replace
 		net install lpdensity,  from(https://raw.githubusercontent.com/nppackages/lpdensity/master/stata) replace
 		
-		**MC Crary test
+		*MC Crary test
 		sysdir  //locations
 		copy https://eml.berkeley.edu/~jmccrary/DCdensity/DCdensity.ado  `"`c(sysdir_plus)'/DCdensity.ado"', public replace
 		discard // you have to discard to see installed adofiles
@@ -229,12 +229,11 @@
 		**DataZoom Package
 		net from http://www.econ.puc-rio.br/datazoom/portugues  
 		net install datazoom_pnad, replace
-		*/ 
-		
+		*/
 		**Stata version
-		ieboilstart, version(15)          	
-		`r(version)' 
-		
+		*ieboilstart, version(16)          	
+		*`r(version)' 
+		version 16
 		**Figure settings
 		graph set window fontface "Times"
 		set scheme s1mono
@@ -244,6 +243,8 @@
         set level   95
 		set seed    108474
 		
+		clear all
+		mata: mata clear 
 		
 	*--------------------------------------------------------------------------------------------------------------------------------*
 	**
@@ -256,37 +257,33 @@
 	   * Next User               2    
 
 	   *Set this value to the user currently using this file
-	   global user  1			
-
+	   global user  1
+	   
 	   **
 	   * Root folder globals
 	   * -------------------------*
 	   if $user == 1 {
-		   global dofiles       "/Users/vivianamorim/Documents/GitHub/child-labor-ban-brazil/Do files"
-		   global projectfolder	"/Users/vivianamorim/OneDrive/world-bank/Labor/child-labor-ban-brazil"		//Do not use folder's names with spaces, for example "World Bank" 
-	   }
-
-	   if $user == 2 {
-		   global projectfolder ""  //project file path in your computer
+		   global projectfolder  "C:\Users\wb495845\OneDrive - WBG\III. Labor\child-labor-ban-brazil" 					//project file path in your computer
+		   global dofiles        "C:\Users\wb495845\OneDrive - WBG\Documents\GitHub\child-labor-ban-brazil\Do files"
 	   }
 	   
 	   **
 	   * Project folder globals
 	   * -------------------------*
-	   global datawork         	"$projectfolder/DataWork"
-	   global datasets         	"$datawork/Datasets"
-	   global raw	           	"$datasets/Raw"
-	   global inter				"$datasets/Intermediate"
-	   global final            	"$datasets/Final" 
-	   global tables			"$datawork/Output/Tables"
-	   global figures			"$datawork/Output/Figures"
+	   global datawork         	"$projectfolder\DataWork"
+	   global datasets         	"$datawork\Datasets"
+	   global raw	           	"$datasets\Raw"
+	   global inter				"$datasets\Intermediate"
+	   global final            	"$datasets\Final" 
+	   global tables			"$datawork\Output\Tables"
+	   global figures			"$datawork\Output\Figures"
 	   
 	*--------------------------------------------------------------------------------------------------------------------------------*
 	**
 	*Setting up Globals
 	**
 	*--------------------------------------------------------------------------------------------------------------------------------*
-		do "$dofiles/Globals.do"
+		do "$dofiles\Globals.do"
 		  
 	/*
 	*--------------------------------------------------------------------------------------------------------------------------------*
@@ -294,8 +291,8 @@
 	*Run the do-files
 	**
 	*--------------------------------------------------------------------------------------------------------------------------------*
-		do "$dofiles/1. Importing Household Survey (PNAD).do"
-		do "$dofiles/2. Harmonizing Household Survey (PNAD).do"
-		do "$dofiles/3. Setting up Paper Data.do"
-		do "$dofiles/4. Descriptives.do"
+		do "$dofiles\1. Importing Household Survey (PNAD).do"
+		do "$dofiles\2. Harmonizing Household Survey (PNAD).do"
+		do "$dofiles\3. Setting up Paper Data.do"
+		do "$dofiles\4. Descriptives.do"
 	
