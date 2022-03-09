@@ -82,7 +82,7 @@
 	**
 	*Children in our sample	
 	*--------------------------------------------------------------------------------------------------------------------------------*
-		gen  	member_household_self_consu = 1 if inlist(type_work_noagric, 5, 7) |  inlist(type_work_agric, 4, 6)
+		gen  	member_household_self_consu  = 1 if inlist(type_work_noagric, 5, 7) |  inlist(type_work_agric, 4, 6)
 		gen  	others_unpaid			 	 = 1 if unpaid_work == 1 & member_household_self_consu != 1 & working == 1
 		gen  	paid_work_girls_urban		 = 1 if unpaid_work == 0 & female == 1 & urban == 1 & working == 1
 		gen  	paid_work_girls_rural		 = 1 if unpaid_work == 0 & female == 1 & urban == 0 & working == 1
@@ -114,9 +114,13 @@
 		
 		**
 		**
-		*Children in unpaid activities for their own household and children working as paid housekeepers
+		*% of unpaid workers in activities for their own household
 		gen	 	working_for_household = 1 if member_household_self_consu == 1 & unpaid_work == 1
-		replace working_for_household = 0 if missing(working_for_household)   & unpaid_work == 1 
+		replace working_for_household = 0 if missing(working_for_household)   & unpaid_work == 1 //among those unpaid, percentage that worked for their household. 
+		
+		**
+		** 
+		*% of paid workers as housekeepers
 		gen 	housekeeper 		  = 1 if type_work_noagric == 2		 	  & pwork   == 1
 		replace housekeeper 		  = 0 if missing(housekeeper)  		      & pwork   == 1
 
@@ -185,7 +189,7 @@
 			gen 		gap`sample'			= dateofbirth-threshold`sample'
 			
 			foreach bandwidth in 3 4 5 6 7 8 9 12 {
-			gen 		cohort`sample'_`bandwidth' 	= (abs(gap`sample') <= `dist`bandwidth'')		//precisa ser < (nao <=) porque o 0 entra como T. se colocarmos <= teremos mais observacoes do lado direito do cutoff do que do lado esquerdo
+			gen 		cohort`sample'_`bandwidth' 	= (abs(gap`sample') <= `dist`bandwidth'')		
 			}
 			
 			*Cluster for standard errors
@@ -514,7 +518,7 @@
 	**
 	*Reducing size
 	*--------------------------------------------------------------------------------------------------------------------------------*
-		keep 	if (zw1 >= -52 &  zw1 <= 52) | (zw2 >= -52 & zw2 <= 52) | (zw3 >= -52 & zw3 <= 52)
+		keep 	if ((zw1 >= -52 &  zw1 <= 52) | (zw2 >= -52 & zw2 <= 52) | (zw3 >= -52 & zw3 <= 52)) | (year == 1998 & age == 14) | (year == 1999 & age == 14) 
 
 	save 	"$final/child-labor-ban-brazil.dta", replace
 
@@ -596,9 +600,7 @@
 					save	`bargain'
 				restore
 				
-				merge 1:1 id_dom id_pes using `bargain', force 
-				
-				keep (3)
+				merge 1:1 id_dom id_pes using `bargain', force keep (3)
 				
 				**
 				**We can see that all variables match:

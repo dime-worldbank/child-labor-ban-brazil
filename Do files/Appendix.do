@@ -96,25 +96,28 @@
 		**Table 1, online appendix
 		*----------------------------------------------------------------------------------------------------------------------------*		
 		estimates clear	
+			
 			foreach table in 1 {												//1: Control variables used by Bargain/Boutin but using our harmonization for skin color, education, age, household income. 
 																				//2: Control variables used in Bargain/Boutin (their harmonization).
 																				//3: Control variable: mother's years of schooling
 																				//4: Lasso selected controls
-				foreach variable in employ_bargain pwork {						//% of children's working and % of children in paid jobs
-						
-				if `table' == 1 							local controls $bargain_controls_our_def
-				if `table' == 2 							local controls $bargain_controls
-				if `table' == 3 							local controls mom_yrs_school
-				if `table' == 4 							local controls i.region
-				*if `table' == 4 & "`variable'" == "employ" 	local controls $lasso_employ
-				*if `table' == 4 & "`variable'" == "pwork"  	local controls $lasso_pwork
-						
-					foreach bandwidth in 3 6 9 {								//bandwidths
-						
-						if "`variable'" == "employ_bargain" & `bandwidth'  == 3  	 local title = "Child Labor, 3-month bandwidth"
-						if "`variable'" == "employ_bargain" & `bandwidth'  == 6  	 local title = "Child Labor, 6-month bandwidth"
-						if "`variable'" == "employ_bargain" & `bandwidth'  == 9  	 local title = "Child Labor, 9-month bandwidth"
-						if "`variable'" == "pwork" 			& `bandwidth'  == 3  	 local title = "Paid work, 3-month bandwidth"	
+				//Controls															
+				if `table' == 1 								local controls $bargain_controls_our_def
+				if `table' == 2 								local controls $bargain_controls
+				if `table' == 3 								local controls mom_yrs_school
+				if `table' == 4 								local controls i.region
+			   *if `table' == 4 & "`variable'" == "employ" 		local controls $lasso_employ
+			   *if `table' == 4 & "`variable'" == "pwork"  		local controls $lasso_pwork
+			   
+			   
+				foreach bandwidth in 6 9 {											
+				
+					foreach variable in employ_bargain eap pwork {						//% of children's working and % of children in paid jobs
+					
+						if "`variable'" == "employ_bargain" & `bandwidth'  == 6  	 local title = "Economically Active Children, Child Labor definition according to Bargain and Boutin, 6-month bandwidth"
+						if "`variable'" == "employ_bargain" & `bandwidth'  == 9  	 local title = "Economically Active Children, Child Labor definition according to Bargain and Boutin, 9-month bandwidth"
+						if "`variable'" == "eap" 			& `bandwidth'  == 6  	 local title = "Economically Active Children, IBGE definition, 6-month bandwidth"
+						if "`variable'" == "eap"			& `bandwidth'  == 9  	 local title = "Economically Active Children, IBGE definition, 9-month bandwidth"
 						if "`variable'" == "pwork" 			& `bandwidth'  == 6  	 local title = "Paid work, 6-month bandwidth"	
 						if "`variable'" == "pwork" 			& `bandwidth'  == 9  	 local title = "Paid work, 9-month bandwidth"	
 							
@@ -138,7 +141,7 @@
 						}
 						
 						
-						if "`variable'" == "employ_bargain" & `bandwidth' == 3 {
+						if "`variable'" == "employ_bargain" & `bandwidth' == 6 {
 						estout * using "$tables/online_appendix_table`table'.xls",  keep(D*)  title("`title'") label mgroups("1999" "Pooling 1999 and 2001" "1999" "Pooling 1999 and 2001", pattern(1 0 0 1 0 0 1 0 0 1 0 0)) cells(b(star fmt(2)) se(par(`"="("' `")""') fmt(2))) starlevels(* 0.10 ** 0.05 *** 0.01) stats(N, labels("Obs") fmt(%9.0g %9.3f %9.3f)) replace
 						}
 						else{

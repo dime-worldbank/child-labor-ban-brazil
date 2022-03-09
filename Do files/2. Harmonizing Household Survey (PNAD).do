@@ -123,13 +123,13 @@
 
 				gen     edu_att2   = 1        					if edu_att   == 1																									//sem instrução 
 
-				replace edu_att2   = 2 							if edu_att == 2 | edu_att == 3																						//primary
+				replace edu_att2   = 2 							if edu_att   == 2 | edu_att == 3																						//primary
 
-				replace edu_att2   = 3 							if edu_att == 4 | edu_att == 5																						//upper secondary
+				replace edu_att2   = 3 							if edu_att   == 4 | edu_att == 5																						//upper secondary
 
-				replace edu_att2   = 4 							if edu_att == 6 | edu_att == 7																						//tertiary
+				replace edu_att2   = 4 							if edu_att   == 6 | edu_att == 7																						//tertiary
 
-				replace v4803 	   = . 							if v4803 == 17																										//anos de escolaridade
+				replace v4803 	   = . 							if v4803     == 17																										//anos de escolaridade
 
 				replace v4803 	   = v4803 - 1
 			
@@ -1260,7 +1260,7 @@
 				label var urban 									"Urban"
 				label var metro 									"Metropolitan"
 				label var area 										"1: Urban, 2: Rural and 3: Metropolitan"
-				label var eap 										"Economically active population"
+				label var eap 										"Economically active"
 				label var out_labor 								"Out of the labor force"
 				label var employed	 								"Employed"
 				label var unemployed 								"Unemployed"

@@ -12,6 +12,67 @@
 	*Descriptive Statistics cited in the Paper
 	*____________________________________________________________________________________________________________________________________*
 	**
+		
+		//-------------->>
+		//1. Intro
+		//
+		{		
+		use "$final/child-labor-ban-brazil.dta" if year == 1998 & age == 14, clear	
+
+			su working [w = weight]
+			su eap	   [w = weight]
+
+				
+		use "$final/child-labor-ban-brazil.dta" if year == 1998 & age == 14, clear	
+
+			su working [w = weight]
+			su eap	   [w = weight]
+
+				
+		use "$final/child-labor-ban-brazil.dta" if year == 1998 & age == 14 & urban  == 0 & working == 1, clear	
+		
+			tab uwork  							    [w = weight], mis
+			tab working_for_household if uwork == 1 [w = weight], mis
+		
+		
+		use "$final/child-labor-ban-brazil.dta" if year == 1998 & age == 14 & urban  == 1 & working == 1 & male == 0, clear	
+			tab pwork  							    [w = weight], mis
+			tab housekeeper if pwork == 1 			[w = weight], mis
+		
+		
+		use "$final/child-labor-ban-brazil.dta" if year == 1998 & age == 14 & urban  == 1 & male == 1, clear	
+			tab eap 							[w = weight], mis
+			
+			
+		use "$final/child-labor-ban-brazil.dta" if year == 1999 & urban  == 1 & male == 1 & cohort1_4 == 1, clear	
+			su pwork [w = weight]
+		}
+		
+		
+		
+		
+		//-------------->>
+		//2. Related Literature
+		//
+		use "$final/child-labor-ban-brazil.dta" if year == 1999 & age == 14 & uwork == 1, clear	
+			tab working_for_household  [w = weight], mis
+			tab type_work_noagric 	   [w = weight], mis
+			tab type_work_agric  	   [w = weight], mis
+			
+			tab type_work_noagric 	   [w = weight] 
+			tab type_work_agric  	   [w = weight]
+			
+			keep if working_for_household == 1
+			gen id1 = 1 if inlist(type_work_noagric, 5, 7) 
+			gen id2 = 1 if inlist(type_work_agric, 4, 6)
+			
+			tab id1  [w = weight] 
+			
+			tab id2  [w = weight] 
+			
+			collapse (sum) id1 id2 [w = weight] 
+
+		
 	
 		//-------------->>
 		//3. Institutional Setting and the Intervention
@@ -21,23 +82,32 @@
 			*The share of unaffected and affected 14-year-olds in formal sector in 1999
 			**
 				use "$final/child-labor-ban-brazil.dta" if year == 1999 & xw1 >= - 6 & xw1 < 6, clear		//6-month bandwidth
-				
-					tab working informal 	if D1 == 0 						[w = weight]	// 1/30  in formal sector
-					tab working informal 	if D1 == 1 						[w = weight]	// 1/100 in formal sector
+					tab working informal 	if D1 == 0 						[w = weight]					// 1/30  in formal sector
+					tab working informal 	if D1 == 1 						[w = weight]					// 1/100 in formal sector
 					**Thus, among those working, the unaffected 14-year-olds were 3 times more likely to be in the formal sector than the affected ones. 
 			
 			**
 			*% of 14-year-olds in the formal market
 			**
 				use "$final/child-labor-ban-brazil.dta" if year == 1999 & age == 14, clear	
-					su formal if working == 1 [w = weight], detail							//1.5% of 14-year-olds working were in the formal sector
+					su formal if working == 1 [w = weight], detail											//1.5% of 14-year-olds working were in the formal sector
 				
 			**
 			*% of 14-year-olds that already finished lower secondary education (9th grade)
 			**
 				use "$final/child-labor-ban-brazil.dta" if year == 1999 & age == 14, clear	
-					su lowersec_degree, detail												//Only 3.3% of 14-year-olds in 1999 had finished lower secondary education					
+					su lowersec_degree, detail																//Only 3.3% of 14-year-olds in 1999 had finished lower secondary education					
 		}	
+			
+			
+			
+		//-------------->>
+		//4. Empirical
+		//
+		use 	"$final/child-labor-ban-brazil.dta" if year == 1999 & zw1 >= -10 & zw1 < 10, clear	
+			sort dateofbirth
+			br   dateofbirth
+
 			
 		//-------------->>
 		//5. Data
@@ -46,24 +116,27 @@
 			**
 			*Average number of individuals in PNAD
 			**
-				use "$inter/Pooled_PNAD.dta", clear
-				gen id = 1
-				collapse (sum) id, by(year)
-				collapse (mean)id						//380.000
+				use	 	"$inter/Pooled_PNAD.dta", clear
+				gen 			  id = 1
+				collapse 	(sum) id, by(year)
+				collapse 	(mean)id						//380.000
 				
 			**
 			*Average number of households in PNAD
 			**
-				use "$inter/Pooled_PNAD.dta", clear
+				use 	"$inter/Pooled_PNAD.dta", clear
 				duplicates drop hh_id year, force //
-				gen 	id = 1
-				collapse (sum) id, by(year)
-				collapse (mean)id						//110.0003*****3*
+				gen 			  id = 1
+				collapse 	(sum) id, by(year)
+				collapse 	(mean)id						//110.0003*****3*
 				
 			**
-			*Part 12-bandwidth cohort that was still studying by the age of 19 
+			*% of the 10-week cohort that was still studying by the age of 19 
 			**
-				use "$final/child-labor-ban-brazil.dta" if year == 2004 & zw1 >= - 12 & zw1 < 12 & schoolatt == 1, clear	
+				use "$final/child-labor-ban-brazil.dta" if year == 2004 & zw1 >= - 10 & zw1 < 10, clear	
+				tab 		schoolatt 					[w = weight]
+				
+				use "$final/child-labor-ban-brazil.dta" if year == 2004 & zw1 >= - 10 & zw1 < 10 & schoolatt == 1, clear	
 				tab 		edu_level_enrolled 			[w = weight]	
 				bys D1: tab edu_level_enrolled 			[w = weight]									//the majority of them still in primary and secondary education, suggesting delays
 			
@@ -109,6 +182,13 @@
 				
 				tab schoolatt  				if working   == 1 	[w = weight]							//82%						
 				tab edu_att										[w = weight]						
+			
+			**
+			*14-year-olds in unpaid activities and share of those working that also attend school
+			**				
+				use "$final/child-labor-ban-brazil.dta" if year == 1998 & age == 14 & working == 1, clear	
+					tab uwork [w = weight]
+					tab schoolatt
 				
 		}
 		
@@ -116,22 +196,42 @@
 		//6. Results
 		//
 		{
+			
+			use 	"$final/child-labor-ban-brazil.dta" 	    	if year == 1999 & cohort1_4 == 1 & D1== 0 & male == 1 & urban == 1, clear			//almost 50% of those working for pay were boys in urban areas. 
+			su pwork [w=weight]
+			
+			
+			**
+			**Share of 14-year-olds in paid work in 1999 -> desaggregating by urban boys, urban girls, rural boys and rural girls
+			**				
+				use 	"$final/child-labor-ban-brazil.dta" 	    	if year == 1999 & age == 14, clear			//almost 50% of those working for pay were boys in urban areas. 
+				keep 	if pwork == 1
+				gen 	id = 1
+				
+				collapse (sum) id [w = weight], by(male urban)
+				egen 	t = sum(id)
+				gen 	p = id/t
+				
 			**
 			**Educational attainment of the affected cohorts by 2003
 			**				
-				use "$final/child-labor-ban-brazil.dta" 	    if zw1 >= - 12 & zw1 < 12 & male == 1 & urban == 1, clear
+				use "$final/child-labor-ban-brazil.dta" 	    if zw1 >= - 10 & zw1 < 10 & male == 1 & urban == 1, clear
 				
 				bys D1: tab edu_level_enrolled 	  [w = weight]  if year == 2003 
 				bys D1: tab edu_att 			  [w = weight]  if year == 2004 
 				bys D1: tab lowersec_degree		  [w = weight]  if year == 2004
 				bys D1: tab highschool_degree	  [w = weight]  if year == 2004
 				bys year: su goes_public_school 			    if schoolatt == 1 & inrange(edu_level_enrolled, 1,5) [w = weight]
+			
+				su working_for_household if uwork == 1 &   year == 1999 [w = weight]  
+				
+				
 				
 								
 			**	
 			**Educational level of those affected and unaffected within time
 			**				
-				use "$final/child-labor-ban-brazil.dta" 		if zw1 >= - 12 & zw1 < 12 & male == 1 & urban == 1 & year < 2005, clear
+				use "$final/child-labor-ban-brazil.dta" 		if zw1 >= - 10 & zw1 < 10 & male == 1 & urban == 1 & year < 2005, clear
 				
 				bys year: su schoolatt			  [w = weight] 	if D1 == 1
 				bys year: tab edu_level_enrolled  [w = weight]	if D1 == 1				
@@ -146,6 +246,45 @@
 				bys D1: tab edu_att 							if year == 2003
 				bys D1: tab lowersec_degree
 				bys D1: tab highschool_degree
+				
+				
+			**	
+			**% of 14 year old urban boys in unpaid activities in self consumption or working for the household they lived in
+			**				
+				use "$final/child-labor-ban-brazil.dta" 	    if male == 1 & urban == 1 & year == 1999 & uwork == 1 & age == 14, clear
+
+				tab member_household_self_consu [w = weight], mis
+			
+			
+			**	
+			**Correl between household income and mother education
+			**				
+				use "$final/child-labor-ban-brazil.dta" if age == 14 & year == 1999, clear
+				correl mom_yrs_school per_capita_inc
+				
+				
+			**	
+			**Children working -> by socioeconomic background
+			**			
+				use "$final/child-labor-ban-brazil.dta" if male == 1 & urban == 1 & year == 1999 & pwork == 1 & age == 14, clear
+				
+				tab mom_edu_att2 [w = weight], mis
+			
+			
+			**	
+			**Wage by level of education and difference in the formal market
+			**		
+				use "$final/RAIS.dta" if amostra == 1 & (zw >= -10 & zw < 10), clear
+	
+					tab
+				
+				
+			use "$final/child-labor-ban-brazil.dta" if year == 1999 & xw1 >, clear	
+
+			use "$inter/Pooled_PNAD.dta", clear
+			
+			
+				
 		}
 	
 	
@@ -299,35 +438,39 @@
 	*____________________________________________________________________________________________________________________________________*
 	**
 	{
+		cd "$figures"
 		use 	"$final/child-labor-ban-brazil.dta" if year == 1999 & xw1 >= - 12 & xw1 < 12 & urban == 1 & male == 1, clear	
 
-		local 	outcomes pwork pwork_formal pwork_informal pwork_sch study_only nemnem
+		local 	outcomes eap pwork pwork_informal study_only
 		
 			**
 			foreach v of varlist `outcomes' {
 				local `v'_label: var label `v'
 			}
-			collapse 			 `outcomes' [pw = weight], by(zw1)
+			collapse 			 `outcomes' [pw = weight], by(xw1)
 			
 			**
 			foreach v of varlist `outcomes' {
 				replace   `v' = `v'*100
 				label var `v' `"``v'_label'"'
 			}
-			cd "$figures"
+			
+			label define xw1 -10 "-42" -5 "-20" 0 "0" 5 "20" -10 "-42"
+			label val    xw1 xw1
+
 			foreach var of varlist `outcomes' {
-				tw  (lpolyci `var' zw1 if zw1 >= 0, kernel(triangle) degree(0) bw(4) acolor(gs12) fcolor(gs12) clcolor(gray) clwidth(0.3)) 		///
-					(lpolyci `var' zw1 if zw1 <  0, kernel(triangle) degree(0) bw(4) acolor(gs12) fcolor(gs12) clcolor(gray) clwidth(0.3)) 		///
-					(scatter `var' zw1 if zw1 >= -52 & zw1 <  0 ,  sort msymbol(circle) msize(small) mcolor(navy))         		 	///
-					(scatter `var' zw1 if zw1 >=   0 & zw1 <= 51,  sort msymbol(circle) msize(small) mcolor(cranberry)), xline(0) 	///
+				tw  (lpolyci `var' xw1 if xw1 >= 0, kernel(triangle) degree(0) bw(4) acolor(gs12) fcolor(gs12) clcolor(gray) clwidth(0.3)) 		///
+					(lpolyci `var' xw1 if xw1 <  0, kernel(triangle) degree(0) bw(4) acolor(gs12) fcolor(gs12) clcolor(gray) clwidth(0.3)) 		///
+					(scatter `var' xw1 if xw1 >= -12 & xw1 <  0 ,  sort msymbol(circle) msize(small) mcolor(navy))         		 	///
+					(scatter `var' xw1 if xw1 >=   0 & xw1 <= 12, xlabel(-10 "-42" -5 "-20" 0 "0" 5 "20" 10 "42", valuelabel) sort msymbol(circle) msize(small) mcolor(cranberry)), xline(0) 	///
 					legend(off) 																									///
 					plotregion(color(white) fcolor(white) lcolor(white) icolor(white) ifcolor(white) ilcolor(white)) 				///						
 					title({bf:`: variable label `var''}, pos(11) color(navy) span size(medium))										///
-					ytitle("%") xtitle("Age difference from the cutoff (in months)") saving(short_`var'.gph, replace) 												/// 
+					ytitle("%") xtitle("Age difference from the cutoff (in weeks)", size(small)) saving(short_`var'.gph, replace) 	/// 
 					note("", color(black) fcolor(background) pos(7) size(small)) 
 			}
 			
-			graph combine short_pwork.gph short_pwork_formal.gph short_pwork_informal.gph short_pwork_sch.gph short_study_only.gph short_nemnem.gph, cols(2) graphregion(fcolor(white)) ysize(7) xsize(5) title(, fcolor(white) size(medium) color(cranberry))
+			graph combine short_eap.gph short_pwork.gph short_pwork_informal.gph short_study_only.gph, cols(2) graphregion(fcolor(white)) ysize(7) xsize(7) title(, fcolor(white) size(medium) color(cranberry))
 			graph export "$figures/Figure1.pdf", as(pdf) replace
 			foreach var of varlist `outcomes' {
 			erase short_`var'.gph
@@ -342,11 +485,11 @@
 	*____________________________________________________________________________________________________________________________________*
 	**
 	{
-	foreach band in 12 24 {
+	foreach band in 10 12 {
 		use "$final/child-labor-ban-brazil.dta" if year == 1999 & (zw1 >= -`band' & zw1 < `band'), clear	
 			
-		if `band' == 12 local fig = "a"
-		if `band' == 24 local fig = "b"
+		if `band' == 10 local fig = "a"
+		if `band' == 12 local fig = "b"
 		
 			replace formal 		= 0  	if working == 0
 			replace informal 	= 0 	if working == 0
@@ -391,7 +534,7 @@
 	*____________________________________________________________________________________________________________________________________*
 	**
 	{
-		use "$final/child-labor-ban-brazil.dta" if year < 2007 & (zw1 >= -12 & zw1 < 12 ), clear	
+		use "$final/child-labor-ban-brazil.dta" if year < 2007 & (zw1 >= -10 & zw1 < 10 ), clear	
 			collapse (mean)eap pwork uwork schoolatt [pw = weight], by(year D1)
 		
 			foreach var of varlist eap pwork uwork schoolatt {
@@ -424,7 +567,7 @@
 	*____________________________________________________________________________________________________________________________________*
 	**
 	{	
-		use "$final/child-labor-ban-brazil.dta" if year < 2007 & (zw1 >= -12 & zw1 < 12 ), clear	
+		use "$final/child-labor-ban-brazil.dta" if year < 2007 & (zw1 >= -10 & zw1 < 10 ), clear	
 			collapse (mean) pwork_sch pwork_only study_only nemnem  [pw = weight], by(year D1)
 		
 			foreach var of varlist pwork_sch pwork_only study_only nemnem {

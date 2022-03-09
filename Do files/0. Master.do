@@ -205,20 +205,23 @@
 	**
 	*--------------------------------------------------------------------------------------------------------------------------------*
 	   Installing packages needed to run all dofiles called by this master dofile. */
-	   local user_commands ietoolkit labutil
+		*ieboilstart, version(16)          	
+		*`r(version)' 
+	   version 16.1
+	   set more off, permanently 
+	   local user_commands ietoolkit rdrobust
 	   foreach command of local user_commands   {
 		   cap which `command'
 		   if _rc == 111 {
 			   ssc install `command'
 		   }
-	   }
+	   }		
 		
-		**Local Randomization Inference Package
-		net install rdlocrand, from(https://raw.githubusercontent.com/rdpackages/rdlocrand/master/stata) replace
-		
-		**RD densitity and LP density Packages
+		**Local Randomization Inference, RD densitity and LP density Packages
+		net install rdlocrand,  from(https://raw.githubusercontent.com/rdpackages/rdlocrand/master/stata) replace
 		net install rddensity,  from(https://raw.githubusercontent.com/rdpackages/rddensity/master/stata) replace
 		net install lpdensity,  from(https://raw.githubusercontent.com/nppackages/lpdensity/master/stata) replace
+		
 		
 		*MC Crary test
 		sysdir  //locations
@@ -227,16 +230,9 @@
 		which DCdensity
 		
 		**DataZoom Package
-		net from http://www.econ.puc-rio.br/datazoom/portugues  
-		net install datazoom_pnad, replace
-		
-		
-		**Stata version
-		*ieboilstart, version(16)          	
-		*`r(version)' 
-		version 16
-		
-	
+		*net from http://www.econ.puc-rio.br/datazoom/portugues  
+		*net install datazoom_pnad, replace
+
 		**Figure settings
 		graph set window fontface "Times"
 		set scheme s1mono
@@ -244,7 +240,7 @@
 		**Others
 		set matsize 11000
         set level   95
-		set seed    108474
+		set seed    740592
 		
 		clear all
 		mata: mata clear 
