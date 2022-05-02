@@ -486,8 +486,8 @@
 	**
 	{
 	foreach band in 10 12 {
-		use "$final/child-labor-ban-brazil.dta" if year == 1999 & (zw1 >= -`band' & zw1 < `band'), clear	
-			
+		use "$final/child-labor-ban-brazil.dta" if year == 1999 & (zw1 >= -`band' & zw1 < `band') & urban  == 1	& male == 1 & cohort1_12 == 1, clear	
+
 		if `band' == 10 local fig = "a"
 		if `band' == 12 local fig = "b"
 		
@@ -513,7 +513,7 @@
 			yscale(off)	 ylabel(,nogrid nogextend) 																																						///	
 			plotregion(color(white) fcolor(white) lcolor(white) icolor(white) ifcolor(white) ilcolor(white)) 																							///						
 			legend(order(1 "Unnafected cohort" 2 "Affected cohort")  region(lwidth(none) color(white) fcolor(none)) cols(2) size(large) position(12))      		            							///
-			note("Source: PNAD, 1999." , color(black) fcolor(background) pos(7) size(small)) 																											///
+			note("" , color(black) fcolor(background) pos(7) size(small)) 																											///
 			xsize(7) ysize(5) 
 
 			local nb =`.Graph.plotregion1.barlabels.arrnels'
@@ -534,7 +534,7 @@
 	*____________________________________________________________________________________________________________________________________*
 	**
 	{
-		use "$final/child-labor-ban-brazil.dta" if year < 2007 & (zw1 >= -10 & zw1 < 10 ), clear	
+		use "$final/child-labor-ban-brazil.dta" if year < 2007 & (zw1 >= -10 & zw1 < 10 ) & urban  == 1	& male == 1 & cohort1_12 == 1, clear	
 			collapse (mean)eap pwork uwork schoolatt [pw = weight], by(year D1)
 		
 			foreach var of varlist eap pwork uwork schoolatt {
@@ -543,7 +543,8 @@
 			}
 			replace year = year - 1998 if year < 2001
 			replace year = year - 1999 if year > 2000 
-
+			br if D1 == 0
+			
 			tw 	///
 				(line pwork year		, msize(2) msymbol(T) lwidth(0.5) color(emidblue)  lp(solid) connect(direct) recast(connected) mlabel(pwork) 	 mlabcolor(black) mlabpos(12))   ///  
 				(line uwork year		, msize(2) msymbol(D) lwidth(0.5) color(cranberry) lp(solid) connect(direct) recast(connected) mlabel(uwork) 	 mlabcolor(black) mlabpos(3)) 	///  
@@ -556,7 +557,7 @@
 				plotregion(color(white) fcolor(white) lcolor(white) icolor(white) ifcolor(white) ilcolor(white)) 																		///						
 				legend(order(1 "Paid work" 2 "Unpaid work" 3 "Economically active" 4 "Attending school") pos(12) cols(2) region(lstyle(none) fcolor(none)) size(medsmall))  			///
 				xsize(9) ysize(5) 	///
-				note("Source: PNAD.", span color(black) fcolor(background) pos(7) size(small))) 
+				note(, span color(black) fcolor(background) pos(7) size(small))) 
 				graph export "$figures/FigureA2.pdf", as(pdf) replace
 		}
 		
@@ -567,7 +568,7 @@
 	*____________________________________________________________________________________________________________________________________*
 	**
 	{	
-		use "$final/child-labor-ban-brazil.dta" if year < 2007 & (zw1 >= -10 & zw1 < 10 ), clear	
+		use "$final/child-labor-ban-brazil.dta" if year < 2007 & (zw1 >= -10 & zw1 < 10 ) & urban  == 1	& male == 1 & cohort1_12 == 1, clear	
 			collapse (mean) pwork_sch pwork_only study_only nemnem  [pw = weight], by(year D1)
 		
 			foreach var of varlist pwork_sch pwork_only study_only nemnem {
@@ -589,7 +590,7 @@
 				plotregion(color(white) fcolor(white) lcolor(white) icolor(white) ifcolor(white) ilcolor(white)) 																					///						
 				legend(order(1 "Paid work and attending school" 2 "Only paid work" 3 "Only attending school" 4 "Neither working nor attending school") cols(2) pos(12) region(lstyle(none) fcolor(none)) size(medsmall))  		///
 				xsize(9) ysize(5) 	///
-				note("Source: PNAD.", span color(black) fcolor(background) pos(7) size(small))) 
+				note("", span color(black) fcolor(background) pos(7) size(small))) 
 				graph export "$figures/FigureA3.pdf", as(pdf) replace	
 			}
 		

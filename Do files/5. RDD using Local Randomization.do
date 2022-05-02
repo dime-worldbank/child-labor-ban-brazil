@@ -162,7 +162,7 @@
 		
 		
 			**
-			*Table 2
+			*Table 2 -> urban boys only
 			*----------------------------------------------------------------------------------------------------------------------------*
 			{
 				use 	dep_var year window ATE2- att_perc_mean2 pvalue2  polinomio using "$inter/Local Randomization Results_1999.dta" if polinomio == 0, clear
@@ -246,12 +246,12 @@
 				
 				**
 				**
-				*export		excel using "$tables/TableA12.xlsx",  replace   	//DECIDIMOS TIRAR DO PAPER
+				*export		excel using "$tables/.xlsx",  replace   	//DECIDIMOS TIRAR DO PAPER
 			}
 			*/
 						
 			**
-			*Table A12
+			*Table A12 -> urban, rural, boys and girls
 			*----------------------------------------------------------------------------------------------------------------------------*
 			{
 
@@ -362,7 +362,7 @@
 								   4 "Formal paid work"  			 5 "Informal paid work" 			6 "Attending school" 					///
 								   7 "Only paid work" 				 8 "Only attending school " 	  	9 "Neither working nor attending school" 								   
 					
-			label   define sample   1 "Mother without High School"	  	2 "Mother with High School" 										///
+			label   define sample   1 "Mother without High School"	 2 "Mother with High School" 												///
 			
 			label	val    dep_var dep_var
 			label   val    sample  sample 
@@ -479,7 +479,7 @@
 							**
 							**
 							local variable = 1
-							foreach var of varlist $shortterm_outcomes  {																					//short term outcomes
+							foreach var of varlist $shortterm_outcomes highschool_degree wage_hour {																					//short term outcomes
 								
 								if "`var'" == "schoolatt" {
 								rdrandinf `var' zw1 if highschool_degree == 0, cutoff(0) wl(`wl') wr(`wr') interfci(0.05) seed(8474085)						//estimate of ATE
@@ -531,11 +531,11 @@
 				label 		define shortterm_outcomes  	1 "Economically Active" 					2 "Paid work" 						3 "Unpaid work" 		  ///
 														4 "Formal paid work" 						5 "Informal paid work" 				 						  ///
 														6 "Attending school" 						7 "Only paid work" 					8 "Only attending school" ///		
-														9 "Neither working nor attending school" 
+														9 "Neither working nor attending school" 	10 "High School degree" 			11 "Wage per hour"
 						
 				**
 				**
-				label 		define longterm_outcomes   	1 "At least High School degree" 																		 ///
+				label 		define longterm_outcomes   	1 "Reached undergrad" 																		 ///
 														2 "Employed" 								3 "Formal occupation" 				4 "Wage per hour" 
 				
 													
@@ -596,10 +596,12 @@
 				foreach bandwidth in 10 12 14 {
 				
 				use    "$inter/Local Randomization Results_1998-2014.dta" if shortterm_outcomes != 0 & bandwidth == `bandwidth', clear
-			
+				
 				local figure = 1
-
-					forvalues shortterm_outcomes = 1(1)9 {
+					
+					**
+					*Outcomes 1 a 9
+					forvalues shortterm_outcomes = 1(1)9{
 						preserve
 							keep if shortterm_outcomes == `shortterm_outcomes'						
 							quietly su lower, detail
@@ -608,10 +610,10 @@
 							local max = r(max) + r(max)/3
 							
 							twoway  ///
-							||  	scatter ATE 	 year_n1 ,   color(orange) msize(large) msymbol(O) 			///
-							|| 		rcap lower upper year_n1 ,  lcolor(navy) lwidth( medthick )  	 				///
-							yline(0, lw(0.6) lp(shortdash) lcolor(cranberry*06))  ylabel(, labsize(small) gmax angle(horizontal) format (%4.1fc)) 				 													///
-							xlabel(1 `" "1998" "' 2 `" "1999" "' 3 `" "2001" "' 4 `" "2002" "' 5 `" "2003" "' 6 `" "2004" "' 7 `" "2005" "' 8 `" "2006" "' , angle(90)  labsize(small) ) 			///
+							||  	scatter ATE 	 year_n1 ,   color(orange) msize(large) msymbol(O) 																					///
+							|| 		rcap lower upper year_n1 ,  lcolor(navy) lwidth( medthick )  	 																					///
+							yline(0, lw(0.6) lp(shortdash) lcolor(cranberry*06))  ylabel(, labsize(small) gmax angle(horizontal) format (%4.1fc)) 				 						///
+							xlabel(1 `" "1998" "' 2 `" "1999" "' 3 `" "2001" "' 4 `" "2002" "' 5 `" "2003" "' 6 `" "2004" "' 7 `" "2005" "' 8 `" "2006" "' , angle(90)  labsize(small)) ///
 							xtitle("", size(small)) 											  																						///
 							yscale(r(`min' `max'))	 																																	///
 							ytitle("ATE, in pp", size(small))					 																										///					
@@ -622,17 +624,78 @@
 						restore
 					}
 					
+					
+					**
+					*High school degree
+						preserve
+							keep if shortterm_outcomes == 10 & year >= 2004					
+							su lower, detail
+							local min = r(min) + r(min)/3
+							quietly su upper, detail
+							local max = r(max) + r(max)/3
+							
+							twoway  ///
+							||  	scatter ATE 	 year_n1 ,   color(orange) msize(large) msymbol(O) 																					///
+							|| 		rcap lower upper year_n1 ,  lcolor(navy) lwidth( medthick )  	 																					///
+							yline(0, lw(0.6) lp(shortdash) lcolor(cranberry*06))  ylabel(, labsize(medsmall) gmax angle(horizontal) format (%4.1fc)) 				 					///
+							xlabel(6 `" "2004" "' 7 `" "2005" "' 8 `" "2006" "' , angle(0)  labsize(medsmall) ) 																		///
+							xtitle("", size(small)) 											  																						///
+							yscale(r(`min' `max'))	 																																	///
+							ytitle("ATE, in pp", size(medsmall))					 																									///					
+							title({bf: `:label shortterm_outcomes 10' `bandwidth'- bandwidth}, pos(11) color(navy) span size(medsmall))												///
+							legend(off) ///
+							xsize(4) ysize(6) ///
+							note(".", color(black) fcolor(background) pos(7) size(small)) saving(short`figure'_`bandwidth'.gph, replace)
+							local figure = `figure' + 1
+						restore
+					
+					**
+					*Wage per hour
+						preserve
+							keep if shortterm_outcomes == 11 & year >= 2004						
+							su lower, detail
+							local min = r(min) + r(min)/3
+							quietly su upper, detail
+							local max = r(max) + r(max)/3
+							
+							twoway  ///
+							||  	scatter ATE 	 year_n1 ,   color(orange) msize(large) msymbol(O) 																					///
+							|| 		rcap lower upper year_n1 ,  lcolor(navy) lwidth( medthick )  	 																					///
+							yline(0, lw(0.6) lp(shortdash) lcolor(cranberry*06))  ylabel(, labsize(medsmall) gmax angle(horizontal) format (%4.1fc)) 				 					///
+							xlabel(6 `" "2004" "' 7 `" "2005" "' 8 `" "2006" "' , angle(0)  labsize(medsmall) ) 																		///
+							xtitle("", size(small)) 											  																						///
+							yscale(r(`min' `max'))	 																																	///
+							ytitle("ATE, in R$", size(medsmall))					 																									///					
+							title({bf: `:label shortterm_outcomes 11' `bandwidth'- bandwidth}, pos(11) color(navy) span size(medsmall))												///
+							legend(off) ///
+							xsize(4) ysize(6) ///
+							note(".", color(black) fcolor(background) pos(7) size(small)) saving(short`figure'_`bandwidth'.gph, replace)
+							local figure = `figure' + 1
+						restore
+						
+					
 					*Graph with estimations for shortterm outcomes
 					graph combine short1.gph short2.gph short3.gph short4.gph short5.gph short6.gph short7.gph short8.gph short9.gph, cols(5) graphregion(fcolor(white)) ysize(10) xsize(25) title(, fcolor(white) size(medium) color(cranberry))
 					
-					if `bandwidth' == 10 graph export "$figures/Figure3.pdf", as(pdf) replace
+					if `bandwidth' == 10 graph export "$figures/Figure3.pdf",  as(pdf) replace
 					if `bandwidth' == 12 graph export "$figures/FigureA7.pdf", as(pdf) replace	
 					if `bandwidth' == 14 graph export "$figures/FigureA8.pdf", as(pdf) replace
-					
+				
 					forvalues figure = 1(1)9 {
 					erase short`figure'.gph
-					}	
+					}
+					
 				}
+					graph combine short10_10.gph short11_10.gph	short10_12.gph short11_12.gph short11_14.gph short11_14.gph			, cols(2) graphregion(fcolor(white)) ysize(7)  xsize(5) title(, fcolor(white) size(medium) color(cranberry))
+					graph export "$figures/FigureA9.pdf", as(pdf) replace
+					/*
+					erase short10_10.gph
+					erase short11_10.gph
+					erase short10_12.gph
+					erase short11_12.gph
+					erase short10_14.gph
+					erase short11_14.gph
+					*/
 				}
 				
 				**
@@ -642,7 +705,7 @@
 				use    "$inter/Local Randomization Results_1998-2014.dta" if longterm_outcomes != 0 & bandwidth == 10, clear
 					local figure = 1
 					
-					forvalues longterm_outcomes = 1(1)4 {
+					forvalues longterm_outcomes = 1(1)3 {
 						preserve
 							keep if longterm_outcomes == `longterm_outcomes'
 							quietly su lower, detail
@@ -664,6 +727,31 @@
 							local figure = `figure' + 1
 						restore
 					}
+					
+					**
+					*Wage per hour
+						preserve
+							keep if longterm_outcomes == 4				
+							su lower, detail
+							local min = r(min) + r(min)/3
+							quietly su upper, detail
+							local max = r(max) + r(max)/3
+							
+							twoway  ///
+							||  	scatter ATE 	 year_n1 ,   color(orange) msize(large) msymbol(O) 																					///
+							|| 		rcap lower upper year_n1 ,  lcolor(navy) lwidth( medthick )  	 																					///
+							yline(0, lw(0.6) lp(shortdash) lcolor(cranberry*06))  ylabel(, labsize(small) gmax angle(horizontal) format (%4.1fc)) 				 						///
+							xlabel(6 `" "2004" "' 7 `" "2005" "' 8 `" "2006" "' , angle(90)  labsize(small) ) 																			///
+							xtitle("", size(small)) 											  																						///
+							yscale(r(`min' `max'))	 																																	///
+							ytitle("ATE, in R$", size(small))					 																										///					
+							title({bf: `:label longterm_outcomes 4'}, pos(11) color(navy) span size(medsmall))																		///
+							legend(off) 																																				///
+							note(".", color(black) fcolor(background) pos(7) size(small)) saving(lomg`figure'.gph, replace)
+							local figure = `figure' + 1
+						restore
+						
+					
 					
 					*Graph with estimations for longterm outcomes
 					graph combine long1.gph long2.gph long3.gph long4.gph 						  , graphregion(fcolor(white)) ysize(5) xsize(8) title(, fcolor(white) size(medium) color(cranberry))
