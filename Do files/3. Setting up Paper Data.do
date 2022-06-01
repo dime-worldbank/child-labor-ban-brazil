@@ -57,6 +57,19 @@
 		gen 	dw3 = 	   dateofbirth  -  mdy(3, 16, 1984)				//days between date of birth   and  March 3rd, 1984
 	
 	
+		*---------------------------->> (sample 4) - placebo
+		*
+		*Months
+		gen 	xw4 = mofd(dateofbirth  -  mdy(12, 16, 1982)) 			//months between date of birth and   December 16th, 1982
+		
+		**
+		*Weeks
+		gen 	zw4 = wofd(dateofbirth  -  mdy(12, 16, 1982))			//weeks between date of birth  and   December 16th, 1982
+
+		**
+		*Day
+		gen 	dw4 = 	   dateofbirth  -  mdy(12, 16, 1982)			//days between date of birth   and  December 16th, 1982
+	
 	
 	*--------------------------------------------------------------------------------------------------------------------------------*
 	**
@@ -69,10 +82,13 @@
 		replace D2	 	= 0 		if dw2 <  0				
 		gen 	D3 	 	= 1 		if dw3 >= 0 					
 		replace D3	 	= 0 		if dw3 <  0				
+		gen 	D4	 	= 1 		if dw4 >= 0 					
+		replace D4	 	= 0 		if dw4 <  0				
 		gen 	zw1D1  	= zw1*D1										//running variable interacted with treatment
 		gen 	zw12   	= zw1^2											//running variable ^ 2
 		gen 	zw2D2  	= zw2*D2										//running variable interacted with treatment
 		gen 	zw22   	= zw2^2											//running variable ^ 2
+		
 		
 		format 	zw* dw* xw* %20.0fc
 		
@@ -174,13 +190,14 @@
 		local 		dist8	=  (365/12)*8  	// window: +/- 9 mois 
 		local 		dist9	=  (365/12)*9   	// window: +/- 9 mois 
 		
-		foreach sample in 1 2 3 { 
+		foreach sample in 1 2 3 4 { 
 		
 			**Cutoff dates based on studied samples
 			if `sample' == 1 gen str 	tresholdi`sample'	=	"1984 12 16"
 			if `sample' == 2 gen str 	tresholdi`sample'	=	"1983 12 16"
 			if `sample' == 3 gen str 	tresholdi`sample'	=	"1984 3  16"
-
+			if `sample' == 4 gen str 	tresholdi`sample'	=	"1982 12 16"
+			
 			gen 		threshold`sample'	=	date(tresholdi`sample', "YMD")
 			format 		threshold* %td
 			drop 		tresholdi*
@@ -207,14 +224,14 @@
 		*Preserving PNAD waves, expect 1999, 98
 		preserve
 		drop  		v*
-		keep 		if year != 1999 & year != 2001 & year != 1998
+		keep 		if year != 1999 & year != 2001 & year != 1998 & year != 1997
 		tempfile 	data
 		save 	   `data'
 		restore
 		
 		**
 		*Working with 1999 wave as the authors did
-		keep 		if year == 1999 | year == 2001 | year == 1998
+		keep 		if year == 1999 | year == 2001 | year == 1998 | year == 1997
 		
 	**	
 	*--------------------------------------------------------------------------------------------------------------------------------*
@@ -274,6 +291,8 @@
 		gen str  surveyi="1999 09 01" if year==1999
 		replace  surveyi="1998 09 01" if year==1998
 		replace  surveyi="2001 09 01" if year==2001
+		replace  surveyi="1997 09 01" if year==1997
+
 		
 		gen 	 survey = date(surveyi, "YMD")
 		format   survey %td 
@@ -519,7 +538,10 @@
 	**
 	*Reducing size
 	*--------------------------------------------------------------------------------------------------------------------------------*
-		keep 	if ((zw1 >= -52 &  zw1 <= 52) | (zw2 >= -52 & zw2 <= 52) | (zw3 >= -52 & zw3 <= 52)) | (year == 1998 & age == 14) | (year == 1999 & age == 14) 
+		keep 	if ((zw1 >= -52 &  zw1 <= 52) | (zw2 >= -52 & zw2 <= 52) | (zw3 >= -52 & zw3 <= 52) | (zw4 >= -52 & zw4 <= 52)) ///
+											  | (year == 1998 & age == 14)	/// 
+											  | (year == 1999 & age == 14)  /// 
+											  | (year == 1997 & age == 14)
 
 	**	
 	*--------------------------------------------------------------------------------------------------------------------------------*
@@ -610,7 +632,10 @@
 					save	`bargain'
 				restore
 				
-				merge 1:1 id_dom id_pes using `bargain', force keep (3)
+				
+				*merge 1:1 id_dom id_pes using `bargain', force	//most of merge for id_dom and id_pes work. the merge = 1 or 2 are probably due to .txt differences???
+				 merge 1:1 id_dom id_pes using `bargain', force keep (3)	//for variables merged, there is no difference in variable's definition. 
+				
 				
 				**
 				**We can see that all variables match:

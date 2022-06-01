@@ -103,11 +103,11 @@
 																				//4: Lasso selected controls
 				//Controls															
 				if `table' == 1 								local controls $bargain_controls_our_def
-				if `table' == 2 								local controls $bargain_controls
-				if `table' == 3 								local controls mom_yrs_school
-				if `table' == 4 								local controls i.region
-			   *if `table' == 4 & "`variable'" == "employ" 		local controls $lasso_employ
-			   *if `table' == 4 & "`variable'" == "pwork"  		local controls $lasso_pwork
+				*if `table' == 2 								local controls $bargain_controls
+				*if `table' == 3 								local controls mom_yrs_school
+				*if `table' == 4 								local controls i.region
+			    *if `table' == 4 & "`variable'" == "employ" 	local controls $lasso_employ
+			    *if `table' == 4 & "`variable'" == "pwork"  	local controls $lasso_pwork
 			   
 			   
 				foreach bandwidth in 6 9 {											
@@ -153,11 +153,7 @@
 			}
 		
 		
-		
-		
-		
-		
-		
+	
 		
 		
 		

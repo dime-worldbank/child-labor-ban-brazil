@@ -26,7 +26,12 @@
 		use "$final/child-labor-ban-brazil.dta" if year == 1998 & age == 14, clear	
 
 			su working [w = weight]
-			su eap	   [w = weight]
+			su eap	   [w = weight] 
+			
+			gen 	id = 1 if pwork == 1							//children in paid jobs, % boys in urban areas, %girls in urban areas, % boys in rural areas, % girls in rural areas
+			collapse (sum) id [aw = weight], by(male urban)
+			egen 	t = sum(id)
+			gen 	p = id/t
 
 				
 		use "$final/child-labor-ban-brazil.dta" if year == 1998 & age == 14 & urban  == 0 & working == 1, clear	
@@ -224,8 +229,6 @@
 				bys year: su goes_public_school 			    if schoolatt == 1 & inrange(edu_level_enrolled, 1,5) [w = weight]
 			
 				su working_for_household if uwork == 1 &   year == 1999 [w = weight]  
-				
-				
 				
 								
 			**	

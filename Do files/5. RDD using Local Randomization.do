@@ -38,11 +38,20 @@
 			graph export "$figures/FigureA5.pdf", as(pdf) replace
 		
 		**
-		*Placebo (1998)
+		*Placebo (1998) 
+		**Children cohort 2: cutoff 12, 16, 1983. We do not have a window in which the local randomization holds. 
 		use "$final/child-labor-ban-brazil.dta" if year == 1998 & cohort2_12 == 1, clear
 			rdwinselect zw2  mom_yrs_school hh_head_edu hh_head_age hh_size ,   seed(2198)	obsmin(1000)						// obsmin() is the minimum number of observations below and above the cutoff. 
 			rdwinselect zw2  mom_yrs_school hh_head_edu hh_head_age hh_size ,   seed(2198)	nwin(50) plot						// obsmin() is the minimum number of observations below and above the cutoff. 
 			graph export "$figures/FigureA6.pdf", as(pdf) replace
+			
+		**
+		*Placebo (1998) 
+		**Children cohort 2: cutoff 12, 16, 1983. We do not have a window in which the local randomization holds. 
+		use "$final/child-labor-ban-brazil.dta" if year == 1997 & cohort4_12 == 1, clear
+			rdwinselect zw4  mom_yrs_school hh_head_edu hh_head_age hh_size ,   seed(2198)	obsmin(1000)						// obsmin() is the minimum number of observations below and above the cutoff. 
+			rdwinselect zw4  mom_yrs_school hh_head_edu hh_head_age hh_size ,   seed(2198)	nwin(50) plot						// obsmin() is the minimum number of observations below and above the cutoff. 
+			*graph export "$figures/FigureA6.pdf", as(pdf) replace			
 		}
 		
 		
@@ -55,48 +64,51 @@
 		{
 		
 			estimates clear
-			matrix results = (0,0,0,0,0,0,0,0,0,0) 									//storing dependent variable, sample, observed statistic, lower bound and upper bounds, and mean of the dependent outcome
+			matrix results = (0,0,0,0,0,0,0,0,0,0,0) 									//storing dependent variable, sample, observed statistic, lower bound and upper bounds, and mean of the dependent outcome
 			local dep_var = 1														//we attributed a model number for each specification we tested
 			
 			set seed 740592
 			**
 			*Estimates using Cattaneo
 			*----------------------------------------------------------------------------------------------------------------------------*
-			foreach variable in $shortterm_outcomes {		//short-term outcomes
-												
-				foreach year in 1998 1999 {																									//example = 1 -> PNAD 1999 wave. Example = 2 -> Placebo using 1998 wave )
-					//only running example 1 because we could not find a window around the cutoff where the local randomization holds. 
-					
-					foreach sample in 1 2 3 4 {																							//testing the results with different samples
-												
-						**
-						*Sample
-						if `sample' == 1 use "$final/child-labor-ban-brazil.dta" if 						  year == `year' & cohort1_12 == 1, clear	//all sample
+			foreach variable in $shortterm_outcomes	    {		//short-term outcomes
+				foreach cohort in 1 3				    {		//cohort1 = cutoff Dec 17, 1984. cohort3 = cut March 16th 1984
+					foreach year in  1998 1999 	 		{																							
 						
-						if `sample' == 2 use "$final/child-labor-ban-brazil.dta" if urban  == 1	& male == 1 & year == `year' & cohort1_12 == 1, clear	//only boys, urban areas
+						if (`year' == 1998 & cohort == 1) | `year' == 1999 {
+											
+							foreach sample in 1 2 3 4 		{																							//testing the results with different samples
+														
+								**
+								*Sample
+								if `sample' == 1 use "$final/child-labor-ban-brazil.dta" if 						  year == `year' & cohort`cohort'_12 == 1, clear	//all sample
+								
+								if `sample' == 2 use "$final/child-labor-ban-brazil.dta" if urban  == 1	& male == 1 & year == `year' & cohort`cohort'_12 == 1, clear	//only boys, urban areas
 
-						if `sample' == 3 use "$final/child-labor-ban-brazil.dta" if urban  == 1	& male == 0 & year == `year' & cohort1_12 == 1, clear	//only girls, urban areas
-		
-						if `sample' == 4 use "$final/child-labor-ban-brazil.dta" if urban  == 0				& year == `year' & cohort1_12 == 1, clear	//only girls, urban areas
-						
-						foreach window in 10 12 14 {
-						
-							**
-							*Mean of the dependent variable
-							su `variable' [w = weight] if inrange(zw1, -`window', -1), detail
-							local mean = r(mean)
-							
-							local wl = - `window'
-							local wr =   `window' - 1
-							
-							**
-							*Local randomization
-							rdrandinf `variable' zw1,  wl(`wl') wr(`wr')  interfci(0.05) seed(493734)	
-							matrix results = results \ (`year',`dep_var', `sample', r(obs_stat), r(randpval), r(int_lb), r(int_ub), `mean',0, `window')
-							
-							//We decided in the meeting not to use the polinomio of order 1
-							*rdrandinf `variable' zw1,  wl(`wl') wr(`wr')  interfci(0.05) seed(356869) p(1)
-							*matrix results = results \ (`year',`dep_var', `sample', r(obs_stat), r(randpval), r(int_lb), r(int_ub), `mean',1, `window')
+								if `sample' == 3 use "$final/child-labor-ban-brazil.dta" if urban  == 1	& male == 0 & year == `year' & cohort`cohort'_12 == 1, clear	//only girls, urban areas
+				
+								if `sample' == 4 use "$final/child-labor-ban-brazil.dta" if urban  == 0				& year == `year' & cohort`cohort'_12 == 1, clear	//only girls, urban areas
+								
+								foreach window in 10 12 14 {
+								
+									**
+									*Mean of the dependent variable
+									su `variable' [w = weight] if inrange(zw`cohort', -`window', -1), detail
+									local mean = r(mean)
+									
+									local wl = - `window'
+									local wr =   `window' - 1
+									
+									**
+									*Local randomization
+									rdrandinf `variable' zw`cohort',  wl(`wl') wr(`wr')  interfci(0.05) seed(493734)	
+									matrix results = results \ (`year',`dep_var', `sample', r(obs_stat), r(randpval), r(int_lb), r(int_ub), `mean',0, `window', `cohort')
+									
+									//We decided in the meeting not to use the polinomio of order 1
+									*rdrandinf `variable' zw1,  wl(`wl') wr(`wr')  interfci(0.05) seed(356869) p(1)
+									*matrix results = results \ (`year',`dep_var', `sample', r(obs_stat), r(randpval), r(int_lb), r(int_ub), `mean',1, `window',`cohort')
+								}
+							}
 						}
 					}
 				}
@@ -109,7 +121,7 @@
 			clear
 			svmat 		results						//storing the results of our estimates so we can present the estimates in charts
 			drop  		in 1
-			rename 		(results1-results10) (year dep_var sample ATE pvalue lower upper mean_outcome polinomio window)	
+			rename 		(results1-results10) (year dep_var sample ATE pvalue lower upper mean_outcome polinomio window cohort)	
 
 			**
 			**
@@ -165,7 +177,7 @@
 			*Table 2 -> urban boys only
 			*----------------------------------------------------------------------------------------------------------------------------*
 			{
-				use 	dep_var year window ATE2- att_perc_mean2 pvalue2  polinomio using "$inter/Local Randomization Results_1999.dta" if polinomio == 0, clear
+				use 	dep_var year window ATE2- att_perc_mean2 pvalue2  polinomio using "$inter/Local Randomization Results_1999.dta" if polinomio == 0 & cohort == 1, clear
 				drop 	polinomio pvalue2
 				
 				**
@@ -207,7 +219,7 @@
 			
 			/*
 			**
-			*Decidimos tirar do paper, mas eh igual a tabela 2 com a diferenca de que o polinomio eh de ordem1 
+			*We decided to not include the table below in the paper, but it is just like Table 2, just with the polinomio of order 1.
 			*----------------------------------------------------------------------------------------------------------------------------*
 			{
 				use 	dep_var year window ATE2- att_perc_mean2  polinomio using "$inter/Local Randomization Results_1999.dta" if polinomio == 1, clear
@@ -845,5 +857,37 @@
 	
 	
 
+	
+	
+	
+	
+	
+	
+	
+	
+		use "$final/child-labor-ban-brazil.dta" if urban  == 1	& male == 1 & year == 2007 & cohort1_12 == 1, clear	
+	
+
+
+	
+		rdsampsi  	working zw1, samph(10 11)  nratio(0.25) plot
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 			
 			

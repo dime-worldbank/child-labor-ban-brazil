@@ -7,7 +7,7 @@
 	
 	Author: Vivian Amorim
 	vivianamorim5@gmail.com/vamorim@worldbank.org
-	Last Update: July 2021
+	Last Update: May 2022
 	
 	**
 	**
@@ -134,13 +134,14 @@
 			5. RDD using Local Randomization	
 		
 			-> How long does it take to run?
+			More than one hour
 				
 	
 			-> What it does?
 				Run RDD using local Randomization
 						
 			-> What it creates? 
-				.dta file with estimates 'Regression Results using RD under local randomization.dta' saved in child-labor-ban-brazil/DataWork/Datasets/Final.
+				.dta file with estimates 'Regression Results using RD under local randomization_1999.dta' saved in child-labor-ban-brazil/DataWork/Datasets/Final.
 				Figures saved in child-labor-ban-brazil/DataWork/Output/Figures.
 		
 		
