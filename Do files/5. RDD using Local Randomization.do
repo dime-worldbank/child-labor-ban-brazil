@@ -263,7 +263,7 @@
 			*/
 						
 			**
-			*Table A12 -> urban, rural, boys and girls
+			*Table A7> urban, rural, boys and girls
 			*----------------------------------------------------------------------------------------------------------------------------*
 			{
 
@@ -306,7 +306,7 @@
 
 				**
 				**
-				export		excel using "$tables/TableA12.xlsx",  replace   //All results for Local Randomization for Appendix
+				export		excel using "$tables/TableA7.xlsx",  replace   //All results for Local Randomization for Appendix
 			}
 			
 	
@@ -320,7 +320,7 @@
 
 		
 			**
-			*Table A13
+			*Table A8
 			*----------------------------------------------------------------------------------------------------------------------------*
 			{
 			estimates clear
@@ -453,7 +453,7 @@
 			**
 			**Table
 			keep 		year *1* *2*
-			export		excel using "$tables/TableA13.xlsx",  replace
+			export		excel using "$tables/TableA8.xlsx",  replace
 			}	
 			
 				

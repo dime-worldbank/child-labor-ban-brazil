@@ -377,49 +377,8 @@
 		iebaltab $balance if urban == 0 [pw = weight], format(%12.2fc) grpvar(male) savetex("$tables/TableA4.tex") rowvarlabels 													///
 		tblnote("Source: PNAD, 1998.") notecombine texdocument  texcaption("Descriptive Statistics for 14-year-olds boys and girls in rural areas (1998)") replace
 	}
-		
-	**
-	*____________________________________________________________________________________________________________________________________*
-	**
-	*Table A5
-	*____________________________________________________________________________________________________________________________________*
-	**
-	{
-		use "$final/RAIS.dta" if amostra == 1 & (dw >= -84 & dw < 84) & sexo != ., clear
-		
-		**
-		gen id_total = 1
-		gen id_atdez = 1 if po_3112 == 1
-		
-		
-		**
-		*collapse (mean)id_total  id_atdez, by(ano sexo		D pis)
-		
-		**
-		collapse (sum) id_total  id_atdez, by(ano sexo 		D)
 	
-		**
-		reshape wide   id_total  id_atdez , i(ano sexo)   j(D)
-		reshape wide   id_total* id_atdez*, i(ano)  	  j(sexo)
-		
-		**
-		foreach name in total atdez {
-			gen 	p`name'01 = (id_`name'01/(id_`name'01 + id_`name'11))*100
-			gen 	p`name'11 = (id_`name'11/(id_`name'01 + id_`name'11))*100
-			gen 	p`name'02 = (id_`name'02/(id_`name'02 + id_`name'12))*100
-			gen 	p`name'12 = (id_`name'12/(id_`name'02 + id_`name'12))*100
-		}
-		
-		**
-		order 	ano *total01* *total11* *total02* *total12*  *atdez01* *atdez11* *atdez02* *atdez12*  
-					
-		drop 	*atdez*
-		
-		format 	p* %4.2fc
-		
-		export excel using "$tables/TableA5.xlsx", replace
-	}	
-
+	
 	**
 	*____________________________________________________________________________________________________________________________________*
 	**
@@ -610,7 +569,64 @@
 		graph export "$figures/FigureA4.pdf", as(pdf) replace
 	}
 	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/*
+	**
+	*____________________________________________________________________________________________________________________________________*
+	**
+	*Table A5
+	*____________________________________________________________________________________________________________________________________*
+	**
+	{
+		use "$final/RAIS.dta" if amostra == 1 & (dw >= -84 & dw < 84) & sexo != ., clear
+		
+		**
+		gen id_total = 1
+		gen id_atdez = 1 if po_3112 == 1
+		
+		
+		**
+		*collapse (mean)id_total  id_atdez, by(ano sexo		D pis)
+		
+		**
+		collapse (sum) id_total  id_atdez, by(ano sexo 		D)
+	
+		**
+		reshape wide   id_total  id_atdez , i(ano sexo)   j(D)
+		reshape wide   id_total* id_atdez*, i(ano)  	  j(sexo)
+		
+		**
+		foreach name in total atdez {
+			gen 	p`name'01 = (id_`name'01/(id_`name'01 + id_`name'11))*100
+			gen 	p`name'11 = (id_`name'11/(id_`name'01 + id_`name'11))*100
+			gen 	p`name'02 = (id_`name'02/(id_`name'02 + id_`name'12))*100
+			gen 	p`name'12 = (id_`name'12/(id_`name'02 + id_`name'12))*100
+		}
+		
+		**
+		order 	ano *total01* *total11* *total02* *total12*  *atdez01* *atdez11* *atdez02* *atdez12*  
+					
+		drop 	*atdez*
+		
+		format 	p* %4.2fc
+		
+		*export excel using "$tables/TableA5.xlsx", replace
+	}	
 
+	*/
 	
 	/*		
 	*____________________________________________________________________________________________________________________________________*

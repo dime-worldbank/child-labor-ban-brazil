@@ -12,7 +12,7 @@
 	*____________________________________________________________________________________________________________________________________*
 	**
 	**
-	*Tables 1 and Table A6
+	*Tables 1 and Table A5
 	**
 	*____________________________________________________________________________________________________________________________________*
 	{
@@ -110,6 +110,97 @@
 	}
 	
 	
+	
+	
+	*____________________________________________________________________________________________________________________________________*
+	**
+	**
+	*Table A5
+	**
+	*____________________________________________________________________________________________________________________________________*
+	{
+	estimates clear
+	clear
+			**
+			*Regs   ----------------------------------->>
+				
+				**	
+				**
+				foreach year in 1 2 {
+					
+					foreach variable in eap pwork uwork pwork_formal pwork_informal schoolatt pwork_only study_only nemnem {
+						
+						foreach sample in 1 2 3 4 {
+							
+							if `sample' == 1 use "$final/child-labor-ban-brazil.dta" if cohort1_12 == 1 & (year  == 1999 | year == 2001), clear
+							
+							if `sample' == 2 use "$final/child-labor-ban-brazil.dta" if cohort1_12 == 1 & (year  == 1999 | year == 2001) & male == 1 & urban == 1, clear	
+							
+							if `sample' == 3 use "$final/child-labor-ban-brazil.dta" if cohort1_12 == 1 & (year  == 1999 | year == 2001) & male == 0 & urban == 1, clear						
+							
+							if `sample' == 4 use "$final/child-labor-ban-brazil.dta" if cohort1_12 == 1 & (year  == 1999 | year == 2001) &			   urban == 0, clear
+							
+							if `year'   == 1 keep if year == 1999
+						
+							replace `variable' = `variable'*100
+						
+							**
+							if "`variable'" == "eap"    		local title = "Economically active"
+							if "`variable'" == "pwork"			local title = "Paid work"
+							if "`variable'" == "pwork_informal"	local title = "Informal paid work"
+							if "`variable'" == "study_only"		local title = "Only attending school"
+							if "`variable'" == "uwork"			local title = "Unpaid work"
+							if "`variable'" == "pwork_formal"	local title = "Formal paid work"
+							if "`variable'" == "schoolatt"		local title = "Attending school "
+							if "`variable'" == "pwork_only"		local title = "Only paid work"
+							if "`variable'" == "nemnem"			local title = "Neither working nor studying"
+																			
+										
+							foreach bandwidth in 6 9 {			//bandwidths
+								reg `variable' zw1 		  	 				 $bargain_controls_our_def D1 i.year [aw = weight] if cohort1_`bandwidth' == 1 , cluster(zw1)	
+								eststo, title("`bandwidth'")
+							}
+						}
+						
+						**
+						*Tables ----------------------------------->>
+						if  	 "`variable'" == "eap" & `year' == 1		 			{
+								estout * using "$tables\TableA5.xls",  keep(D1)  title("`title'") label mgroups("Boys, Girls, rural and urban" "Boys, urban" "Girls, urban" "Boys, Girls, rural",  pattern(1 0 1 0 1 0 1 0 1 0)) stats() cells(b(star fmt(2) ) se(par(`"="("' `")""')  fmt(2))) starlevels(* 0.10 ** 0.05 *** 0.01) replace
+						}
+						if  	("`variable'" != "eap" & `year' == 1) | `year' == 2		{
+								estout * using "$tables\TableA5.xls",  keep(D1)  title("`title'") label mgroups("Boys, Girls, rural and urban" "Boys, urban" "Girls, urban" "Boys, Girls, rural",  pattern(1 0 1 0 1 0 1 0 1 0)) stats() cells(b(star fmt(2) ) se(par(`"="("' `")""')  fmt(2))) starlevels(* 0.10 ** 0.05 *** 0.01) append
+						}							
+						estimates clear	
+					} 	//examples
+				}
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/*
 	*____________________________________________________________________________________________________________________________________*
 	**
 	**
