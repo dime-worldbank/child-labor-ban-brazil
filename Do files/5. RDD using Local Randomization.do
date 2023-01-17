@@ -31,11 +31,16 @@
 		*Main sample (1999)
 		use "$final/child-labor-ban-brazil.dta" if year == 1999 & cohort1_12 == 1, clear
 				
+			rdwinselect xw1 mom_yrs_school hh_head_edu hh_head_age hh_size,   seed(980324) p(1)	obsmin(2000)						
+			rdwinselect zw1 mom_yrs_school hh_head_edu hh_head_age hh_size,   seed(980324)	obsmin(800)							// obsmin() is the minimum number of observations below and above the cutoff. 
+			rinselectdw zw1 mom_yrs_school hh_head_edu hh_head_age hh_size,   seed(980324) 	nwin(50) plot						// obsmin() is the minimum number of observations below and above the cutoff. 
+
 			**Remember zw1 is our running variable in terms of weeks between the date of birth and December 16th 1984
-			rdwinselect zw1 mom_yrs_school hh_head_edu hh_head_age hh_size,   seed(2198)	obsmin(500)							// obsmin() is the minimum number of observations below and above the cutoff. 
+			rdwinselect zw1 mom_yrs_school hh_head_edu hh_head_age hh_size,   seed(980324)	obsmin(500)							// obsmin() is the minimum number of observations below and above the cutoff. 
 			//-14 e 13  selected window 
-			rdwinselect zw1 mom_yrs_school hh_head_edu hh_head_age hh_size,   seed(2198)	nwin(50) plot						// obsmin() is the minimum number of observations below and above the cutoff. 
+			rinselectdw zw1 mom_yrs_school hh_head_edu hh_head_age hh_size,   seed(980324)	nwin(50) plot						// obsmin() is the minimum number of observations below and above the cutoff. 
 			graph export "$figures/FigureA5.pdf", as(pdf) replace
+		
 		
 		**
 		*Placebo (1998) 
@@ -64,30 +69,35 @@
 		{
 		
 			estimates clear
-			matrix results = (0,0,0,0,0,0,0,0,0,0,0) 									//storing dependent variable, sample, observed statistic, lower bound and upper bounds, and mean of the dependent outcome
+			matrix results = (0,0,0,0,0,0,0,0,0,0,0,0) 									//storing dependent variable, sample, observed statistic, lower bound and upper bounds, and mean of the dependent outcome
 			local dep_var = 1														//we attributed a model number for each specification we tested
 			
 			set seed 740592
 			**
 			*Estimates using Cattaneo
 			*----------------------------------------------------------------------------------------------------------------------------*
-			foreach variable in $shortterm_outcomes	    {		//short-term outcomes
-				foreach cohort in 1 3				    {		//cohort1 = cutoff Dec 17, 1984. cohort3 = cut March 16th 1984
-					foreach year in  1998 1999 	 		{																							
+			foreach variable in   has_sibling13working 	has_sibling16working					 {		//short-term outcomes
+				foreach cohort in 1			    							 {		//cohort1 = cutoff Dec 17, 1984. cohort3 = cut March 16th 1984
+					foreach year in  1999  							 {																							
 						
-						if (`year' == 1998 & cohort == 1) | `year' == 1999 {
+						if (`year' == 1998 & `cohort' == 1) | `year' == 1999 {
 											
-							foreach sample in 1 2 3 4 		{																							//testing the results with different samples
+							foreach sample in 2								 {																							//testing the results with different samples
 														
 								**
 								*Sample
-								if `sample' == 1 use "$final/child-labor-ban-brazil.dta" if 						  year == `year' & cohort`cohort'_12 == 1, clear	//all sample
+								if `sample' == 1 use "$final/child-labor-ban-brazil.dta" if 						  cohort`cohort'_12 == 1, clear	//all sample
 								
-								if `sample' == 2 use "$final/child-labor-ban-brazil.dta" if urban  == 1	& male == 1 & year == `year' & cohort`cohort'_12 == 1, clear	//only boys, urban areas
+								if `sample' == 2 use "$final/child-labor-ban-brazil.dta" if urban  == 1	& male == 1 & cohort`cohort'_12 == 1, clear	//only boys, urban areas
 
-								if `sample' == 3 use "$final/child-labor-ban-brazil.dta" if urban  == 1	& male == 0 & year == `year' & cohort`cohort'_12 == 1, clear	//only girls, urban areas
+								if `sample' == 3 use "$final/child-labor-ban-brazil.dta" if urban  == 1	& male == 0 & cohort`cohort'_12 == 1, clear	//only girls, urban areas
 				
-								if `sample' == 4 use "$final/child-labor-ban-brazil.dta" if urban  == 0				& year == `year' & cohort`cohort'_12 == 1, clear	//only girls, urban areas
+								if `sample' == 4 use "$final/child-labor-ban-brazil.dta" if urban  == 0				& cohort`cohort'_12 == 1, clear	//only girls, urban areas
+								
+								if  `year' == 1998 keep if year == `year'
+								if  `year' == 1999 keep if year == `year'
+							   *if  `year' == 1999 keep if inlist(year, 1999,2001) //when I tried the estimation with the pooled sample
+								
 								
 								foreach window in 10 12 14 {
 								
@@ -97,16 +107,19 @@
 									local mean = r(mean)
 									
 									local wl = - `window'
-									local wr =   `window' - 1
+									local wr =   `window' - 1 //for weeks/days
+									*local wr =   `window' 
 									
 									**
 									*Local randomization
 									rdrandinf `variable' zw`cohort',  wl(`wl') wr(`wr')  interfci(0.05) seed(493734)	
-									matrix results = results \ (`year',`dep_var', `sample', r(obs_stat), r(randpval), r(int_lb), r(int_ub), `mean',0, `window', `cohort')
+									matrix results = results \ (`year',`dep_var', `sample', r(obs_stat), r(randpval), r(int_lb), r(int_ub), `mean',0, `window', `cohort', r(N))
 									
+									if `cohort' == 1 {
 									//We decided in the meeting not to use the polinomio of order 1
-									*rdrandinf `variable' zw1,  wl(`wl') wr(`wr')  interfci(0.05) seed(356869) p(1)
-									*matrix results = results \ (`year',`dep_var', `sample', r(obs_stat), r(randpval), r(int_lb), r(int_ub), `mean',1, `window',`cohort')
+									*rdrandinf `variable' zw`cohort',  wl(`wl') wr(`wr')  interfci(0.05) seed(356869) p(1)
+									*matrix results = results \ (`year',`dep_var', `sample', r(obs_stat), r(randpval), r(int_lb), r(int_ub), `mean',1, `window',`cohort',r(N))
+									}
 								}
 							}
 						}
@@ -121,15 +134,15 @@
 			clear
 			svmat 		results						//storing the results of our estimates so we can present the estimates in charts
 			drop  		in 1
-			rename 		(results1-results10) (year dep_var sample ATE pvalue lower upper mean_outcome polinomio window cohort)	
+			rename 		(results1-results12) (year dep_var sample ATE pvalue lower upper mean_outcome polinomio window cohort obs)	
 
 			**
 			**
+			
 			label 		define dep_var 1 "Economically Active"  		 2 "Paid work"  	  				3 "Unpaid work" 						///
 									   4 "Formal paid work"  			 5 "Informal paid work" 			6 "Attending school" 					///
 									   7 "Only paid work" 				 8 "Only attending school " 	  	9 "Neither working nor attending school" 								   
-			label		val    dep_var dep_var
-		
+			label 		val dep_var dep_var	
 			**
 			**
 			foreach 	 var of varlist ATE lower upper mean_outcome	{
@@ -140,6 +153,7 @@
 			**
 			gen 	 	att_perc_mean = (ATE/mean_outcome)*100	 if pvalue  <= 0.10
 			format   	ATE-att_perc_mean pvalue* %4.3fc
+			format 		obs %4.0fc
 		
 			**
 			**
@@ -160,7 +174,7 @@
 			**
 			drop  		lower upper 
 			order 		dep_var year ATE CI mean_outcome att_perc_mean pvalue
-			reshape 	wide ATE CI mean_outcome att_perc_mean pvalue, i(year polinomio window dep_var) j(sample)
+			reshape 	wide ATE CI mean_outcome att_perc_mean pvalue obs, i(year polinomio window dep_var) j(sample)
 			save 		"$inter/Local Randomization Results_1999.dta", replace 
 		}
 		
@@ -177,16 +191,16 @@
 			*Table 2 -> urban boys only
 			*----------------------------------------------------------------------------------------------------------------------------*
 			{
-				use 	dep_var year window ATE2- att_perc_mean2 pvalue2  polinomio using "$inter/Local Randomization Results_1999.dta" if polinomio == 0 & cohort == 1, clear
-				drop 	polinomio pvalue2
-				
-				**
-				**
-				reshape 	wide ATE2-att_perc_mean2, i(dep_var year) j(window)
+				use 	dep_var year  polinomio window ATE2- att_perc_mean2 obs2 cohort using "$inter/Local Randomization Results_1999.dta" if cohort == 1 & polinomio == 0, clear
 
 				
 				**
-				local 		num_dp_var  = 9 					//number of dependent variables
+				**
+				drop 		polinomio
+				reshape 	wide ATE2-att_perc_mean2 obs2, i(dep_var year) j(window)
+				drop 		cohort
+				**
+				local 		num_dp_var  = 9						//number of dependent variables
 				local 		number_rows = `num_dp_var'*3		//total number of rows in the table
 				
 				**
@@ -201,6 +215,9 @@
 					replace dep_var = `row'  					in `n_row'
 				}
 				
+				
+				drop if inlist(dep_var,3,7,9,10)
+
 				**
 				**
 				gsort     	dep_var  -year
@@ -217,50 +234,6 @@
 			}
 			
 			
-			/*
-			**
-			*We decided to not include the table below in the paper, but it is just like Table 2, just with the polinomio of order 1.
-			*----------------------------------------------------------------------------------------------------------------------------*
-			{
-				use 	dep_var year window ATE2- att_perc_mean2  polinomio using "$inter/Local Randomization Results_1999.dta" if polinomio == 1, clear
-				drop 	polinomio
-				
-				**
-				**
-				reshape 	wide ATE2-att_perc_mean2, i(dep_var year) j(window)
-
-				
-				**
-				local 		num_dp_var  = 9 					//number of dependent variables
-				local 		number_rows = `num_dp_var'*3		//total number of rows in the table
-				
-				**
-				**
-				set 	 	obs `number_rows'
-				replace  	year 	 = 0 		if year == .
-				
-				**
-				**
-				forvalues 	row = 1(1)`num_dp_var' {
-					local 	n_row 	= `row' + `num_dp_var'*2
-					replace dep_var = `row'  					in `n_row'
-				}
-				
-				**
-				**
-				sort     	dep_var  year
-				decode   	dep_var, gen(var)
-				drop     	dep_var
-				replace  	year = . 			if year == 0
-				tostring 	year, replace
-				replace  	year = var 			if year == "."
-				drop     	var
-				
-				**
-				**
-				*export		excel using "$tables/.xlsx",  replace   	//DECIDIMOS TIRAR DO PAPER
-			}
-			*/
 						
 			**
 			*Table A7> urban, rural, boys and girls
@@ -605,7 +578,7 @@
 				*Shortterm outcomes
 				*------------------------------------------------------------------------------------------------------------------------*
 				{
-				foreach bandwidth in 10 12 14 {
+				foreach bandwidth in 10 12 14  {
 				
 				use    "$inter/Local Randomization Results_1998-2014.dta" if shortterm_outcomes != 0 & bandwidth == `bandwidth', clear
 				
@@ -625,18 +598,18 @@
 							||  	scatter ATE 	 year_n1 ,   color(orange) msize(large) msymbol(O) 																					///
 							|| 		rcap lower upper year_n1 ,  lcolor(navy) lwidth( medthick )  	 																					///
 							yline(0, lw(0.6) lp(shortdash) lcolor(cranberry*06))  ylabel(, labsize(small) gmax angle(horizontal) format (%4.1fc)) 				 						///
-							xlabel(1 `" "1998" "' 2 `" "1999" "' 3 `" "2001" "' 4 `" "2002" "' 5 `" "2003" "' 6 `" "2004" "' 7 `" "2005" "' 8 `" "2006" "' , angle(90)  labsize(small)) ///
+							xlabel(1 `" "13" "years" "old" "' 2 `" "14" "years" "old" "' 3 `" "16" "years" "old" "' 4 `" "17" "years" "old" "' 5 `" "18" "years" "old" "' 6 `" "19" "years" "old" "' 7 `" "20" "years" "old" "' 8 `" "21" "years" "old" "' ,  labsize(small)) ///
 							xtitle("", size(small)) 											  																						///
 							yscale(r(`min' `max'))	 																																	///
 							ytitle("ATE, in pp", size(small))					 																										///					
 							title({bf:`: label shortterm_outcomes `shortterm_outcomes''}, pos(11) color(navy) span size(medsmall))														///
-							legend(off) 																																				///
+							legend(off) xsize(6) ysize(4)																																			///
 							note(".", color(black) fcolor(background) pos(7) size(small)) saving(short`figure'.gph, replace)
 							local figure = `figure' + 1
 						restore
 					}
 					
-					
+					/*
 					**
 					*High school degree
 						preserve
@@ -684,23 +657,23 @@
 							note(".", color(black) fcolor(background) pos(7) size(small)) saving(short`figure'_`bandwidth'.gph, replace)
 							local figure = `figure' + 1
 						restore
-						
+					*/
 					
 					*Graph with estimations for shortterm outcomes
-					graph combine short1.gph short2.gph short3.gph short4.gph short5.gph short6.gph short7.gph short8.gph short9.gph, cols(5) graphregion(fcolor(white)) ysize(10) xsize(25) title(, fcolor(white) size(medium) color(cranberry))
+					graph combine short1.gph short2.gph short4.gph short5.gph short6.gph short8.gph, cols(3) graphregion(fcolor(white)) ysize(10) xsize(18) title(, fcolor(white) size(medium) color(cranberry))
 					
 					if `bandwidth' == 10 graph export "$figures/Figure3.pdf",  as(pdf) replace
 					if `bandwidth' == 12 graph export "$figures/FigureA7.pdf", as(pdf) replace	
 					if `bandwidth' == 14 graph export "$figures/FigureA8.pdf", as(pdf) replace
 				
 					forvalues figure = 1(1)9 {
-					erase short`figure'.gph
+					*erase short`figure'.gph
 					}
 					
-				}
+				}	
+					/*
 					graph combine short10_10.gph short11_10.gph	short10_12.gph short11_12.gph short11_14.gph short11_14.gph			, cols(2) graphregion(fcolor(white)) ysize(7)  xsize(5) title(, fcolor(white) size(medium) color(cranberry))
 					graph export "$figures/FigureA9.pdf", as(pdf) replace
-					/*
 					erase short10_10.gph
 					erase short11_10.gph
 					erase short10_12.gph
@@ -717,7 +690,7 @@
 				use    "$inter/Local Randomization Results_1998-2014.dta" if longterm_outcomes != 0 & bandwidth == 10, clear
 					local figure = 1
 					
-					forvalues longterm_outcomes = 1(1)3 {
+					forvalues longterm_outcomes = 1(1)4 {
 						preserve
 							keep if longterm_outcomes == `longterm_outcomes'
 							quietly su lower, detail
@@ -729,7 +702,7 @@
 							||  	scatter ATE 	 year_n2 ,   color(orange) msize(large) msymbol(O) 		///
 							|| 		rcap lower upper year_n2 ,  lcolor(navy) lwidth( medthick )  	 			///
 							yline(0, lw(0.6) lp(shortdash) lcolor(cranberry*0.6))  ylabel(, labsize(small) gmax angle(horizontal) format (%4.1fc))  				 					///
-							xlabel(1 `" "2007" "' 2 `" "2008" "' 3 `" "2009" "' 4 `" "2011" "' 5 `" "2012" "' 6 `" "2013" "' 7 `" "2014" "' , labsize(vsmall) ) 						///
+							xlabel(1 `" "22 years" "old" "' 2 `" "23 years" "old" "' 3 `" "24 years" "old" "' 4 `" "26 years" "old" "' 5 `" "27 years" "old" "' 6 `" "28 years" "old" "' 7 `" "29 years" "old" "' , labsize(vsmall) ) 						///
 							xtitle("", size(small)) 											  																						///
 							yscale(r(`min' `max')) 																																		///
 							ytitle("ATE, in pp", size(small))					 																										///					
@@ -740,6 +713,7 @@
 						restore
 					}
 					
+					/*
 					**
 					*Wage per hour
 						preserve
@@ -759,10 +733,10 @@
 							ytitle("ATE, in R$", size(small))					 																										///					
 							title({bf: `:label longterm_outcomes 4'}, pos(11) color(navy) span size(medsmall))																		///
 							legend(off) 																																				///
-							note(".", color(black) fcolor(background) pos(7) size(small)) saving(lomg`figure'.gph, replace)
+							note(".", color(black) fcolor(background) pos(7) size(small)) saving(long`figure'.gph, replace)
 							local figure = `figure' + 1
 						restore
-						
+					*/	
 					
 					
 					*Graph with estimations for longterm outcomes
@@ -874,8 +848,10 @@
 	
 	
 	
+	use "$final/child-labor-ban-brazil.dta" if urban  == 1	& male == 1 & cohort1_12 == 1, clear	//only boys, urban areas
 	
-	
+	rdrandinf mom_working zw1,  wl(-14) wr(13)  interfci(0.05) seed(493734)	
+
 	
 	
 	

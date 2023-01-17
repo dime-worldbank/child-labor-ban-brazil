@@ -179,12 +179,10 @@
 				gen 	inf      = v0301
 
 				gen 	ninf_mom = v0407 																																			//número de ordem da mãe - vai ser últil para sabermos a escolaridade da mãe
-				gen 	ninf_mom = v0407 																																			//número de ordem da mãe - vai ser últil para sabermos a escolaridade da mãe
 				
 				sort 	hh_id inf uf
 
 				gen 	year     = v0101
-
 
 				*
 				*------------------------------------------------------------------------------------------------------------------------*
@@ -480,7 +478,7 @@
 						
 						recode  v1605 (1 = 1) (3 = 0) (9 = .), gen (happy_work)
 						
-						rename (v1606 v1607 v1504 v1562 v1507 v1508) (reason_not_like_work reason_work hours_school missing_school_days reason_not_go_school reason_not_attend_school)
+						rename (v1604  v1606 v1607 v1504 v1562 v1507 v1508) (wage_desti reason_not_like_work reason_work hours_school missing_school_days reason_not_go_school reason_not_attend_school)
 						
 						replace reason_not_like_work= . 		if reason_not_like_work == 9 
 						
@@ -510,6 +508,10 @@
 						gen 	more6hours_school 		 = 1 if schoolatt 			     == 1 & (hours_school == 6)
 					
 						replace more6hours_school 	     = 0 if schoolatt 				 == 1 & (hours_school == 4 | hours_school == 2 )
+						
+						gen 	help_finance_house = 1 if inlist(wage_desti,1,2,3)
+						
+						replace help_finance_house = 0 if inlist(wage_desti,4,5)
 												
 				} 
 				
@@ -624,8 +626,10 @@
 
 				gen 	kid17fa		  = 1 				   		if age >= 6 & age <= 17 & female == 1																						//meninas adolescentes no domicílio
 
-				gen 	kid17ma		  = 1 				   		if age >= 6 & age <= 17 & female == 0																						//meninos adolescentes no domicílio
+				gen 	kid17ma		  = 1 				   		if age >= 6 & age <= 17 & female == 0 																						//meninos adolescentes no domicílio
 
+
+				
 				foreach name in kid6 kid13 kid17 kid17f kid17m {
 				
 					bysort hh_id: egen `name' = max(`name'a)
@@ -636,6 +640,32 @@
 				
 				}	
 				
+				if `year' == 1999 {
+					
+				preserve 
+												
+				gen		a 	 = age <13  &  hh_member == 3 & employed == 1
+				
+			    gen 	b	 = age >16	&  hh_member == 3 & employed == 1
+				
+				bys    hh_id: egen has_sibling13working = max(a)
+				
+				bys    hh_id: egen has_sibling16working = max(b)
+				
+				duplicates drop hh_id,force
+				
+				keep hh_id has_sibling*
+				
+				tempfile hh_id
+				
+				save    `hh_id'
+				
+				restore
+				
+				merge m:1 hh_id using `hh_id', nogen 
+				
+				}
+
 			
 				*Finished high school
 				*------------------------------------------------------------------------------------------------------------------------*
@@ -957,11 +987,23 @@
 				
 				drop 	temp
 				
-				gen 	temp = yrs_school			if spouse == 1 & male == 0
+				gen 	temp = yrs_school			if spouse == 1 
 				
 				bys 	hh_id year: egen hh_spouse_edu = max(temp)
 				
-				drop 	temp				
+				drop 	temp	
+				
+				gen 	temp = age 					if spouse == 1 
+				
+				bys 	hh_id year: egen hh_spouse_age = max(temp)
+				
+				drop 	temp	
+				
+				gen 	temp = working 				if hh_head == 1 
+				
+				bys 	hh_id year: egen hh_head_working = max(temp)
+				
+				drop 	temp	
 				
 				*------------------------------------------------------------------------------------------------------------------------*
 				replace wage 				= . 	if wage 			== 0
@@ -974,19 +1016,19 @@
 			*----------------------------------------------------------------------------------------------------------------------------*
 			end
 
-			
+		
 		**
 		**
 		*Pooled data
 		*___________________________________________________________________________________________________________ _____________________*
 			
-			foreach wave in 1998 1999 2001 2002 2003 2004 2005 2006 2007 2008 2009 2011 2012 2013 2014 {
+			foreach wave in 2007 2008 2009 2011 2012 2013 2014  { //1998 1999 2001 2002 2003 2004 2005 2006
 				harmonizar_pnad, year(`wave')
 			}
 			clear
-			foreach wave in 1998 1999 2001 2002 2003 2004 2005 2006 2007 2008 2009 2011 2012 2013 2014 {
+			foreach wave in 1998 1999 2001 2002 2003 2004 2005 2006 2007 2008 2009 2011 2012 2013 2014  { //
 				append using "$inter/pnad_harm_`wave'.dta"
-				erase 		 "$inter/pnad_harm_`wave'.dta"
+				*erase 		 "$inter/pnad_harm_`wave'.dta"
 			}
 			save "$inter/Pooled_PNAD.dta", replace
 
@@ -1036,7 +1078,7 @@
 							replace real_`var' = `var'*`ipca`wave'' if year == `wave'
 					}
 				}
-				*/
+				
 				
 				*Variáveis em Ln
 				*------------------------------------------------------------------------------------------------------------------------*
@@ -1052,7 +1094,7 @@
 										22 "Piauí" 				23 "Ceará" 					24 "Rio Grande do Norte" 	25 "Paraíba" 		    26 "Pernambuco" 	27 "Alagoas" 	28 "Sergipe" ///
 										29 "Bahia" 				31 "Minas Gerais" 			32 "Espírito Santo" 		33 "Rio de Janeiro" 	35 "São Paulo" 		41 "Paraná" ///
 										42 "Santa Catarina" 	43 "Rio Grande do Sul" 	    50 "Mato Grosso do Sul" 	51 "Mato Grosso" 		52 "Goiás" 			53 "Distrito Federal" 
-				rename uf 	 coduf
+				clonevar coduf = uf
 
 																		
 				*Labels					

@@ -167,9 +167,8 @@
 		label 	var working_for_household 			"Working for their household (unpaid)" 
 		label 	var housekeeper						"Working as housekeepers (paid)" 
 
-		*label 	drop 	urban male
+		label 	drop 	urban male
 		label 	define 	D1    0 "Unnafected cohort" 1 "Affected cohort"
-		label 	drop  urban male 
 		label 	define 	urban 1 "Urban"   0 "Rural"
 		label 	define 	male  1 "Boys"    0 "Girls"
 		label 	val		urban urban
@@ -225,6 +224,7 @@
 		preserve
 		drop  		v*
 		keep 		if year != 1999 & year != 2001 & year != 1998 & year != 1997
+		tostring 	uf	 , replace     			 		//  unidade da federacao: uf
 		tempfile 	data
 		save 	   `data'
 		restore
@@ -241,8 +241,7 @@
 	*--------------------------------------------------------------------------------------------------------------------------------*
 		destring  	v0102 v0103 v0301, replace
 		replace  	v0101 = 99 if v0101 == 1999
-		tostring 	v0101, replace  
-		gen 	 	uf = coduf
+		tostring 	v0101, replace
 		tostring 	uf	 , replace     			 		//  unidade da federacao: uf
 		tostring 	v0102, replace   					//  control: v0102
 		tostring 	v0103, replace   					//  serie: v0103
@@ -552,11 +551,12 @@
 		su  	 wage_hour 		if year == `year', detail
 		replace  wage_hour = .  if year == `year' & (wage_hour< r(p5) | wage_hour > r(p95))
 		}
+		*tab region, gen(region)
 	save 	"$final/child-labor-ban-brazil.dta", replace
 
 	
 	
-	
+	/*
 	*________________________________________________________________________________________________________________________________*
 	
 	*Comparing our data size and covariates with the ones of Bargain/Boutin Paper (2021). 
@@ -644,7 +644,7 @@
 				*Child Labor
 				tab employ employ_bargain, mis			
 				*===================================================*
-				
+				/*
 				*===================================================*
 				*Region
 				tab region1 reg1, mis
@@ -652,7 +652,7 @@
 				tab region3 reg3, mis
 				tab region4 reg4, mis
 				*===================================================*
-				
+				*/
 				*===================================================*
 				*Skin color
 				tab color_bargain2 eth2, mis			

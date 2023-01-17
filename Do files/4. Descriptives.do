@@ -12,7 +12,7 @@
 	*Descriptive Statistics cited in the Paper
 	*____________________________________________________________________________________________________________________________________*
 	**
-		
+				
 		//-------------->>
 		//1. Intro
 		//
@@ -21,17 +21,43 @@
 
 			su working [w = weight]
 			su eap	   [w = weight]
-
-				
-		use "$final/child-labor-ban-brazil.dta" if year == 1998 & age == 14, clear	
-
-			su working [w = weight]
-			su eap	   [w = weight] 
 			
 			gen 	id = 1 if pwork == 1							//children in paid jobs, % boys in urban areas, %girls in urban areas, % boys in rural areas, % girls in rural areas
 			collapse (sum) id [aw = weight], by(male urban)
 			egen 	t = sum(id)
 			gen 	p = id/t
+			
+			
+		use "$final/child-labor-ban-brazil.dta" if year == 1998 & age == 14, clear	
+			gen id 		= 1
+			gen rural   = urban == 0
+			foreach region in urban rural {
+				if "`region'" == "urban" local urban = 1
+				if "`region'" == "rural" local urban = 0	
+					foreach sex in f m {
+						if "`sex'" == "f" local male = 0
+						if "`sex'" == "m" local male = 1
+						gen 		     `region'_`sex' = 1 if urban == `urban' & male == `male'
+						gen 	     eap_`region'_`sex' = 1 if urban == `urban' & male == `male' & eap == 1
+						gen	  		   w_`region'_`sex' = 1 if urban == `urban' & male == `male' & eap == 1 & working == 1
+						gen	 		   u_`region'_`sex' = 1 if urban == `urban' & male == `male' & eap == 1 & working == 0
+						gen	       pwork_`region'_`sex' = 1 if urban == `urban' & male == `male' & eap == 1 & working == 1 & pwork  == 1
+						gen	       uwork_`region'_`sex' = 1 if urban == `urban' & male == `male' & eap == 1 & working == 1 & uwork  == 1
+						gen	    pwformal_`region'_`sex' = 1 if urban == `urban' & male == `male' & eap == 1 & working == 1 & pwork  == 1 & formal == 1
+						gen	  pwinformal_`region'_`sex' = 1 if urban == `urban' & male == `male' & eap == 1 & working == 1 & pwork  == 1 & formal == 0
+					}
+			}
+
+
+			collapse (mean) urban male female id-pwinformal_rural_m [pw = weight]
+			
+			
+			
+			
+			
+			
+			
+			
 
 				
 		use "$final/child-labor-ban-brazil.dta" if year == 1998 & age == 14 & urban  == 0 & working == 1, clear	
@@ -287,6 +313,15 @@
 			use "$inter/Pooled_PNAD.dta", clear
 			
 			
+		//-------------->>
+		//7. Submission comments
+		//
+				use "$final/child-labor-ban-brazil.dta" if year == 1999 & cohort1_12 == 1, clear	
+				tab hh_
+
+				tab	hh_head_age if  hh_member == 3
+				tab	hh_spouse_age if  hh_member == 3
+				
 				
 		}
 	
@@ -456,7 +491,7 @@
 			replace formal 		= 0  	if working == 0
 			replace informal 	= 0 	if working == 0
 			
-			collapse (mean) eap pwork pwork_formal pwork_informal [pw = weight], by(D1 year)
+			collapse (mean) eap pwork pwork_formal pwork_informal high [pw = weight], by(D1 year)
 		
 			foreach var of varlist eap pwork_formal pwork_informal pwork  {
 				replace `var' = `var'*100
@@ -563,11 +598,41 @@
 	*Figure A4
 	*____________________________________________________________________________________________________________________________________*
 	**
+	
+	local window = 14
+	
 	{			
-		use "$final/child-labor-ban-brazil.dta" if year == 1999 & xw1 >= - 6 & xw1 < 6, clear	
+		use "$final/child-labor-ban-brazil.dta" if year == 1999 & cohort1_3== 1 , clear	
 		DCdensity zw1, breakpoint(0) b(1) generate(Xj Yj r0 fhat se_fhat)
-		graph export "$figures/FigureA4.pdf", as(pdf) replace
+		
 	}
+		
+	local breakpoint 0
+	local cellmpname Xj
+	local cellvalname Yj
+	
+	local evalname r0
+	local cellsmname fhat
+	local cellsmsename se_fhat
+	
+	drop if `cellmpname' <  -`window'  | `cellmpname' >  `window' 
+	drop if `evalname'   <  -`window'  | `evalname'   >  `window'
+	
+	quietly gen hi = `cellsmname' + 1.96*`cellsmsename'
+	quietly gen lo = `cellsmname' - 1.96*`cellsmsename'
+	
+	
+	gr twoway (scatter `cellvalname' `cellmpname' if `cellmpname' > -13, msymbol(circle_hollow) mcolor(gray))             ///
+	  (line `cellsmname' `evalname' if `evalname' < `breakpoint', lcolor(black) lwidth(medthick))   ///
+	  (line `cellsmname' `evalname' if `evalname' > `breakpoint' & `evalname' < 10, lcolor(black) lwidth(medthick))   ///
+	  (line hi `evalname' if `evalname' < `breakpoint', lcolor(black) lwidth(vthin))              ///
+	  (line lo `evalname' if `evalname' < `breakpoint', lcolor(black) lwidth(vthin))              ///
+	  (line hi `evalname' if `evalname' > `breakpoint' & `evalname' <10, lcolor(black) lwidth(vthin))              ///
+	  (line lo `evalname' if `evalname' > `breakpoint' & `evalname' < 10, lcolor(black) lwidth(vthin)),             ///
+	  xline(`breakpoint', lcolor(black)) legend(off) ///
+	  xlabel(-15(5)15) xtitle("Running variable, in weeks", size(medsmall)) ytitle("Density", size(medsmall)) 
+		graph export "$figures/FigureA4.pdf", as(pdf) replace
+
 	
 	
 	
@@ -577,6 +642,26 @@
 	
 	
 	
+	use "$final/child-labor-ban-brazil.dta" if year >= 2003 & year <= 2007 & (zw1 >= -10 & zw1 < 10) & urban  == 1	& male == 1 & cohort1_12 == 1, clear	
+
+			collapse (mean) highschool_degree [pw = weight], by(D1 year)
+			replace highschool_degree = highschool_degree*100
+			reshape wide highschool_degree, i(year) j(D1)
+			
+					
+			graph bar (asis)highschool_degree0 highschool_degree1, bargap(5) bar(2,  lw(0.5) lcolor(navy) fcolor(gs12)) bar(1, lw(0.5) lcolor(emidblue) fcolor(gs12) fintensity(70))	bar(2, lw(0.5) lcolor(navy) fcolor(emidblue) )		///
+			over(year, sort(year) label(labsize(small)))																			///
+			blabel(bar, position(outside) orientation(horizontal) size(medsmall) color(black) format (%4.1fc))   																						///
+			title("", pos(12) size(medsmall) color(black)) subtitle(, pos(12) size(medsmall) color(black)) 																								///
+			ytitle("%", size(medsmall)) 																																								///
+			yscale(off)	 ylabel(,nogrid nogextend) 																																						///	
+			plotregion(color(white) fcolor(white) lcolor(white) icolor(white) ifcolor(white) ilcolor(white)) 																							///						
+			legend(order(1 "Unnafected cohort" 2 "Affected cohort")  region(lwidth(none) color(white) fcolor(none)) cols(2) size(large) position(12))      		            							///
+			note("" , color(black) fcolor(background) pos(7) size(small)) 																											///
+			xsize(7) ysize(5) 
+		graph export "$figures/percentage of students finish high school.pdf", as(pdf) replace
+
+
 	
 	
 	

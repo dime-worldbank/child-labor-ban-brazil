@@ -219,16 +219,16 @@
 	   }		
 		
 		**Local Randomization Inference, RD densitity and LP density Packages
-		net install rdlocrand,  from(https://raw.githubusercontent.com/rdpackages/rdlocrand/master/stata) replace
-		net install rddensity,  from(https://raw.githubusercontent.com/rdpackages/rddensity/master/stata) replace
-		net install lpdensity,  from(https://raw.githubusercontent.com/nppackages/lpdensity/master/stata) replace
+		net install rdlocrand,  from(https://github.com/rdpackages/rdlocrand/tree/master/stata) replace
+		net install rddensity,  from(https://github.com/rdpackages/rddensity/tree/master/stata) replace
+		net install lpdensity,  from(https://github.com/nppackages/lpdensity/tree/master/stata) replace
 		
 		
 		*MC Crary test
 		sysdir  //locations
-		copy https://eml.berkeley.edu/~jmccrary/DCdensity/DCdensity.ado  `"`c(sysdir_plus)'/DCdensity.ado"', public replace
-		discard // you have to discard to see installed adofiles
-		which DCdensity
+		*copy https://eml.berkeley.edu/~jmccrary/DCdensity/DCdensity.ado  `"`c(sysdir_plus)'/DCdensity.ado"', public replace
+		*discard // you have to discard to see installed adofiles
+		*which DCdensity
 		
 		**DataZoom Package
 		*net from http://www.econ.puc-rio.br/datazoom/portugues  

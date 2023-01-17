@@ -76,7 +76,7 @@
 																			
 					
 						foreach bandwidth in 4 6 9 {			//bandwidths
-							reg `variable' zw`cohort' 		  	 				 $bargain_controls_our_def D`cohort' i.year [aw = weight] if cohort`cohort'_`bandwidth' == 1 , cluster(zw`cohort')	
+							reg `variable' zw`cohort' 		  	 				 $bargain_controls_our_def D`cohort' i.year [aw = weight] if cohort`cohort'_`bandwidth' == 1, cluster(zw`cohort')	
 							eststo, title("Linear")
 							reg `variable' zw`cohort'  zw`cohort'2	  			 $bargain_controls_our_def D`cohort' i.year [aw = weight] if cohort`cohort'_`bandwidth' == 1 , cluster(zw`cohort')	
 							eststo, title("Quadratic") 
@@ -90,19 +90,19 @@
 						**
 						*Tables ----------------------------------->>
 						if  	  `example' == -1  & "`variable'" == "eap" { //ROBSTUNESS, SAME AGE, SAME COHORT
-								estout * using "$tables\TableA6.xls",  keep(D`cohort')  title("`title'") label mgroups("4-month bandwidth" "6-month bandwidth" "9-month bandwidth",  pattern(1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0)) stats() cells(b(star fmt(2) ) se(par(`"="("' `")""')  fmt(2))) starlevels(* 0.10 ** 0.05 *** 0.01) replace
+								estout * using "$tables\TableA6.xls",  keep(D`cohort')  title("`title'") label mgroups("4-month bandwidth" "6-month bandwidth" "9-month bandwidth",  pattern(1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0)) stats(N) cells(b(star fmt(2) ) se(par(`"="("' `")""')  fmt(2))) starlevels(* 0.10 ** 0.05 *** 0.01) replace
 						}
 						if  	 (`example' == - 1  & "`variable'" != "eap") | `example' == 0 {
-								estout * using "$tables\TableA6.xls",  keep(D`cohort')  title("`title'") label mgroups("4-month bandwidth" "6-month bandwidth" "9-month bandwidth",  pattern(1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0)) stats() cells(b(star fmt(2) ) se(par(`"="("' `")""')  fmt(2))) starlevels(* 0.10 ** 0.05 *** 0.01) append
+								estout * using "$tables\TableA6.xls",  keep(D`cohort')  title("`title'") label mgroups("4-month bandwidth" "6-month bandwidth" "9-month bandwidth",  pattern(1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0)) stats(N) cells(b(star fmt(2) ) se(par(`"="("' `")""')  fmt(2))) starlevels(* 0.10 ** 0.05 *** 0.01) append
 						}
 						
 						**
 						*Tables ----------------------------------->>
 						if  	  `example' == 1  & "`variable'" == "eap" 					{
-								estout * using "$tables\Table1.xls",  keep(D`cohort')  title("`title'") label mgroups("4-month bandwidth" "6-month bandwidth" "9-month bandwidth",  pattern(1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0)) stats() cells(b(star fmt(2) ) se(par(`"="("' `")""')  fmt(2))) starlevels(* 0.10 ** 0.05 *** 0.01) replace
+								estout * using "$tables\Table1.xls",  keep(D`cohort')  title("`title'") label mgroups("4-month bandwidth" "6-month bandwidth" "9-month bandwidth",  pattern(1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0)) stats(N) cells(b(star fmt(2) ) se(par(`"="("' `")""')  fmt(2))) starlevels(* 0.10 ** 0.05 *** 0.01) replace
 						}
 						if  	 (`example' == 1  & "`variable'" != "eap") | `example' == 2 {
-								estout * using "$tables\Table1.xls",  keep(D`cohort')  title("`title'") label mgroups("4-month bandwidth" "6-month bandwidth" "9-month bandwidth",  pattern(1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0)) stats() cells(b(star fmt(2) ) se(par(`"="("' `")""')  fmt(2))) starlevels(* 0.10 ** 0.05 *** 0.01) append
+								estout * using "$tables\Table1.xls",  keep(D`cohort')  title("`title'") label mgroups("4-month bandwidth" "6-month bandwidth" "9-month bandwidth",  pattern(1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0)) stats(N) cells(b(star fmt(2) ) se(par(`"="("' `")""')  fmt(2))) starlevels(* 0.10 ** 0.05 *** 0.01) append
 						}							
 						estimates clear	
 					} 	//examples
@@ -178,8 +178,17 @@
 	
 	
 	
+	use "$final/child-labor-ban-brazil.dta" if urban == 1 & male == 1 & cohort1_12 == 1 & (year  == 1999), clear	//boys, urban, 1999ta
 	
 	
+	reg eap  zw1 zw1D1 D1 if zw1 > -15 & zw1 < 15 , cluster(zw1)	
+
+	
+	rdrobust eap  zw1,  c(0) p(1)  vce(cluster zw1) kernel(uniform)
+        
+	rdrobust pwork_formal zw1,  c(0) p(1)  vce(cluster zw1) kernel(uniform) 
+
+
 	
 	
 	
