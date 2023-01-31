@@ -25,39 +25,7 @@
 			gen 	id = 1 if pwork == 1							//children in paid jobs, % boys in urban areas, %girls in urban areas, % boys in rural areas, % girls in rural areas
 			collapse (sum) id [aw = weight], by(male urban)
 			egen 	t = sum(id)
-			gen 	p = id/t
-			
-			
-		use "$final/child-labor-ban-brazil.dta" if year == 1998 & age == 14, clear	
-			gen id 		= 1
-			gen rural   = urban == 0
-			foreach region in urban rural {
-				if "`region'" == "urban" local urban = 1
-				if "`region'" == "rural" local urban = 0	
-					foreach sex in f m {
-						if "`sex'" == "f" local male = 0
-						if "`sex'" == "m" local male = 1
-						gen 		     `region'_`sex' = 1 if urban == `urban' & male == `male'
-						gen 	     eap_`region'_`sex' = 1 if urban == `urban' & male == `male' & eap == 1
-						gen	  		   w_`region'_`sex' = 1 if urban == `urban' & male == `male' & eap == 1 & working == 1
-						gen	 		   u_`region'_`sex' = 1 if urban == `urban' & male == `male' & eap == 1 & working == 0
-						gen	       pwork_`region'_`sex' = 1 if urban == `urban' & male == `male' & eap == 1 & working == 1 & pwork  == 1
-						gen	       uwork_`region'_`sex' = 1 if urban == `urban' & male == `male' & eap == 1 & working == 1 & uwork  == 1
-						gen	    pwformal_`region'_`sex' = 1 if urban == `urban' & male == `male' & eap == 1 & working == 1 & pwork  == 1 & formal == 1
-						gen	  pwinformal_`region'_`sex' = 1 if urban == `urban' & male == `male' & eap == 1 & working == 1 & pwork  == 1 & formal == 0
-					}
-			}
-
-
-			collapse (mean) urban male female id-pwinformal_rural_m [pw = weight]
-			
-			
-			
-			
-			
-			
-			
-			
+			gen 	p = id/t	
 
 				
 		use "$final/child-labor-ban-brazil.dta" if year == 1998 & age == 14 & urban  == 0 & working == 1, clear	
@@ -311,19 +279,105 @@
 			use "$final/child-labor-ban-brazil.dta" if year == 1999 & xw1 >, clear	
 
 			use "$inter/Pooled_PNAD.dta", clear
-			
+		}	
 			
 		//-------------->>
 		//7. Submission comments
 		//
-				use "$final/child-labor-ban-brazil.dta" if year == 1999 & cohort1_12 == 1, clear	
+		{
+			use "$final/child-labor-ban-brazil.dta" if year == 1999 & cohort1_12 == 1, clear	
 				tab hh_
 
 				tab	hh_head_age if  hh_member == 3
 				tab	hh_spouse_age if  hh_member == 3
 				
-				
 		}
+	
+		//-------------->>
+		//8. Flow charts
+		//
+		{
+			
+		**
+		*
+		use "$final/child-labor-ban-brazil.dta" if year == 1998 & age == 14, clear	
+			gen id 		= 1
+			gen rural   = urban == 0
+			foreach region in urban rural {
+				if "`region'" == "urban" local urban = 1
+				if "`region'" == "rural" local urban = 0	
+					foreach sex in f m {
+						if "`sex'" == "f" local male = 0
+						if "`sex'" == "m" local male = 1
+						gen 		     `region'_`sex' = 1 if urban == `urban' & male == `male'
+						gen 	     eap_`region'_`sex' = 1 if urban == `urban' & male == `male' & eap == 1
+						gen	  		   w_`region'_`sex' = 1 if urban == `urban' & male == `male' & eap == 1 & working == 1
+						gen	 		   u_`region'_`sex' = 1 if urban == `urban' & male == `male' & eap == 1 & working == 0
+						gen	       pwork_`region'_`sex' = 1 if urban == `urban' & male == `male' & eap == 1 & working == 1 & pwork  == 1
+						gen	       uwork_`region'_`sex' = 1 if urban == `urban' & male == `male' & eap == 1 & working == 1 & uwork  == 1
+						gen	    pwformal_`region'_`sex' = 1 if urban == `urban' & male == `male' & eap == 1 & working == 1 & pwork  == 1 & formal == 1
+						gen	  pwinformal_`region'_`sex' = 1 if urban == `urban' & male == `male' & eap == 1 & working == 1 & pwork  == 1 & formal == 0
+						gen	   uw_formal_`region'_`sex' = 1 if urban == `urban' & male == `male' & eap == 1 & working == 1 & uwork  == 1 & formal == 1
+						gen	 uw_informal_`region'_`sex' = 1 if urban == `urban' & male == `male' & eap == 1 & working == 1 & uwork  == 1 & formal == 0
+					}
+			}
+			collapse (sum) urban male female id-uw_informal_rural_m [pw = weight]
+			
+		**
+		*
+		use "$final/child-labor-ban-brazil.dta" if year == 1998 & age == 14, clear	
+			gen 	w_urban 								= 1 	if working 			== 1 & urban == 1
+			replace w_urban									= 0 	if working 			== 1 & urban == 0
+			gen 	w_rural 								= 1 	if working 			== 1 & urban == 0
+			replace w_rural									= 0 	if working 			== 1 & urban == 1
+			gen 	w_urban_girls 							= 1 	if w_urban 			== 1 & male   == 0
+			replace w_urban_girls 							= 0 	if w_urban 			== 1 & male   == 1
+			gen 	w_urban_boys 							= 1 	if w_urban 			== 1 & male   == 1
+			replace w_urban_boys 							= 0 	if w_urban 			== 1 & male   == 0	
+			gen 	w_rural_girls 							= 1 	if w_rural 			== 1 & male   == 0
+			replace w_rural_girls 							= 0 	if w_rural 			== 1 & male   == 1
+			gen 	w_rural_boys 							= 1 	if w_rural 			== 1 & male   == 1
+			replace w_rural_boys 							= 0 	if w_rural 			== 1 & male   == 0	
+			
+			foreach region    in urban rural {
+				foreach group in girls boys  {
+					
+					gen 	pw_`region'_`group'  			= 1 	if w_`region'_`group' 	== 1 & pwork  == 1
+					replace pw_`region'_`group'  			= 0 	if w_`region'_`group' 	== 1 & pwork  == 0
+					
+					gen 	uw_`region'_`group'  			= 1 	if w_`region'_`group' 	== 1 & uwork  == 1
+					replace uw_`region'_`group'  			= 0 	if w_`region'_`group' 	== 1 & uwork  == 0
+
+					gen 	pwformal_`region'_`group' 		= 1 	if pw_`region'_`group' 	== 1 & formal == 1
+					replace pwformal_`region'_`group' 		= 0 	if pw_`region'_`group' 	== 1 & formal == 0
+					
+					gen 	pwinformal_`region'_`group' 	= 1 	if pw_`region'_`group' 	== 1 & formal == 0
+					replace pwinformal_`region'_`group' 	= 0 	if pw_`region'_`group' 	== 1 & formal == 1
+					
+					gen 	uwformal_`region'_`group' 		= 1 	if uw_`region'_`group' 	== 1 & formal == 1
+					replace uwformal_`region'_`group' 		= 0 	if uw_`region'_`group' 	== 1 & formal == 0
+					
+					gen 	uwinformal_`region'_`group' 	= 1 	if uw_`region'_`group' 	== 1 & formal == 0
+					replace uwinformal_`region'_`group' 	= 0 	if uw_`region'_`group' 	== 1 & formal == 1
+				}
+			}
+			
+			foreach var of varlist working w_* pw* uw* {
+			replace `var' = `var'*100	
+			}
+		
+			collapse (mean) working w_urban ///
+							w_urban_girls pw_urban_girls pwformal_urban_girls pwinformal_urban_girls uw_urban_girls uwformal_urban_girls uwinformal_urban_girls ///
+							w_urban_boys  pw_urban_boys  pwformal_urban_boys  pwinformal_urban_boys  uw_urban_boys  uwformal_urban_boys  uwinformal_urban_boys	///
+							w_rural_girls pw_rural_girls pwformal_rural_girls pwinformal_rural_girls uw_rural_girls uwformal_rural_girls uwinformal_rural_girls ///
+							w_rural_boys  pw_rural_boys  pwformal_rural_boys  pwinformal_rural_boys  uw_rural_boys  uwformal_rural_boys  uwinformal_rural_boys	///
+							[pw = weight]
+
+		}
+	
+	
+	
+	
 	
 	
 	**
