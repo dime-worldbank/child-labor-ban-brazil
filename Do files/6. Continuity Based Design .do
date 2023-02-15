@@ -162,6 +162,7 @@
 							}
 						}
 						
+						
 						**
 						*Tables ----------------------------------->>
 						if  	 "`variable'" == "eap" & `year' == 1		 			{
@@ -184,7 +185,7 @@
 	reg eap  zw1 zw1D1 D1 if zw1 > -15 & zw1 < 15 , cluster(zw1)	
 
 	
-	rdrobust eap  zw1,  c(0) p(1)  vce(cluster zw1) kernel(uniform)
+	rdrobust eap  zw1,  c(0) p(1)  vce(cluster zw1) kernel(uniform) all 
         
 	rdrobust pwork_formal zw1,  c(0) p(1)  vce(cluster zw1) kernel(uniform) 
 

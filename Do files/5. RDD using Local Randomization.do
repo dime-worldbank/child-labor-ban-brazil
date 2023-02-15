@@ -602,7 +602,7 @@
 							xtitle("", size(small)) 											  																						///
 							yscale(r(`min' `max'))	 																																	///
 							ytitle("ATE, in pp", size(small))					 																										///					
-							title({bf:`: label shortterm_outcomes `shortterm_outcomes''}, pos(11) color(navy) span size(medsmall))														///
+							title({bf:`: label `shortterm_outcomes' `shortterm_outcomes''}, pos(11) color(navy) span size(medsmall))														///
 							legend(off) xsize(6) ysize(4)																																			///
 							note(".", color(black) fcolor(background) pos(7) size(small)) saving(short`figure'.gph, replace)
 							local figure = `figure' + 1

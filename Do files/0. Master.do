@@ -210,7 +210,7 @@
 		*`r(version)' 
 	   version 16.1
 	   set more off, permanently 
-	   local user_commands ietoolkit rdrobust
+	   local user_commands ietoolkit rdrobust mat2txt
 	   foreach command of local user_commands   {
 		   cap which `command'
 		   if _rc == 111 {
@@ -226,9 +226,9 @@
 		
 		*MC Crary test
 		sysdir  //locations
-		*copy https://eml.berkeley.edu/~jmccrary/DCdensity/DCdensity.ado  `"`c(sysdir_plus)'/DCdensity.ado"', public replace
-		*discard // you have to discard to see installed adofiles
-		*which DCdensity
+		copy https://eml.berkeley.edu/~jmccrary/DCdensity/DCdensity.ado  `"`c(sysdir_plus)'/DCdensity.ado"', public replace
+		discard // you have to discard to see installed adofiles
+		which DCdensity
 		
 		**DataZoom Package
 		*net from http://www.econ.puc-rio.br/datazoom/portugues  
