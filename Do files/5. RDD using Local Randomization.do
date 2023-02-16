@@ -2,6 +2,17 @@
 													*REGRESSION DISCONTINUITY UNDER LOCAL RANDOMIZATION*
 	*____________________________________________________________________________________________________________________________________*
 
+	rdrobust optmium bandwidth
+	eap  number of observations
+	
+	
+	
+	rdrobust p values
+	
+	apendix
+	ols with MHT 
+	
+	
 
 	**=================================================================>>
 	**======================================================>>

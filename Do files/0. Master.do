@@ -210,7 +210,7 @@
 		*`r(version)' 
 	   version 16.1
 	   set more off, permanently 
-	   local user_commands ietoolkit rdrobust mat2txt
+	   local user_commands ietoolkit rdrobust mat2txt qqvalue somersd parmest 
 	   foreach command of local user_commands   {
 		   cap which `command'
 		   if _rc == 111 {
