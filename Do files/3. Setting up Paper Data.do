@@ -167,7 +167,7 @@
 		label 	var working_for_household 			"Working for their household (unpaid)" 
 		label 	var housekeeper						"Working as housekeepers (paid)" 
 
-		label 	drop 	urban male
+		cap noi label 	drop 	urban male
 		label 	define 	D1    0 "Unnafected cohort" 1 "Affected cohort"
 		label 	define 	urban 1 "Urban"   0 "Rural"
 		label 	define 	male  1 "Boys"    0 "Girls"

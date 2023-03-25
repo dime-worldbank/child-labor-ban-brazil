@@ -7,11 +7,11 @@
 	
 	Author: Vivian Amorim
 	vivianamorim5@gmail.com/vamorim@worldbank.org
-	Last Update: May 2022
+	Last Update: March 2023
 	
 	**
 	**
-	Short and Long-term Effects of a Child Labor Ban in Brazil. 
+	Short and Longer-term Effects of a Child Labor Ban in Brazil. 
 	**
 	
 	**YOU NEED STATA 16 TO REPLICATE THE RESULTS**
@@ -205,12 +205,13 @@
 	*Installing Packages and Standardize Settings
 	**
 	*--------------------------------------------------------------------------------------------------------------------------------*
+	   
 	   Installing packages needed to run all dofiles called by this master dofile. */
 		*ieboilstart, version(16)          	
 		*`r(version)' 
 	   version 16.1
 	   set more off, permanently 
-	   local user_commands ietoolkit rdrobust mat2txt qqvalue somersd parmest 
+	   local user_commands ietoolkit rdrobust mat2txt qqvalue somersd parmest matvsort
 	   foreach command of local user_commands   {
 		   cap which `command'
 		   if _rc == 111 {
@@ -231,9 +232,10 @@
 		which DCdensity
 		
 		**DataZoom Package
-		*net from http://www.econ.puc-rio.br/datazoom/portugues  
-		*net install datazoom_pnad, replace
-
+		net from http://www.econ.puc-rio.br/datazoom/portugues  
+		net install datazoom_pnad, replace
+		
+		
 		**Figure settings
 		graph set window fontface "Times"
 		set scheme s1mono

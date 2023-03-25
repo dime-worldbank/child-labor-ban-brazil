@@ -2,7 +2,7 @@
 	*Globals*
 	*________________________________________________________________________________________________________________________________*
 
-		global shortterm_outcomes  		"eap pwork uwork pwork_formal pwork_informal schoolatt  pwork_only study_only nemnem"	//short-term outcomes
+		global shortterm_outcomes  		"eap pwork pwork_formal pwork_informal schoolatt study_only"	//short-term outcomes
 		global longterm_outcomes   		"college_degree working pwork_formal wage_hour"											//long-term outcomes
 		global dep_vars1 				D gap84 	  																			//linear model
 		global dep_vars2 				D gap84 gap84_2																			//quadratic model

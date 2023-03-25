@@ -28,22 +28,22 @@
 			gen 	p = id/t	
 
 				
-		use "$final/child-labor-ban-brazil.dta" if year == 1998 & age == 14 & urban  == 0 & working == 1, clear	
+		use "$final/child-labor-ban-brazil.dta" if year == 1998 & age    == 14 & urban  == 0 & working   == 1, clear	
 		
 			tab uwork  							    [w = weight], mis
 			tab working_for_household if uwork == 1 [w = weight], mis
 		
 		
-		use "$final/child-labor-ban-brazil.dta" if year == 1998 & age == 14 & urban  == 1 & working == 1 & male == 0, clear	
+		use "$final/child-labor-ban-brazil.dta" if year == 1998 & age    == 14 & urban  == 1 & working   == 1 & male == 0, clear	
 			tab pwork  							    [w = weight], mis
 			tab housekeeper if pwork == 1 			[w = weight], mis
 		
 		
-		use "$final/child-labor-ban-brazil.dta" if year == 1998 & age == 14 & urban  == 1 & male == 1, clear	
+		use "$final/child-labor-ban-brazil.dta" if year == 1998 & age    == 14 & urban  == 1 & male      == 1, clear	
 			tab eap 							[w = weight], mis
 			
 			
-		use "$final/child-labor-ban-brazil.dta" if year == 1999 & urban  == 1 & male == 1 & cohort1_4 == 1, clear	
+		use "$final/child-labor-ban-brazil.dta" if year == 1999 & urban  == 1 & male    == 1 & cohort1_4 == 1, clear	
 			su pwork [w = weight]
 		}
 		
@@ -266,21 +266,148 @@
 				use "$final/child-labor-ban-brazil.dta" if male == 1 & urban == 1 & year == 1999 & pwork == 1 & age == 14, clear
 				
 				tab mom_edu_att2 [w = weight], mis
-			
-			
-			**	
-			**Wage by level of education and difference in the formal market
-			**		
-				use "$final/RAIS.dta" if amostra == 1 & (zw >= -10 & zw < 10), clear
-	
-					tab
 				
 				
-			use "$final/child-labor-ban-brazil.dta" if year == 1999 & xw1 >, clear	
-
-			use "$inter/Pooled_PNAD.dta", clear
+				use "$final/child-labor-ban-brazil.dta" if male == 1 & urban == 1 & year == 1999 			  & age == 14, clear
+				
+				gen 	mom_highschool = 1 if inlist(mom_edu_att2,3,4)
+				replace mom_highschool = 0 if inlist(mom_edu_att2,1,2)
+				
+				su 		mom_highschool [w = weight], 
+				
+				bys 	mom_highschool : su eap    [w = weight], 
+				bys	 	mom_highschool : su pwork  [w = weight], 			
 		}	
+		
+		/*
+			v1604   O rendimento que recebia nesse trabalho, habitualmente	
+			wage_desti 
+			1	Era entregue pelo empregador diretamente aos pais ou responsáveis
+			2	Entregava todo  aos pais ou responsáveis
+			3	Entregava parte aos pais ou responsáveis
+			4	Não entregava  aos pais ou responsáveis
+			5	Recebia somente em benefício
+			9	Ignorado
+				Não aplicável
+				
+			V1605	Estava satisfeito nesse trabalho ( único ou principal) que tinha na semana de 23 a 29 de setembro de 2001	
+			happy_work
+			1	Sim
+			3	Não
+			9	Ignorado
+				Não aplicável
+				
+				
+			V1606	Motivo principal pelo qual não estava satisfeito nesse trabalho	
+			reason_not_like_work 
+			1	Trabalho cansativo
+			2	Não tinha tempo para estudar
+			3	Ganhava pouco
+			4	Não tinha um bom relacionamento com o empregador ou responsável nesse trabalho
+			5	Não gostava de trabalhar
+			6	Pagamento atrasava
+			7	Outro motivo
+			9	Ignorado
+				Não aplicável
+
+
+			V1607 Principal motivo que tinha para trabalhar
+			reason_work
+			1	Querer trabalhar
+			3	Os pais ou responsáveis querem que trabalhe
+			9	Ignorado
+				Não aplicável
+				
+				
+			V1562 Valor em nº de dias que deixou de comparecer no período de 1 de agosto a 30 de setembro de 2001	
+			missing_school_days
+			1 a 60	
+			99	Ignorado
+				Não aplicável
+				
+			V1507 Motivo principal ter deixado de comparecer à escola nesses dias	
+			reason_not_go_school
+			01	Ajuda nos afazeres domésticos
+			02	Trabalhar ou procurar trabalho
+			03	Falta de transporte escolar
+			04	Falta dinheiro para as despesas( de mensalidade, material, transporte, etc), para manter-se na escola
+			05	A escola é distante
+			06	Não teve quem o leve
+			07	Falta de professor, greve
+			08	Dificuldade de acompanhar o curso
+			09	Doença
+			10	Não quis comparecer
+			11	Os pais ou responsáveis não quiseram que comparecesse
+			12	Outro motivo
+			99	Ignorado
+				Não aplicável
+
+			V1508 Principal motivo de não frequentar escola	
+			reason_not_attend_school
+			01	Ajuda nos afazeres domésticos
+			02	Trabalhar ou procurar trabalho
+			03	Falta de transporte escolar
+			04	Falta dinheiro para as despesas( de mensalidade, material, transporte, etc), para manter-se na escola
+			05	Falta de documentação
+			06	Não existe escola perto de casa
+			07	Falta vaga na escola
+			08	Concluiu a série ou o curso desejado
+			09	Não tem quem o leve
+			10	Doença ou incapacidade
+			11	Não quis frequentar escola
+			12	Os pais ou responsáveis não querem que frequentem
+			13	Os pais ou responsáveis preferem que trabalhem
+			14	Outro motivo
+			99	Ignorado
+				Não aplicável
+		*/	
+		
+		
+				
+		use "$final/child-labor-ban-brazil.dta" if year == 2001 & cohort1_12 == 1 & urban == 1 & male == 1, clear
+				keep if zw1 >= - 39 & zw1 <= 39
+		
+		
+		keep if working == 1
+		
+		
+		foreach var of varlist  happy_work help_finance_house want_work  work_canhurt gothurt {
 			
+			di as red "`var'"
+			ttest `var', by(D1)
+		}
+		
+		collapse (mean) happy_work help_finance_house want_work  work_canhurt gothurt [w = weight], by(D1)
+
+		
+		
+		**
+		*Weeks
+		gen 	zw1 = wofd(dateofbirth  -  mdy(12, 16, 1984))			//weeks between date of birth  and December 16th, 1984
+
+		keep if zw1 >= -39 & zw1 <= 39
+		
+		gen 	affected = 1 if zw1 >= 0
+		replace affected = 0 if zw1 <  0
+		
+		su affected, detail
+		
+		
+		
+		use "$inter/Pooled_PNAD.dta" if year == 2001 & inlist(age,14,16)  & working == 1, clear	
+
+		bys age: su pwork  [w = weight]			
+					
+		collapse (mean) happy_work help_finance_house want_work  work_canhurt gothurt [w = weight], by(age pwork)
+			
+			
+		use "$inter/Pooled_PNAD.dta" if year == 2001 & inlist(age,14,16) & working == 1, clear	
+		
+		keep if happy_work == 0
+		gen id = 1
+		collapse (sum) id [w = weight], by(age reason_not_like_work)
+		
+		
 		//-------------->>
 		//7. Submission comments
 		//

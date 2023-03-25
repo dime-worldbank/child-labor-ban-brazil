@@ -121,7 +121,7 @@
 				
 				assert  v6003 != . 								if schoolatt == 1
 
-				gen     edu_att2   = 1        					if edu_att   == 1																									//sem instrução 
+				gen     edu_att2   = 1        					if edu_att   == 1																										//sem instrução 
 
 				replace edu_att2   = 2 							if edu_att   == 2 | edu_att == 3																						//primary
 
@@ -209,11 +209,15 @@
 				recode v4727 (1 = 1) (2 = 0) (3 = 0)																		, gen (metro)
 				
 				recode v4704 (1 = 1) (2 = 0) (3 = .)																		, gen (eap)
-
+			
 				recode v4705 (1 = 1) (2 = 0)																				, gen (employed)
 
-				recode v4705 (1 = 0) (2 = 1)																				, gen (unemployed)
+				tab 	eap employed	//there is an error, the person is listed as employed byt the eap is equal to missing
+				
+				replace eap = 1 if employed == 1
 
+				recode v4705 (1 = 0) (2 = 1)																				, gen (unemployed)
+				
 				recode v4706 (1/8 = 1) (9 = 2) (10 = 3) (11/13 = 4) (14 = .)												, gen (type_work)
 						
 				recode v0602 (2 = 1) (4 = 0) (9 = .)																		, gen (schoolatt)									//frequenta ou não a escola
@@ -424,13 +428,15 @@
 				
 				recode  v4704 (1 = 1) (2 = 0) (3 = .)															  					, gen (eap)
 				
+				tab eap employed, mis //5 obs are looking for a job but is listed as not economically active.
+				
+				replace eap = 1 if employed == 0 & eap == 0
+				
 				recode  v4706 (1/8 = 1) (9 = 2) (10 = 3) (11/13 = 4) (14 = .)									  					, gen (type_work)
 					
 				recode  v0602 	(2 = 1) (4 = 0) (9 = .)																				, gen (schoolatt)								//frequenta ou não a escola
 					
 				recode  employed (1 = 0) (0 = 1)																					, gen (unemployed)
-					
-				replace unemployed = . 							if eap == 0 & unemployed == 1	//error
 				
 				gen 	wage  			= v4718   				if  v4718 < 999999999999  & v4718 != -1
 				
@@ -451,9 +457,7 @@
 				gen 	agric_sector = 1 if !missing(type_work_agric)																												//dummy para identificar quem trabalha ou não com agricultura																					
 				
 				replace agric_sector = 0 if  missing(type_work_agric) & employed == 1
-				
-				
-				
+
 				
 				*Labor Card and social security 
 				*------------------------------------------------------------------------------------------------------------------------*
@@ -470,7 +474,90 @@
 					replace `var' = . if age < 10 																																	//normalmente, as informações sobre trabalho são coletadas para pessoas com 10 anos ou +. Em 2001, foram coletadas para 5 anos ou +. Apenas para padronizar com os demais anos, vamos colocar missing quando idade < 10
 					
 				}
-				
+					
+				/*
+				v1604   O rendimento que recebia nesse trabalho, habitualmente	
+				wage_desti 
+				1	Era entregue pelo empregador diretamente aos pais ou responsáveis
+				2	Entregava todo  aos pais ou responsáveis
+				3	Entregava parte aos pais ou responsáveis
+				4	Não entregava  aos pais ou responsáveis
+				5	Recebia somente em benefício
+				9	Ignorado
+					Não aplicável
+					
+				V1605	Estava satisfeito nesse trabalho ( único ou principal) que tinha na semana de 23 a 29 de setembro de 2001	
+				happy_work
+				1	Sim
+				3	Não
+				9	Ignorado
+					Não aplicável
+					
+					
+				V1606	Motivo principal pelo qual não estava satisfeito nesse trabalho	
+				reason_not_like_work 
+				1	Trabalho cansativo
+				2	Não tinha tempo para estudar
+				3	Ganhava pouco
+				4	Não tinha um bom relacionamento com o empregador ou responsável nesse trabalho
+				5	Não gostava de trabalhar
+				6	Pagamento atrasava
+				7	Outro motivo
+				9	Ignorado
+					Não aplicável
+
+
+				V1607 Principal motivo que tinha para trabalhar
+				reason_work
+				1	Querer trabalhar
+				3	Os pais ou responsáveis querem que trabalhe
+				9	Ignorado
+					Não aplicável
+					
+					
+				V1562 Valor em nº de dias que deixou de comparecer no período de 1 de agosto a 30 de setembro de 2001	
+				missing_school_days
+				1 a 60	
+				99	Ignorado
+					Não aplicável
+					
+				V1507 Motivo principal ter deixado de comparecer à escola nesses dias	
+				reason_not_go_school
+				01	Ajuda nos afazeres domésticos
+				02	Trabalhar ou procurar trabalho
+				03	Falta de transporte escolar
+				04	Falta dinheiro para as despesas( de mensalidade, material, transporte, etc), para manter-se na escola
+				05	A escola é distante
+				06	Não teve quem o leve
+				07	Falta de professor, greve
+				08	Dificuldade de acompanhar o curso
+				09	Doença
+				10	Não quis comparecer
+				11	Os pais ou responsáveis não quiseram que comparecesse
+				12	Outro motivo
+				99	Ignorado
+					Não aplicável
+
+				V1508 Principal motivo de não frequentar escola	
+				reason_not_attend_school
+				01	Ajuda nos afazeres domésticos
+				02	Trabalhar ou procurar trabalho
+				03	Falta de transporte escolar
+				04	Falta dinheiro para as despesas( de mensalidade, material, transporte, etc), para manter-se na escola
+				05	Falta de documentação
+				06	Não existe escola perto de casa
+				07	Falta vaga na escola
+				08	Concluiu a série ou o curso desejado
+				09	Não tem quem o leve
+				10	Doença ou incapacidade
+				11	Não quis frequentar escola
+				12	Os pais ou responsáveis não querem que frequentem
+				13	Os pais ou responsáveis preferem que trabalhem
+				14	Outro motivo
+				99	Ignorado
+					Não aplicável
+			*/	
+			
 
 				*In 2001, there is a series of questions regarding the work safety for children/teenagers and also education
 				*------------------------------------------------------------------------------------------------------------------------*
@@ -478,7 +565,8 @@
 						
 						recode  v1605 (1 = 1) (3 = 0) (9 = .), gen (happy_work)
 						
-						rename (v1604  v1606 v1607 v1504 v1562 v1507 v1508) (wage_desti reason_not_like_work reason_work hours_school missing_school_days reason_not_go_school reason_not_attend_school)
+						rename  (v1604  	v1606 				 v1607 		 v1504 		  v1562 			  v1507 			   v1508) ///
+								(wage_desti reason_not_like_work reason_work hours_school missing_school_days reason_not_go_school reason_not_attend_school)
 						
 						replace reason_not_like_work= . 		if reason_not_like_work == 9 
 						
@@ -487,6 +575,19 @@
 						replace reason_work         = 2 		if reason_work 			== 3
 						
 						replace hours_school		= . 		if hours_school 		== 9
+						
+						gen 	want_work =	1 if reason_work == 1
+						
+						replace want_work = 0 if reason_work == 2
+						
+						gen     work_canhurt = 1 if v1611 == 1
+						
+						replace work_canhurt = 0 if v1611 == 3 
+						
+						gen     gothurt 	 = 1 if v1618 == 2
+						
+						replace gothurt 	 = 0 if v1618 == 4
+						
 						
 						foreach var of varlist missing_school_days reason_not_go_school reason_not_attend_school {
 						
@@ -512,9 +613,13 @@
 						gen 	help_finance_house = 1 if inlist(wage_desti,1,2,3)
 						
 						replace help_finance_house = 0 if inlist(wage_desti,4,5)
-												
+						
+						gen 	 money_toparents = 1 if inlist(wage_desti,1,2)
+						replace  money_toparents = 2 if inlist(wage_desti,3)
+						replace  money_toparents = 3 if inlist(wage_desti,4)
+																		
 				} 
-				
+
 					
 				*Women that are mothers
 				*------------------------------------------------------------------------------------------------------------------------*
@@ -603,10 +708,10 @@
 				replace edu_level_enrolled = 10					if v4701 == 2  																										//alfabetização de adultos
 
 				tab v4701 edu_level_enrolled
-	
-				if `year' == 2001 keep 	hours_school missing_school_days reason_not_go_school reason_not_attend_school happy_work reason_not_like_work reason_work	 		 												 work_home place_work type* work_household_consumption   uf age hh_member weight hours_worked years_current_work months_current_work hh_id-edu_level_enrolled v3031 v3032 v3033 v0404 v0406
+	 
+				if `year' == 2001  keep   wage_dest* hours_school missing_school_days reason_not_go_school reason_not_attend_school happy_work reason_not_like_work reason_work work_canhurt want_work money_toparents gothurt  	    work_home place_work type* work_household_consumption   uf age hh_member weight hours_worked years_current_work months_current_work hh_id-edu_level_enrolled v3031 v3032 v3033 v0404 v0406
 				
-				*if `year' <  2001 keep   v0404 v0101 v0102 v0103 v0301 v0602 v0603 v0605 v0606 v0607 v0610 v0601 v4718 v4719 v4720  v9001 v9004 v9002 v9003 v9008 v9029 v9054 activity90s occupation90s  					 work_home place_work type* work_household_consumption   uf age hh_member weight hours_worked years_current_work months_current_work hh_id-edu_level_enrolled v3031 v3032 v3033 v0404 v0406
+				*if `year' <  2001 keep   v0404 v0101 v0102 v0103 v0301 v0602 v0603 v0605 v0606 v0607 v0610 v0601 v4718 v4719 v4720  v9001 v9004 v9002 v9003 v9008 v9029 v9054 activity90s occupation90s  					 			work_home place_work type* work_household_consumption   uf age hh_member weight hours_worked years_current_work months_current_work hh_id-edu_level_enrolled v3031 v3032 v3033 v0404 v0406
 
 			
 			} //fim da harmonização até 2001
@@ -627,8 +732,6 @@
 				gen 	kid17fa		  = 1 				   		if age >= 6 & age <= 17 & female == 1																						//meninas adolescentes no domicílio
 
 				gen 	kid17ma		  = 1 				   		if age >= 6 & age <= 17 & female == 0 																						//meninos adolescentes no domicílio
-
-
 				
 				foreach name in kid6 kid13 kid17 kid17f kid17m {
 				
@@ -676,6 +779,7 @@
 				gen 	lowersec_degree   = 1							if inlist(edu_att, 3, 4, 5, 6, 7)
 				
 				replace lowersec_degree   = 0							if edu_att     < 3
+				
 				
 				*College degree
 				*------------------------------------------------------------------------------------------------------------------------*
@@ -811,8 +915,8 @@
 				
 				*Non paid work, Work and study status
 				*------------------------------------------------------------------------------------------------------------------------*
-				gen 	working 		= employed ==  1 //employed is a variable that is only defined for people in economically active population
-
+				gen 	working 		= 		employed ==  1 //employed is a variable that is only defined for people in economically active population
+				
 				gen 	unpaid_work 	= type_work == 4 
 				
 				replace unpaid_work 	= 1 if  working  == 1 & type_work  != 4 & wage_all_jobs == 0
@@ -1011,22 +1115,23 @@
 				replace wage_all_jobs 		= . 	if wage_all_jobs 	== 0
 				
 				replace wage_hour			= . 	if wage_hour 		== 0
+				
+				replace eap = 0 if age >= 10 & age <= 65 & eap == .
 					
 			save "$inter/pnad_harm_`year'.dta", replace
 			*----------------------------------------------------------------------------------------------------------------------------*
 			end
-
-		
+	
 		**
 		**
 		*Pooled data
 		*___________________________________________________________________________________________________________ _____________________*
 			
-			foreach wave in 2007 2008 2009 2011 2012 2013 2014  { //1998 1999 2001 2002 2003 2004 2005 2006
+			foreach wave in 2002 2003 2004 2005 2006  { //2007 2008 2009 2011 2012 2013 2014 
 				harmonizar_pnad, year(`wave')
 			}
 			clear
-			foreach wave in 1998 1999 2001 2002 2003 2004 2005 2006 2007 2008 2009 2011 2012 2013 2014  { //
+			foreach wave in 1998 1999 2001 2002 2003 2004 2005 2006 { //2002 2003 2004 2005 2006 2007 2008 2009 2011 2012 2013 2014
 				append using "$inter/pnad_harm_`wave'.dta"
 				*erase 		 "$inter/pnad_harm_`wave'.dta"
 			}
