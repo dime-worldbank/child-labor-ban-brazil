@@ -24,7 +24,7 @@
 		On December 15th, 1998, the Brazilian Federal Government increased the minimum age of employment from 14 to 16 years old.
 		The law started being applied one day after that. 
 		Children that were already employed were not affected. 
-		Therefore, if the children turned 14 on December 16th, 1998, or after that, she/he could not start working legally 
+		Therefore, if the child turned 14 on December 16th, 1998, or after that, she/he could not start working legally 
 		as opposed to before the law changed. 
 		
 		We work on regression discontinuity design and on a local randomization inference to explore the effects of this policy.
@@ -41,16 +41,14 @@
 		of the policy on the following outcomes:
 		
 			- Economically Active Children.
-			- Share of children in paid jobs.
-			- Share of children in unpaid jobs.
-			- School attendance. 
-			- Wages. 
+			- Share of children in paid jobs (formal and informal)
+			- School attendance
+			- Share of kids only attending school
 			
-		Use used PNAD waves of 1998, 1999 and 2001; and from 2007 to 2014. 
-		
+					
 	*--------------------------------------------------------------------------------------------------------------------------------*
 	**
-	This master do file runs the following codes: 
+	Do files description
 	**
 	*--------------------------------------------------------------------------------------------------------------------------------*
 		**
@@ -79,8 +77,8 @@
 						Between 1998 to 2014: we used the DataZoom tool created by PUC/RIO University to import the data without having to manually create the dictionary of the variables. 
 						For 2015, we created our own dictionary due to an error we identified in the tool. 
 				
-			-> What it creates? 
-				The code creates sixteen .dta files saved in: child-labor-ban-brazil/DataWork/Datasets/Intermediate. 
+			-> What it It creates? 
+				The code It creates sixteen .dta files saved in: child-labor-ban-brazil/DataWork/Datasets/Intermediate. 
 				Each file is a wave of the household survey. 
 				
 			
@@ -94,7 +92,7 @@
 			-> What it does?
 				The code harmonizes the PNAD waves from 1998 to 2015, creating the dependent and independent variables of our analysis. 			
 						
-			-> What it creates? 
+			-> What it It creates? 
 				One .dta file named Pooled_PNAD saved in child-labor-ban-brazil/DataWork/Datasets/Intermediate.
 			
 		
@@ -106,12 +104,12 @@
 				Less than one minute. 
 	
 			-> What it does?
-				The code creates the running variable of our study. 
+				The code It creates the running variable of our study. 
 				The code defines the same covariates used in the Bargain/Boutin Paper (2021) 'Minimum Age Regulation and Child Labor'. 
 				Therefore, we can compare our and their sample sizes, as well as explain why some results differ. 
 				
 						
-			-> What it creates? 
+			-> What it It creates? 
 				One .dta file named Child Labor Ban saved in: child-labor-ban-brazil/DataWork/Datasets/Final.
 		
 		
@@ -123,27 +121,47 @@
 				Few minutes. 
 	
 			-> What it does?
-				Creates descriptives statistics and figures used in the paper. 
+				It creates descriptives statistics and figures used in the paper. 
 						
-			-> What it creates? 
+			-> What it It creates? 
 				Figures saved in child-labor-ban-brazil/DataWork/Output/Figures.
 		
 		
 		**
-		**		
-			5. RDD using Local Randomization	
+		**	
+		- 5. Rdrobust
 		
 			-> How long does it take to run?
-			More than one hour
-				
+				Few minutes. 
 	
 			-> What it does?
-				Run RDD using local Randomization
+				RD robust estimations.
 						
-			-> What it creates? 
-				.dta file with estimates 'Regression Results using RD under local randomization_1999.dta' saved in child-labor-ban-brazil/DataWork/Datasets/Final.
-				Figures saved in child-labor-ban-brazil/DataWork/Output/Figures.
-		
+			-> What it It creates? 
+				Tables saved in child-labor-ban-brazil/DataWork/Output/Tables
+				
+					
+		**
+		**	
+		- 6. Continuity Based Design  
+	
+			-> What it does?
+				Continuity based approach estimates and runs multiple hyphotesis tests
+						
+			-> What it It creates? 
+				Tables saved in child-labor-ban-brazil/DataWork/Output/Tables
+				
+		**
+		**	
+		- 7. RDD using Local Randomization 
+	
+			-> What it does?
+				Local Randomization estimates. 
+						
+			-> What it It creates? 
+				Tables and Figures saved in child-labor-ban-brazil/DataWork/Output
+				
+				
 		
 		**
 		**	
@@ -206,10 +224,8 @@
 	**
 	*--------------------------------------------------------------------------------------------------------------------------------*
 	   
-	   Installing packages needed to run all dofiles called by this master dofile. */
-		*ieboilstart, version(16)          	
-		*`r(version)' 
-	   version 16.1
+	  *Installing packages needed to run all dofiles called by this master dofile. */
+		ieboilstart, version(15)          	
 	   set more off, permanently 
 	   local user_commands ietoolkit rdrobust mat2txt qqvalue somersd parmest matvsort
 	   foreach command of local user_commands   {
@@ -228,12 +244,12 @@
 		*MC Crary test
 		sysdir  //locations
 		copy https://eml.berkeley.edu/~jmccrary/DCdensity/DCdensity.ado  `"`c(sysdir_plus)'/DCdensity.ado"', public replace
-		discard // you have to discard to see installed adofiles
+		discard   // you have to discard to see installed adofiles
 		which DCdensity
 		
+		
 		**DataZoom Package
-		net from http://www.econ.puc-rio.br/datazoom/portugues  
-		net install datazoom_pnad, replace
+		net install datazoom_social, from("https://raw.githubusercontent.com/datazoompuc/datazoom_social_stata/master/") force
 		
 		
 		**Figure settings
@@ -287,14 +303,3 @@
 	*--------------------------------------------------------------------------------------------------------------------------------*
 		do "$dofiles\Globals.do"
 		  
-	/*
-	*--------------------------------------------------------------------------------------------------------------------------------*
-	**
-	*Run the do-files
-	**
-	*--------------------------------------------------------------------------------------------------------------------------------*
-		do "$dofiles\1. Importing Household Survey (PNAD).do"
-		do "$dofiles\2. Harmonizing Household Survey (PNAD).do"
-		do "$dofiles\3. Setting up Paper Data.do"
-		do "$dofiles\4. Descriptives.do"
-	

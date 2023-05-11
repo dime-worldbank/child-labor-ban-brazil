@@ -50,7 +50,6 @@
 		use "$final/child-labor-ban-brazil.dta" if year == 1998 & cohort2_12 == 1, clear
 			rdwinselect zw2  mom_yrs_school hh_head_edu hh_head_age hh_size ,   seed(2198)	obsmin(1000)						// obsmin() is the minimum number of observations below and above the cutoff. 
 			rdwinselect zw2  mom_yrs_school hh_head_edu hh_head_age hh_size ,   seed(2198)	nwin(50) plot						// obsmin() is the minimum number of observations below and above the cutoff. 
-			graph export "$figures/FigureA6.pdf", as(pdf) replace
 			
 		**
 		*Placebo (1998) 
@@ -58,7 +57,6 @@
 		use "$final/child-labor-ban-brazil.dta" if year == 1997 & cohort4_12 == 1, clear
 			rdwinselect zw4  mom_yrs_school hh_head_edu hh_head_age hh_size ,   seed(2198)	obsmin(1000)						// obsmin() is the minimum number of observations below and above the cutoff. 
 			rdwinselect zw4  mom_yrs_school hh_head_edu hh_head_age hh_size ,   seed(2198)	nwin(50) plot						// obsmin() is the minimum number of observations below and above the cutoff. 
-			*graph export "$figures/FigureA6.pdf", as(pdf) replace			
 		}
 		
 		
@@ -231,159 +229,10 @@
 				
 				**
 				**
-				export		excel using "$tables/TableA5.xlsx",  replace   
+				export		excel using "$tables/TableA6.xlsx",  replace   
 				drop if year == "1998"
 				export		excel using "$tables/Table2.xlsx",  replace   
 			}
-			
-
-	
-		*________________________________________________________________________________________________________________________________*
-		**
-		**
-		*Table A6
-		**
-		*________________________________________________________________________________________________________________________________*
-
-
-
-			**
-			*
-			*----------------------------------------------------------------------------------------------------------------------------*
-			{
-			estimates clear
-			matrix results = (0,0,0,0,0,0,0,0,0,0,0,0) 							//storing dependent variable, sample, observed statistic, lower bound and upper bounds, and mean of the dependent outcome
-			local   dep_var = 1													//we attributed a model number for each specification we tested
- 
-			
-			**
-			*Estimates using Cattaneo
-			*----------------------------------------------------------------------------------------------------------------------------*
-		
-			foreach variable in $shortterm_outcomes {	
-
-				foreach year in 1999 2001 2003      {																
-
-					foreach sample in 1 2 { //sample 1 -> mother did not reach high school. sample 2 -> mother reached high school
-				
-						use "$final/child-labor-ban-brazil.dta" if year == `year' & urban == 1 & male == 1 & cohort1_12 == 1, clear
-						
-							**
-							*Sample
-							if `sample' == 1 keep if inlist(mom_edu_att2,1,2) 
-							if `sample' == 2 keep if inlist(mom_edu_att2,3,4)
-			
-							**
-							**Mean of dependent variable
-							su `variable' [w = weight]  if inrange(zw1, -10, -1), detail
-							local mean = r(mean)														//mean of the shor-term outcome
-							
-							**
-							**
-							rdrandinf `variable' zw1,  wl(-10) wr(9) interfci(0.05) seed(8474085)	
-							matrix results = results \ (`year',`dep_var', `sample', r(obs_stat), r(randpval), r(int_lb), r(int_ub), `mean',0, 10, 1, r(N))
-					}
-					
-				}
-				local dep_var = `dep_var' + 1	
-			}
-			
-			**
-			*Results
-			*----------------------------------------------------------------------------------------------------------------------------*
-			clear
-			svmat 	results						//storing the results of our estimates so we can present the estimates in charts
-			drop  	in 1
-			rename 		(results1-results12) (year dep_var sample ATE pvalue lower upper mean_outcome polinomio window cohort obs)	
-
-			**
-			**
-			label 	define dep_var 1 "Economically Active"  		 2 "Paid work"  	  														///
-								   3 "Formal paid work"  			 4 "Informal paid work" 			5 "Attending school" 					///
-								   6 "Only attending school " 	  								   
-					
-			label   define sample   1 "Mother without High School"	 2 "Mother with High School" 												///
-			
-			label	val    dep_var dep_var
-			label   val    sample  sample 
-		
-			
-			**
-			**
-			foreach var of varlist ATE lower upper mean_outcome	{
-				replace `var'  = `var' *100
-			}
-			
-			**
-			gen 	 att_perc_mean = (ATE/mean_outcome)*100	 if pvalue  <= 0.10
-			format   ATE-att_perc_mean %4.2fc
-		
-			**
-			**
-			gen 	 CI  = "[" + substr(string(lower),1,4) + "," + substr(string(upper),1,4) + "]" if substr(string(lower),1,1) == "-" & substr(string(upper),1,1) == "-"
-			replace  CI  = "[" + substr(string(lower),1,4) + "," + substr(string(upper),1,3) + "]" if substr(string(lower),1,1) == "-" & substr(string(upper),1,1) != "-"
-			replace  CI  = "[" + substr(string(lower),1,3) + "," + substr(string(upper),1,3) + "]" if substr(string(lower),1,1) != "-" & substr(string(upper),1,1) != "-"
-			replace  CI  = "[" + substr(string(lower),1,3) + "," + substr(string(upper),1,4) + "]" if substr(string(lower),1,1) != "-" & substr(string(upper),1,1) == "-"
-			
-			**
-			**
-			tostring ATE, force replace
-			replace  ATE = substr(ATE, 1, 5) 
-			replace  ATE = ATE + "*"    if pvalue <= 0.10 & pvalue > 0.05
-			replace  ATE = ATE + "**"   if pvalue <= 0.05 & pvalue > 0.01
-			replace  ATE = ATE + "***"  if pvalue <= 0.01
-
-			**
-			**
-			keep if polinomio == 0 & cohort == 1 
-			drop  	lower upper   polinomio  cohort window 
-			order 	dep_var year ATE CI mean_outcome att_perc_mean pvalue obs
-			reshape 	wide ATE CI mean_outcome att_perc_mean obs pvalue, i(year dep_var) j(sample)
-			
-			**
-			*Setting up the table with main results
-			**
-			
-			**
-			local 		num_dp_var  = 6						//number of dependent variables
-			local 		number_rows = `num_dp_var'*4		//total number of rows in the table
-			
-			**
-			**
-			set 	 	obs `number_rows'
-			replace  	year 	 = 0 		if year == .
-			
-			**
-			**
-			forvalues 	row = 1(1)`num_dp_var' {
-				local 	n_row 	= `row' + `num_dp_var'*3
-				replace dep_var = `row'  					in `n_row'
-			}
-			
-			**
-			**
-			sort     	dep_var  year
-			decode   	dep_var, gen(var)
-			drop     	dep_var
-			replace  	year = . 			if year == 0
-			tostring 	year, replace
-			replace  	year = var 			if year == "."
-			drop     	var
-		
-			**
-			**
-			gen 		space1 = .
-			gen 		space2 = .
-			gen 		space3 = .
-			order 		year *1 *2 
-			
-			
-			**
-			**Table
-			keep 		year *1* *2*
-			drop 		pvalue1 pvalue2
-			export		excel using "$tables/TableA6.xlsx",  replace
-			}	
 			
 				
 			
@@ -573,7 +422,7 @@
 					*Graph with estimations for shortterm outcomes
 					graph combine short1.gph short2.gph short3.gph short4.gph short5.gph short6.gph, cols(2) graphregion(fcolor(white)) ysize(10) xsize(15) title(, fcolor(white) size(medium) color(cranberry))
 					
-					if `bandwidth' == 10 graph export "$figures/Figure3.pdf",  as(pdf) replace
+					if `bandwidth' == 10 graph export "$figures/Figure2.pdf",  as(pdf) replace
 				
 					forvalues figure = 1(1)6 {
 					erase short`figure'.gph
@@ -587,7 +436,7 @@
 		*________________________________________________________________________________________________________________________________*
 		**
 		**	
-		*Robustness check, Figure 2
+		*Robustness check, Figure A6
 		*
 		*________________________________________________________________________________________________________________________________*
 		
@@ -643,15 +492,15 @@
 				*Robusteness check using 1999 PNAD wave
 				graph combine   "$figures/Robustness_eap.gph" 			       "$figures/Robustness_pwork.gph" 			  		///
 				, graphregion(fcolor(white)) cols(3) ysize(6) xsize(12) title(, fcolor(white) size(medium) color(cranberry))	
-				graph export  "$figures/Figure2a.pdf", as(pdf) replace
+				graph export  "$figures/FigureA6a.pdf", as(pdf) replace
 				
 				graph combine    "$figures/Robustness_pwork_formal.gph"        "$figures/Robustness_pwork_informal.gph"  			        ///
 				, graphregion(fcolor(white)) cols(3) ysize(6) xsize(12) title(, fcolor(white) size(medium) color(cranberry))	
-				graph export  "$figures/Figure2b.pdf", as(pdf) replace
+				graph export  "$figures/FigureA6b.pdf", as(pdf) replace
 				
 				graph combine    "$figures/Robustness_schoolatt.gph"  "$figures/Robustness_study_only.gph" 		        ///
 				, graphregion(fcolor(white)) cols(3) ysize(6) xsize(12) title(, fcolor(white) size(medium) color(cranberry))	
-				graph export  "$figures/Figure2c.pdf", as(pdf) replace
+				graph export  "$figures/FigureA6c.pdf", as(pdf) replace
 				
 				**
 				*Erasing charts

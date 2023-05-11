@@ -17,6 +17,11 @@
 		//1. Intro
 		//
 		{		
+		    
+		use "$final/child-labor-ban-brazil.dta" if year == 1999 & (zw1>= -39 & zw1<0) & urban == 1 & male == 1, clear	
+		su pwork  [w = weight]
+		
+			
 		use "$final/child-labor-ban-brazil.dta" if year == 1998 & age == 14, clear	
 
 			su working [w = weight]
@@ -47,12 +52,11 @@
 			su pwork [w = weight]
 		}
 		
-		
-		
-		
+				
 		//-------------->>
 		//2. Related Literature
 		//
+		{
 		use "$final/child-labor-ban-brazil.dta" if year == 1999 & age == 14 & uwork == 1, clear	
 			tab working_for_household  [w = weight], mis
 			tab type_work_noagric 	   [w = weight], mis
@@ -70,7 +74,7 @@
 			tab id2  [w = weight] 
 			
 			collapse (sum) id1 id2 [w = weight] 
-
+		}
 		
 	
 		//-------------->>
@@ -97,7 +101,6 @@
 				use "$final/child-labor-ban-brazil.dta" if year == 1999 & age == 14, clear	
 					su lowersec_degree, detail																//Only 3.3% of 14-year-olds in 1999 had finished lower secondary education					
 		}	
-			
 			
 			
 		//-------------->>
@@ -155,7 +158,11 @@
 			*14-year-olds in economically active population and unemployed (1998)
 			**
 				use "$final/child-labor-ban-brazil.dta" if year == 1998 & age == 14, clear	
-				tab eap  			[w = weight]														//26,7%
+				tab working 		[w = weight] if urban== 1
+				tab working 		[w = weight] if urban== 0
+				
+				tab working 		[w = weight] if urban== 1 & male == 0
+ 				tab eap  			[w = weight]														//26,7%
 				tab unemployed		[w = weight]														//18,2%		
 				
 			**
@@ -188,8 +195,10 @@
 				use "$final/child-labor-ban-brazil.dta" if year == 1998 & age == 14 & working == 1, clear	
 					tab uwork [w = weight]
 					tab schoolatt
+					
 				
 		}
+		
 		
 		//-------------->>
 		//6. Results
@@ -279,133 +288,6 @@
 				bys	 	mom_highschool : su pwork  [w = weight], 			
 		}	
 		
-		/*
-			v1604   O rendimento que recebia nesse trabalho, habitualmente	
-			wage_desti 
-			1	Era entregue pelo empregador diretamente aos pais ou responsáveis
-			2	Entregava todo  aos pais ou responsáveis
-			3	Entregava parte aos pais ou responsáveis
-			4	Não entregava  aos pais ou responsáveis
-			5	Recebia somente em benefício
-			9	Ignorado
-				Não aplicável
-				
-			V1605	Estava satisfeito nesse trabalho ( único ou principal) que tinha na semana de 23 a 29 de setembro de 2001	
-			happy_work
-			1	Sim
-			3	Não
-			9	Ignorado
-				Não aplicável
-				
-				
-			V1606	Motivo principal pelo qual não estava satisfeito nesse trabalho	
-			reason_not_like_work 
-			1	Trabalho cansativo
-			2	Não tinha tempo para estudar
-			3	Ganhava pouco
-			4	Não tinha um bom relacionamento com o empregador ou responsável nesse trabalho
-			5	Não gostava de trabalhar
-			6	Pagamento atrasava
-			7	Outro motivo
-			9	Ignorado
-				Não aplicável
-
-
-			V1607 Principal motivo que tinha para trabalhar
-			reason_work
-			1	Querer trabalhar
-			3	Os pais ou responsáveis querem que trabalhe
-			9	Ignorado
-				Não aplicável
-				
-				
-			V1562 Valor em nº de dias que deixou de comparecer no período de 1 de agosto a 30 de setembro de 2001	
-			missing_school_days
-			1 a 60	
-			99	Ignorado
-				Não aplicável
-				
-			V1507 Motivo principal ter deixado de comparecer à escola nesses dias	
-			reason_not_go_school
-			01	Ajuda nos afazeres domésticos
-			02	Trabalhar ou procurar trabalho
-			03	Falta de transporte escolar
-			04	Falta dinheiro para as despesas( de mensalidade, material, transporte, etc), para manter-se na escola
-			05	A escola é distante
-			06	Não teve quem o leve
-			07	Falta de professor, greve
-			08	Dificuldade de acompanhar o curso
-			09	Doença
-			10	Não quis comparecer
-			11	Os pais ou responsáveis não quiseram que comparecesse
-			12	Outro motivo
-			99	Ignorado
-				Não aplicável
-
-			V1508 Principal motivo de não frequentar escola	
-			reason_not_attend_school
-			01	Ajuda nos afazeres domésticos
-			02	Trabalhar ou procurar trabalho
-			03	Falta de transporte escolar
-			04	Falta dinheiro para as despesas( de mensalidade, material, transporte, etc), para manter-se na escola
-			05	Falta de documentação
-			06	Não existe escola perto de casa
-			07	Falta vaga na escola
-			08	Concluiu a série ou o curso desejado
-			09	Não tem quem o leve
-			10	Doença ou incapacidade
-			11	Não quis frequentar escola
-			12	Os pais ou responsáveis não querem que frequentem
-			13	Os pais ou responsáveis preferem que trabalhem
-			14	Outro motivo
-			99	Ignorado
-				Não aplicável
-		*/	
-		
-		
-				
-		use "$final/child-labor-ban-brazil.dta" if year == 2001 & cohort1_12 == 1 & urban == 1 & male == 1, clear
-				keep if zw1 >= - 39 & zw1 <= 39
-		
-		
-		keep if working == 1
-		
-		
-		foreach var of varlist  happy_work help_finance_house want_work  work_canhurt gothurt {
-			
-			di as red "`var'"
-			ttest `var', by(D1)
-		}
-		
-		collapse (mean) happy_work help_finance_house want_work  work_canhurt gothurt [w = weight], by(D1)
-
-		
-		
-		**
-		*Weeks
-		gen 	zw1 = wofd(dateofbirth  -  mdy(12, 16, 1984))			//weeks between date of birth  and December 16th, 1984
-
-		keep if zw1 >= -39 & zw1 <= 39
-		
-		gen 	affected = 1 if zw1 >= 0
-		replace affected = 0 if zw1 <  0
-		
-		su affected, detail
-		
-		
-		
-		use "$inter/Pooled_PNAD.dta" if year == 2001 & inlist(age,14,16)  & working == 1, clear	
-
-		bys age: su pwork  [w = weight]			
-					
-		collapse (mean) happy_work help_finance_house want_work  work_canhurt gothurt [w = weight], by(age pwork)
-			
-			
-		use "$inter/Pooled_PNAD.dta" if year == 2001 & inlist(age,14,16) & working == 1, clear	
-		
-		keep if happy_work == 0
-		gen id = 1
-		collapse (sum) id [w = weight], by(age reason_not_like_work)
 		
 		
 		//-------------->>
@@ -431,12 +313,279 @@
 	{
 		estimates clear
 		use "$final/child-labor-ban-brazil.dta" if year == 1999 & (xw1 >= -9 & xw1 < 9 ) & male == 1 & urban == 1, clear			//12 week bandwidth in 1999
-		label var hh_head_male "Head of the household is male"
-		iebaltab  mom_yrs_school $bargain_controls_our_def [pw = weight],   pttest  format(%12.2fc) grpvar(D1) savetex("$tables/TableA1.tex") rowvarlabels 			///
+		label var hh_head_male 		"Head of the household is male"
+		label var oldest_person_hh "Age of the oldest person in the household"
+		iebaltab  mom_yrs_school oldest_person_hh $bargain_controls_our_def [pw = weight],   pttest  format(%12.2fc) grpvar(D1) savetex("$tables/TableA1.tex") rowvarlabels 			///
 		tblnote("Source: PNAD, 1999.") notecombine texdocument  texcaption("Balance test for affected and unaffected cohorts, 12-week bandwidth (1999)") replace
 	}	
-			
+				
+	
 	**
+	*____________________________________________________________________________________________________________________________________*
+	**
+	*Figure 1
+	*____________________________________________________________________________________________________________________________________*
+	**
+	{
+		cd "$figures"
+		use 	"$final/child-labor-ban-brazil.dta" if year == 1999 & xw1 >= - 14 & xw1 < 14 & urban == 1 & male == 1, clear	
+
+		local 	outcomes eap pwork pwork_informal study_only
+		
+			**
+			foreach v of varlist `outcomes' {
+				local `v'_label: var label `v'
+			}
+			collapse 			 `outcomes' [pw = weight], by(xw1)
+			
+			**
+			foreach v of varlist `outcomes' {
+				replace   `v' = `v'*100
+				label var `v' `"``v'_label'"'
+			}
+			
+			label define xw1 -10 "-42" -5 "-20" 0 "0" 5 "20" -10 "-42"
+			label val    xw1 xw1
+
+			foreach var of varlist `outcomes' {
+				tw  (lpolyci `var' xw1 if xw1 >= 0, kernel(triangle) degree(0) bw(4) acolor(gs12) fcolor(gs12) clcolor(gray) clwidth(0.3)) 		///
+					(lpolyci `var' xw1 if xw1 <  0, kernel(triangle) degree(0) bw(4) acolor(gs12) fcolor(gs12) clcolor(gray) clwidth(0.3)) 		///
+					(scatter `var' xw1 if xw1 >= -12 & xw1 <  0 ,  sort msymbol(circle) msize(small) mcolor(navy))         		 	///
+					(scatter `var' xw1 if xw1 >=   0 & xw1 <= 12, xlabel(-10 "-42" -5 "-20" 0 "0" 5 "20" 10 "42", valuelabel) sort msymbol(circle) msize(small) mcolor(cranberry)), xline(0) 	///
+					legend(off) 																									///
+					plotregion(color(white) fcolor(white) lcolor(white) icolor(white) ifcolor(white) ilcolor(white)) 				///						
+					title({bf:`: variable label `var''}, pos(11) color(navy) span size(medium))										///
+					ytitle("%") xtitle("Age difference from the cutoff (in weeks)", size(small)) saving(short_`var'.gph, replace) 	/// 
+					note("", color(black) fcolor(background) pos(7) size(small)) 
+			}
+			
+			graph combine short_eap.gph short_pwork.gph short_pwork_informal.gph short_study_only.gph, cols(2) graphregion(fcolor(white)) ysize(7) xsize(7) title(, fcolor(white) size(medium) color(cranberry))
+			graph export "$figures/Figure1.pdf", as(pdf) replace
+			foreach var of varlist `outcomes' {
+			erase short_`var'.gph
+			}	
+		}			
+	
+	
+	**
+	*____________________________________________________________________________________________________________________________________*
+	**
+	*Figure A1
+	*____________________________________________________________________________________________________________________________________*
+	**
+	{
+	foreach band in 14 {
+		use "$final/child-labor-ban-brazil.dta" if year == 1999 & (zw1 >= -`band' & zw1 < `band') & urban  == 1	& male == 1 & cohort1_12 == 1, clear	
+
+		if `band' == 10 local fig = "a"
+		if `band' == 12 local fig = "b"
+		
+			replace formal 		= 0  	if working == 0
+			replace informal 	= 0 	if working == 0
+			
+			collapse (mean) eap pwork pwork_formal pwork_informal [pw = weight], by(D1 year)
+		
+			foreach var of varlist eap pwork_formal pwork_informal pwork  {
+				replace `var' = `var'*100
+				format 	`var' %12.2fc
+				rename  `var' A_`var'
+			}
+		
+			reshape long A_, i(year D1)  j(status) string
+			reshape wide A_, i(year status) j(D1)
+					
+			graph bar (asis)A_0 A_1, bargap(5) bar(2,  lw(0.5) lcolor(navy) fcolor(gs12)) bar(1, lw(0.5) lcolor(emidblue) fcolor(gs12) fintensity(70))	bar(2, lw(0.5) lcolor(navy) fcolor(emidblue) )		///
+			over(status, sort(status) label(labsize(medium)) relabel(1 `" "Economically" "active" "' 2 `" "Paid" "work" "' 3 `"Formal"'  4 `"Informal"' ))																			///
+			blabel(bar, position(outside) orientation(horizontal) size(medsmall) color(black) format (%4.1fc))   																						///
+			title("", pos(12) size(medsmall) color(black)) subtitle(, pos(12) size(medsmall) color(black)) 																								///
+			ytitle("%", size(medsmall)) 																																								///
+			yscale(off)	 ylabel(,nogrid nogextend) 																																						///	
+			plotregion(color(white) fcolor(white) lcolor(white) icolor(white) ifcolor(white) ilcolor(white)) 																							///						
+			legend(order(1 "Unnafected cohort" 2 "Affected")  region(lwidth(none) color(white) fcolor(none)) cols(2) size(medium) position(12))      		            							///
+			note("" , color(black) fcolor(background) pos(7) size(small)) 																											///
+			xsize(6) ysize(5) 
+
+			local nb =`.Graph.plotregion1.barlabels.arrnels'
+			di `nb'
+			forval i = 1/`nb' {
+			  di "`.Graph.plotregion1.barlabels[`i'].text[1]'"
+			  .Graph.plotregion1.barlabels[`i'].text[1]="`.Graph.plotregion1.barlabels[`i'].text[1]'%"
+			}
+			.Graph.drawgraph
+			graph export "$figures/FigureA1.pdf", as(pdf) replace
+		}
+	}		
+		
+	*
+	*
+	*____________________________________________________________________________________________________________________________________*
+	**
+	*Figure A2
+	*____________________________________________________________________________________________________________________________________*
+	**
+	{
+		**
+		*
+		use "$final/child-labor-ban-brazil.dta" if year == 1998 & age == 14, clear	
+			gen 	w_urban 								= 1 	if working 			== 1 & urban == 1
+			replace w_urban									= 0 	if working 			== 1 & urban == 0
+			gen 	w_rural 								= 1 	if working 			== 1 & urban == 0
+			replace w_rural									= 0 	if working 			== 1 & urban == 1
+			gen 	w_urban_girls 							= 1 	if w_urban 			== 1 & male   == 0
+			replace w_urban_girls 							= 0 	if w_urban 			== 1 & male   == 1
+			gen 	w_urban_boys 							= 1 	if w_urban 			== 1 & male   == 1
+			replace w_urban_boys 							= 0 	if w_urban 			== 1 & male   == 0	
+			gen 	w_rural_girls 							= 1 	if w_rural 			== 1 & male   == 0
+			replace w_rural_girls 							= 0 	if w_rural 			== 1 & male   == 1
+			gen 	w_rural_boys 							= 1 	if w_rural 			== 1 & male   == 1
+			replace w_rural_boys 							= 0 	if w_rural 			== 1 & male   == 0	
+			
+			foreach region    in urban rural {
+				foreach group in girls boys  {
+					
+					gen 	pw_`region'_`group'  			= 1 	if w_`region'_`group' 	== 1 & pwork  == 1
+					replace pw_`region'_`group'  			= 0 	if w_`region'_`group' 	== 1 & pwork  == 0
+					
+					gen 	uw_`region'_`group'  			= 1 	if w_`region'_`group' 	== 1 & uwork  == 1
+					replace uw_`region'_`group'  			= 0 	if w_`region'_`group' 	== 1 & uwork  == 0
+
+					gen 	pwformal_`region'_`group' 		= 1 	if pw_`region'_`group' 	== 1 & formal == 1
+					replace pwformal_`region'_`group' 		= 0 	if pw_`region'_`group' 	== 1 & formal == 0
+					
+					gen 	pwinformal_`region'_`group' 	= 1 	if pw_`region'_`group' 	== 1 & formal == 0
+					replace pwinformal_`region'_`group' 	= 0 	if pw_`region'_`group' 	== 1 & formal == 1
+					
+					gen 	uwformal_`region'_`group' 		= 1 	if uw_`region'_`group' 	== 1 & formal == 1
+					replace uwformal_`region'_`group' 		= 0 	if uw_`region'_`group' 	== 1 & formal == 0
+					
+					gen 	uwinformal_`region'_`group' 	= 1 	if uw_`region'_`group' 	== 1 & formal == 0
+					replace uwinformal_`region'_`group' 	= 0 	if uw_`region'_`group' 	== 1 & formal == 1
+				}
+			}
+			
+			foreach var of varlist working w_* pw* uw* {
+			replace `var' = `var'*100	
+			}
+		
+			collapse (mean) working w_urban ///
+							w_urban_girls pw_urban_girls pwformal_urban_girls pwinformal_urban_girls uw_urban_girls uwformal_urban_girls uwinformal_urban_girls ///
+							w_urban_boys  pw_urban_boys  pwformal_urban_boys  pwinformal_urban_boys  uw_urban_boys  uwformal_urban_boys  uwinformal_urban_boys	///
+							w_rural_girls pw_rural_girls pwformal_rural_girls pwinformal_rural_girls uw_rural_girls uwformal_rural_girls uwinformal_rural_girls ///
+							w_rural_boys  pw_rural_boys  pwformal_rural_boys  pwinformal_rural_boys  uw_rural_boys  uwformal_rural_boys  uwinformal_rural_boys	///
+							[pw = weight]
+		//I added these numbers in the excel  					
+		}
+		
+	
+	**
+	*____________________________________________________________________________________________________________________________________*
+	**
+	*Figure A3
+	*____________________________________________________________________________________________________________________________________*
+	**
+	{
+		use "$final/child-labor-ban-brazil.dta" if year < 2007 & (zw1 >= -14 & zw1 < 14 ) & urban  == 1	& male == 1 & cohort1_12 == 1, clear	
+			collapse (mean)eap pwork schoolatt [pw = weight], by(year D1)
+		
+			foreach var of varlist eap pwork schoolatt {
+				replace `var' = `var'*100
+				format 	`var' %12.1fc
+			}
+			replace year = year - 1998 if year < 2001
+			replace year = year - 1999 if year > 2000 
+			br if D1 == 0
+			
+			tw 	///
+				(line pwork year		, msize(2) msymbol(T) lwidth(0.5) color(emidblue)  lp(solid) connect(direct) recast(connected) mlabel(pwork) 	 mlabcolor(black) mlabpos(12))   ///  
+				(line eap year			, msize(2) msymbol(D) lwidth(0.5) color(erose) 	   lp(solid) connect(direct) recast(connected) mlabel(eap) 		 mlabcolor(black) mlabpos(3)) 	///  
+				(line schoolatt year 	, by(D1, note("")) msize(2) msymbol(O) lwidth(0.5) color(gs12) 	   lp(solid) connect(direct) recast(connected) mlabel(schoolatt) mlabcolor(black) mlabpos(12) 	///
+				ylabel(, labsize(small) angle(horizontal) format(%2.0fc)) 																												///
+				xscale(r(-1(1)7)) ///
+				xlabel(0 `" "13-years" "old" "' 1 `" "14" "" "' 2 `" "16" "" "' 3 `" "17" "" "' 4 `" "18" "" "' 5 `" "19" "" "' 6 `" "20" "" "' 7 `" "21" "" "', labsize(medium) gmax angle(horizontal)) 											///
+				ytitle("% of children", size(medsmall)) xtitle("") 			 																														///
+				plotregion(color(white) fcolor(white) lcolor(white) icolor(white) ifcolor(white) ilcolor(white)) 																		///						
+				legend(order(1 "Paid work" 2 "Economically active" 3 "Attending school") pos(12) cols(3) region(lstyle(none) fcolor(none)) size(large))  			///
+				xsize(9) ysize(5) 	///
+				note(, span color(black) fcolor(background) pos(7) size(small))) 
+				graph export "$figures/FigureA3.pdf", as(pdf) replace
+		}
+		
+		
+	**
+	*____________________________________________________________________________________________________________________________________*
+	**
+	*Figure A4
+	*____________________________________________________________________________________________________________________________________*
+	**
+	{	
+	local window = 39
+	
+			
+		use "$final/child-labor-ban-brazil.dta" if year == 1999 & cohort1_9== 1 , clear	
+		DCdensity zw1, breakpoint(0) b(1) generate(Xj Yj r0 fhat se_fhat)
+		
+	
+		
+	local breakpoint 0
+	local cellmpname Xj
+	local cellvalname Yj
+	
+	local evalname r0
+	local cellsmname fhat
+	local cellsmsename se_fhat
+	
+	drop if `cellmpname' <  -`window'  | `cellmpname' >  `window' 
+	drop if `evalname'   <  -`window'  | `evalname'   >  `window'
+	
+	quietly gen hi = `cellsmname' + 1.96*`cellsmsename'
+	quietly gen lo = `cellsmname' - 1.96*`cellsmsename'
+	
+	
+	gr twoway (scatter `cellvalname' `cellmpname' if `cellmpname' > -31, msymbol(circle_hollow) mcolor(gray))             ///
+	  (line `cellsmname' `evalname' if `evalname' < `breakpoint', lcolor(black) lwidth(medthick))   ///
+	  (line `cellsmname' `evalname' if `evalname' > `breakpoint' & `evalname' < 31, lcolor(black) lwidth(medthick))   ///
+	  (line hi `evalname' if `evalname' < `breakpoint', lcolor(black) lwidth(vthin))              ///
+	  (line lo `evalname' if `evalname' < `breakpoint', lcolor(black) lwidth(vthin))              ///
+	  (line hi `evalname' if `evalname' > `breakpoint' & `evalname' < 31, lcolor(black) lwidth(vthin))              ///
+	  (line lo `evalname' if `evalname' > `breakpoint' & `evalname' < 31, lcolor(black) lwidth(vthin)),             ///
+	  xline(`breakpoint', lcolor(black)) legend(off) ///
+	  xlabel(-39(5)39) xtitle("Running variable, in weeks", size(large)) ytitle("Density", size(large)) 
+		graph export "$figures/FigureA4.pdf", as(pdf) replace
+	}
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/*
+	
+		**
 	*____________________________________________________________________________________________________________________________________*
 	**
 	*Table A2
@@ -521,250 +670,7 @@
 		gen id = 1
 		collapse (sum)id [pw = weight], by(year D1)
 		reshape wide id, i(year) j(D1)
-	}	
-	
-	
-	**
-	*____________________________________________________________________________________________________________________________________*
-	**
-	*Figure 1
-	*____________________________________________________________________________________________________________________________________*
-	**
-	{
-		cd "$figures"
-		use 	"$final/child-labor-ban-brazil.dta" if year == 1999 & xw1 >= - 12 & xw1 < 12 & urban == 1 & male == 1, clear	
-
-		local 	outcomes eap pwork pwork_informal study_only
-		
-			**
-			foreach v of varlist `outcomes' {
-				local `v'_label: var label `v'
-			}
-			collapse 			 `outcomes' [pw = weight], by(xw1)
-			
-			**
-			foreach v of varlist `outcomes' {
-				replace   `v' = `v'*100
-				label var `v' `"``v'_label'"'
-			}
-			
-			label define xw1 -10 "-42" -5 "-20" 0 "0" 5 "20" -10 "-42"
-			label val    xw1 xw1
-
-			foreach var of varlist `outcomes' {
-				tw  (lpolyci `var' xw1 if xw1 >= 0, kernel(triangle) degree(0) bw(4) acolor(gs12) fcolor(gs12) clcolor(gray) clwidth(0.3)) 		///
-					(lpolyci `var' xw1 if xw1 <  0, kernel(triangle) degree(0) bw(4) acolor(gs12) fcolor(gs12) clcolor(gray) clwidth(0.3)) 		///
-					(scatter `var' xw1 if xw1 >= -12 & xw1 <  0 ,  sort msymbol(circle) msize(small) mcolor(navy))         		 	///
-					(scatter `var' xw1 if xw1 >=   0 & xw1 <= 12, xlabel(-10 "-42" -5 "-20" 0 "0" 5 "20" 10 "42", valuelabel) sort msymbol(circle) msize(small) mcolor(cranberry)), xline(0) 	///
-					legend(off) 																									///
-					plotregion(color(white) fcolor(white) lcolor(white) icolor(white) ifcolor(white) ilcolor(white)) 				///						
-					title({bf:`: variable label `var''}, pos(11) color(navy) span size(medium))										///
-					ytitle("%") xtitle("Age difference from the cutoff (in weeks)", size(small)) saving(short_`var'.gph, replace) 	/// 
-					note("", color(black) fcolor(background) pos(7) size(small)) 
-			}
-			
-			graph combine short_eap.gph short_pwork.gph short_pwork_informal.gph short_study_only.gph, cols(2) graphregion(fcolor(white)) ysize(7) xsize(7) title(, fcolor(white) size(medium) color(cranberry))
-			graph export "$figures/Figure1.pdf", as(pdf) replace
-			foreach var of varlist `outcomes' {
-			erase short_`var'.gph
-			}	
-		}			
-	
-	*
-	*
-	*____________________________________________________________________________________________________________________________________*
-	**
-	*Figure A1
-	*____________________________________________________________________________________________________________________________________*
-	**
-		{
-		**
-		*
-		use "$final/child-labor-ban-brazil.dta" if year == 1998 & age == 14, clear	
-			gen 	w_urban 								= 1 	if working 			== 1 & urban == 1
-			replace w_urban									= 0 	if working 			== 1 & urban == 0
-			gen 	w_rural 								= 1 	if working 			== 1 & urban == 0
-			replace w_rural									= 0 	if working 			== 1 & urban == 1
-			gen 	w_urban_girls 							= 1 	if w_urban 			== 1 & male   == 0
-			replace w_urban_girls 							= 0 	if w_urban 			== 1 & male   == 1
-			gen 	w_urban_boys 							= 1 	if w_urban 			== 1 & male   == 1
-			replace w_urban_boys 							= 0 	if w_urban 			== 1 & male   == 0	
-			gen 	w_rural_girls 							= 1 	if w_rural 			== 1 & male   == 0
-			replace w_rural_girls 							= 0 	if w_rural 			== 1 & male   == 1
-			gen 	w_rural_boys 							= 1 	if w_rural 			== 1 & male   == 1
-			replace w_rural_boys 							= 0 	if w_rural 			== 1 & male   == 0	
-			
-			foreach region    in urban rural {
-				foreach group in girls boys  {
-					
-					gen 	pw_`region'_`group'  			= 1 	if w_`region'_`group' 	== 1 & pwork  == 1
-					replace pw_`region'_`group'  			= 0 	if w_`region'_`group' 	== 1 & pwork  == 0
-					
-					gen 	uw_`region'_`group'  			= 1 	if w_`region'_`group' 	== 1 & uwork  == 1
-					replace uw_`region'_`group'  			= 0 	if w_`region'_`group' 	== 1 & uwork  == 0
-
-					gen 	pwformal_`region'_`group' 		= 1 	if pw_`region'_`group' 	== 1 & formal == 1
-					replace pwformal_`region'_`group' 		= 0 	if pw_`region'_`group' 	== 1 & formal == 0
-					
-					gen 	pwinformal_`region'_`group' 	= 1 	if pw_`region'_`group' 	== 1 & formal == 0
-					replace pwinformal_`region'_`group' 	= 0 	if pw_`region'_`group' 	== 1 & formal == 1
-					
-					gen 	uwformal_`region'_`group' 		= 1 	if uw_`region'_`group' 	== 1 & formal == 1
-					replace uwformal_`region'_`group' 		= 0 	if uw_`region'_`group' 	== 1 & formal == 0
-					
-					gen 	uwinformal_`region'_`group' 	= 1 	if uw_`region'_`group' 	== 1 & formal == 0
-					replace uwinformal_`region'_`group' 	= 0 	if uw_`region'_`group' 	== 1 & formal == 1
-				}
-			}
-			
-			foreach var of varlist working w_* pw* uw* {
-			replace `var' = `var'*100	
-			}
-		
-			collapse (mean) working w_urban ///
-							w_urban_girls pw_urban_girls pwformal_urban_girls pwinformal_urban_girls uw_urban_girls uwformal_urban_girls uwinformal_urban_girls ///
-							w_urban_boys  pw_urban_boys  pwformal_urban_boys  pwinformal_urban_boys  uw_urban_boys  uwformal_urban_boys  uwinformal_urban_boys	///
-							w_rural_girls pw_rural_girls pwformal_rural_girls pwinformal_rural_girls uw_rural_girls uwformal_rural_girls uwinformal_rural_girls ///
-							w_rural_boys  pw_rural_boys  pwformal_rural_boys  pwinformal_rural_boys  uw_rural_boys  uwformal_rural_boys  uwinformal_rural_boys	///
-							[pw = weight]
-		//I added these numbers in the excel  					
-		}
-		
-	
-	
-	**
-	*____________________________________________________________________________________________________________________________________*
-	**
-	*Figure A2
-	*____________________________________________________________________________________________________________________________________*
-	**
-	{
-	foreach band in 39 {
-		use "$final/child-labor-ban-brazil.dta" if year == 1999 & (zw1 >= -`band' & zw1 < `band') & urban  == 1	& male == 1 & cohort1_12 == 1, clear	
-
-		if `band' == 10 local fig = "a"
-		if `band' == 12 local fig = "b"
-		
-			replace formal 		= 0  	if working == 0
-			replace informal 	= 0 	if working == 0
-			
-			collapse (mean) eap pwork pwork_formal pwork_informal [pw = weight], by(D1 year)
-		
-			foreach var of varlist eap pwork_formal pwork_informal pwork  {
-				replace `var' = `var'*100
-				format 	`var' %12.2fc
-				rename  `var' A_`var'
-			}
-		
-			reshape long A_, i(year D1)  j(status) string
-			reshape wide A_, i(year status) j(D1)
-					
-			graph bar (asis)A_0 A_1, bargap(5) bar(2,  lw(0.5) lcolor(navy) fcolor(gs12)) bar(1, lw(0.5) lcolor(emidblue) fcolor(gs12) fintensity(70))	bar(2, lw(0.5) lcolor(navy) fcolor(emidblue) )		///
-			over(status, sort(status) label(labsize(medium)) relabel(1 `" "Economically" "active" "' 2 `" "Paid" "work" "' 3 `"Formal"'  4 `"Informal"' ))																			///
-			blabel(bar, position(outside) orientation(horizontal) size(medsmall) color(black) format (%4.1fc))   																						///
-			title("", pos(12) size(medsmall) color(black)) subtitle(, pos(12) size(medsmall) color(black)) 																								///
-			ytitle("%", size(medsmall)) 																																								///
-			yscale(off)	 ylabel(,nogrid nogextend) 																																						///	
-			plotregion(color(white) fcolor(white) lcolor(white) icolor(white) ifcolor(white) ilcolor(white)) 																							///						
-			legend(order(1 "Unnafected cohort" 2 "Affected")  region(lwidth(none) color(white) fcolor(none)) cols(2) size(medium) position(12))      		            							///
-			note("" , color(black) fcolor(background) pos(7) size(small)) 																											///
-			xsize(6) ysize(5) 
-
-			local nb =`.Graph.plotregion1.barlabels.arrnels'
-			di `nb'
-			forval i = 1/`nb' {
-			  di "`.Graph.plotregion1.barlabels[`i'].text[1]'"
-			  .Graph.plotregion1.barlabels[`i'].text[1]="`.Graph.plotregion1.barlabels[`i'].text[1]'%"
-			}
-			.Graph.drawgraph
-			graph export "$figures/FigureA2.pdf", as(pdf) replace
-		}
-	}		
-	
-	**
-	*____________________________________________________________________________________________________________________________________*
-	**
-	*Figure A3
-	*____________________________________________________________________________________________________________________________________*
-	**
-	{
-		use "$final/child-labor-ban-brazil.dta" if year < 2007 & (zw1 >= -39 & zw1 < 39 ) & urban  == 1	& male == 1 & cohort1_12 == 1, clear	
-			collapse (mean)eap pwork uwork schoolatt [pw = weight], by(year D1)
-		
-			foreach var of varlist eap pwork uwork schoolatt {
-				replace `var' = `var'*100
-				format 	`var' %12.1fc
-			}
-			replace year = year - 1998 if year < 2001
-			replace year = year - 1999 if year > 2000 
-			br if D1 == 0
-			
-			tw 	///
-				(line pwork year		, msize(2) msymbol(T) lwidth(0.5) color(emidblue)  lp(solid) connect(direct) recast(connected) mlabel(pwork) 	 mlabcolor(black) mlabpos(12))   ///  
-				(line uwork year		, msize(2) msymbol(D) lwidth(0.5) color(cranberry) lp(solid) connect(direct) recast(connected) mlabel(uwork) 	 mlabcolor(black) mlabpos(3)) 	///  
-				(line eap year			, msize(2) msymbol(D) lwidth(0.5) color(erose) 	   lp(solid) connect(direct) recast(connected) mlabel(eap) 		 mlabcolor(black) mlabpos(3)) 	///  
-				(line schoolatt year 	, by(D1, note("")) msize(2) msymbol(O) lwidth(0.5) color(gs12) 	   lp(solid) connect(direct) recast(connected) mlabel(schoolatt) mlabcolor(black) mlabpos(12) 	///
-				ylabel(, labsize(small) angle(horizontal) format(%2.0fc)) 																												///
-				xscale(r(-1(1)7)) ///
-				xlabel(0 `" "13-years" "old" "' 1 `" "14" "" "' 2 `" "16" "" "' 3 `" "17" "" "' 4 `" "18" "" "' 5 `" "19" "" "' 6 `" "20" "" "' 7 `" "21" "" "', labsize(medium) gmax angle(horizontal)) 											///
-				ytitle("% of children", size(medsmall)) xtitle("") 			 																														///
-				plotregion(color(white) fcolor(white) lcolor(white) icolor(white) ifcolor(white) ilcolor(white)) 																		///						
-				legend(order(1 "Paid work" 2 "Unpaid work" 3 "Economically active" 4 "Attending school") pos(12) cols(2) region(lstyle(none) fcolor(none)) size(large))  			///
-				xsize(9) ysize(5) 	///
-				note(, span color(black) fcolor(background) pos(7) size(small))) 
-				graph export "$figures/FigureA3.pdf", as(pdf) replace
-		}
-		
-		
-	**
-	*____________________________________________________________________________________________________________________________________*
-	**
-	*Figure A4
-	*____________________________________________________________________________________________________________________________________*
-	**
-	
-	local window = 39
-	
-	{			
-		use "$final/child-labor-ban-brazil.dta" if year == 1999 & cohort1_9== 1 , clear	
-		DCdensity zw1, breakpoint(0) b(1) generate(Xj Yj r0 fhat se_fhat)
-		
 	}
-		
-	local breakpoint 0
-	local cellmpname Xj
-	local cellvalname Yj
-	
-	local evalname r0
-	local cellsmname fhat
-	local cellsmsename se_fhat
-	
-	drop if `cellmpname' <  -`window'  | `cellmpname' >  `window' 
-	drop if `evalname'   <  -`window'  | `evalname'   >  `window'
-	
-	quietly gen hi = `cellsmname' + 1.96*`cellsmsename'
-	quietly gen lo = `cellsmname' - 1.96*`cellsmsename'
-	
-	
-	gr twoway (scatter `cellvalname' `cellmpname' if `cellmpname' > -31, msymbol(circle_hollow) mcolor(gray))             ///
-	  (line `cellsmname' `evalname' if `evalname' < `breakpoint', lcolor(black) lwidth(medthick))   ///
-	  (line `cellsmname' `evalname' if `evalname' > `breakpoint' & `evalname' < 31, lcolor(black) lwidth(medthick))   ///
-	  (line hi `evalname' if `evalname' < `breakpoint', lcolor(black) lwidth(vthin))              ///
-	  (line lo `evalname' if `evalname' < `breakpoint', lcolor(black) lwidth(vthin))              ///
-	  (line hi `evalname' if `evalname' > `breakpoint' & `evalname' < 31, lcolor(black) lwidth(vthin))              ///
-	  (line lo `evalname' if `evalname' > `breakpoint' & `evalname' < 31, lcolor(black) lwidth(vthin)),             ///
-	  xline(`breakpoint', lcolor(black)) legend(off) ///
-	  xlabel(-39(5)39) xtitle("Running variable, in weeks", size(large)) ytitle("Density", size(large)) 
-		graph export "$figures/FigureA4.pdf", as(pdf) replace
-
-	
-	
-	
-	
-	
-	/*
-	
-	
 	
 	use "$final/child-labor-ban-brazil.dta" if year >= 2003 & year <= 2007 & (zw1 >= -10 & zw1 < 10) & urban  == 1	& male == 1 & cohort1_12 == 1, clear	
 
@@ -1114,4 +1020,131 @@
 			gen id = 1
 			collapse (sum) id working pwork uwork formal informal  (mean)time_job got_work_bef_law age [pw = weight], by(D)	//70% of our unaffected cohort got the job before the law changed
 	
-	
+			
+		/*
+			v1604   O rendimento que recebia nesse trabalho, habitualmente	
+			wage_desti 
+			1	Era entregue pelo empregador diretamente aos pais ou responsáveis
+			2	Entregava todo  aos pais ou responsáveis
+			3	Entregava parte aos pais ou responsáveis
+			4	Não entregava  aos pais ou responsáveis
+			5	Recebia somente em benefício
+			9	Ignorado
+				Não aplicável
+				
+			V1605	Estava satisfeito nesse trabalho ( único ou principal) que tinha na semana de 23 a 29 de setembro de 2001	
+			happy_work
+			1	Sim
+			3	Não
+			9	Ignorado
+				Não aplicável
+				
+				
+			V1606	Motivo principal pelo qual não estava satisfeito nesse trabalho	
+			reason_not_like_work 
+			1	Trabalho cansativo
+			2	Não tinha tempo para estudar
+			3	Ganhava pouco
+			4	Não tinha um bom relacionamento com o empregador ou responsável nesse trabalho
+			5	Não gostava de trabalhar
+			6	Pagamento atrasava
+			7	Outro motivo
+			9	Ignorado
+				Não aplicável
+
+
+			V1607 Principal motivo que tinha para trabalhar
+			reason_work
+			1	Querer trabalhar
+			3	Os pais ou responsáveis querem que trabalhe
+			9	Ignorado
+				Não aplicável
+				
+				
+			V1562 Valor em nº de dias que deixou de comparecer no período de 1 de agosto a 30 de setembro de 2001	
+			missing_school_days
+			1 a 60	
+			99	Ignorado
+				Não aplicável
+				
+			V1507 Motivo principal ter deixado de comparecer à escola nesses dias	
+			reason_not_go_school
+			01	Ajuda nos afazeres domésticos
+			02	Trabalhar ou procurar trabalho
+			03	Falta de transporte escolar
+			04	Falta dinheiro para as despesas( de mensalidade, material, transporte, etc), para manter-se na escola
+			05	A escola é distante
+			06	Não teve quem o leve
+			07	Falta de professor, greve
+			08	Dificuldade de acompanhar o curso
+			09	Doença
+			10	Não quis comparecer
+			11	Os pais ou responsáveis não quiseram que comparecesse
+			12	Outro motivo
+			99	Ignorado
+				Não aplicável
+
+			V1508 Principal motivo de não frequentar escola	
+			reason_not_attend_school
+			01	Ajuda nos afazeres domésticos
+			02	Trabalhar ou procurar trabalho
+			03	Falta de transporte escolar
+			04	Falta dinheiro para as despesas( de mensalidade, material, transporte, etc), para manter-se na escola
+			05	Falta de documentação
+			06	Não existe escola perto de casa
+			07	Falta vaga na escola
+			08	Concluiu a série ou o curso desejado
+			09	Não tem quem o leve
+			10	Doença ou incapacidade
+			11	Não quis frequentar escola
+			12	Os pais ou responsáveis não querem que frequentem
+			13	Os pais ou responsáveis preferem que trabalhem
+			14	Outro motivo
+			99	Ignorado
+				Não aplicável
+		*/	
+		
+		
+				
+		use "$final/child-labor-ban-brazil.dta" if year == 2001 & cohort1_12 == 1 & urban == 1 & male == 1, clear
+				keep if zw1 >= - 39 & zw1 <= 39
+		
+		
+		keep if working == 1
+		
+		
+		foreach var of varlist  happy_work help_finance_house want_work  work_canhurt gothurt {
+			
+			di as red "`var'"
+			ttest `var', by(D1)
+		}
+		
+		collapse (mean) happy_work help_finance_house want_work  work_canhurt gothurt [w = weight], by(D1)
+
+		
+		
+		**
+		*Weeks
+		gen 	zw1 = wofd(dateofbirth  -  mdy(12, 16, 1984))			//weeks between date of birth  and December 16th, 1984
+
+		keep if zw1 >= -39 & zw1 <= 39
+		
+		gen 	affected = 1 if zw1 >= 0
+		replace affected = 0 if zw1 <  0
+		
+		su affected, detail
+		
+		
+		
+		use "$inter/Pooled_PNAD.dta" if year == 2001 & inlist(age,14,16)  & working == 1, clear	
+
+		bys age: su pwork  [w = weight]			
+					
+		collapse (mean) happy_work help_finance_house want_work  work_canhurt gothurt [w = weight], by(age pwork)
+			
+			
+		use "$inter/Pooled_PNAD.dta" if year == 2001 & inlist(age,14,16) & working == 1, clear	
+		
+		keep if happy_work == 0
+		gen id = 1
+		collapse (sum) id [w = weight], by(age reason_not_like_work)

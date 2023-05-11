@@ -1033,6 +1033,11 @@
 				tab		two_parent, mis
 				drop 	hh_ind
 				
+				gen 	temp_age = age if hh_member < 6
+				
+				bys 	hh_id: egen oldest_person_hh = max(temp_age)
+				
+				
 				
 				*Adults income
 				*------------------------------------------------------------------------------------------------------------------------*
@@ -1127,7 +1132,7 @@
 		*Pooled data
 		*___________________________________________________________________________________________________________ _____________________*
 			
-			foreach wave in 2002 2003 2004 2005 2006  { //2007 2008 2009 2011 2012 2013 2014 
+			foreach wave in 1998 1999 2001 2002 2003 2004 2005 2006 { //2007 2008 2009 2011 2012 2013 2014 
 				harmonizar_pnad, year(`wave')
 			}
 			clear
@@ -1475,8 +1480,8 @@
 				label var work_home									"The job was in the same land/area of the household"
 				label var reason_not_like_work						"Reason the children do not like their work"
 				label var reason_work								"Reason to work"
-				label var activity 									"Activity sector (after 2006)"
-				label var occupation								"Occupation sector (after 2006)"
+				*label var activity 								"Activity sector (after 2006)"
+				*label var occupation								"Occupation sector (after 2006)"
 				label var activity90s								"Actitivity sector, (1998-1999)"
 				label var occupation90s								"Occupation sector, (1998-1999)"
 				label var goes_public_school						"Public school"
