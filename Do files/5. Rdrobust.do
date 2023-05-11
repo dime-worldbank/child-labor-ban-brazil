@@ -36,5 +36,4 @@
 	
 	
 	use "$final/child-labor-ban-brazil.dta" if urban == 1 & male == 1 & cohort1_12 == 1 & year  == 1999, clear	//boys, urban, 1999ta
-	
     rdbwselect pwork zw1 , c(0)  p(1) kernel(uniform) vce(cluster zw1) 

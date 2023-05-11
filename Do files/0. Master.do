@@ -1,7 +1,10 @@
 	/*
 	*________________________________________________________________________________________________________________________________* 
 	**
+	**
 	MASTER do file for Child Labor Ban Paper
+	
+	CHANGE ROW 287 > folder path
 	**
 	*________________________________________________________________________________________________________________________________* 
 	
@@ -235,6 +238,7 @@
 		   }
 	   }		
 		
+		
 		**Local Randomization Inference, RD densitity and LP density Packages
 		net install rdlocrand,  from(https://github.com/rdpackages/rdlocrand/tree/master/stata) replace
 		net install rddensity,  from(https://github.com/rdpackages/rddensity/tree/master/stata) replace
@@ -282,7 +286,6 @@
 	   * -------------------------*
 	   if $user == 1 {
 		   global projectfolder  "C:\Users\wb495845\OneDrive - WBG\III. Labor\child-labor-ban-brazil" 					//project file path in your computer
-		   global dofiles        "C:\Users\wb495845\OneDrive - WBG\Documents\GitHub\child-labor-ban-brazil\Do files"
 	   }
 	   
 	   **
@@ -301,5 +304,15 @@
 	*Setting up Globals
 	**
 	*--------------------------------------------------------------------------------------------------------------------------------*
-		do "$dofiles\Globals.do"
+
+		global shortterm_outcomes  		"eap pwork pwork_formal pwork_informal schoolatt study_only"	//short-term outcomes
+		global longterm_outcomes   		"college_degree working pwork_formal wage_hour"											//long-term outcomes
+		global dep_vars1 				D gap84 	  																			//linear model
+		global dep_vars2 				D gap84 gap84_2																			//quadratic model
+		global dep_vars3 				D 																						//without including the running variable, just the treatment dummy
+		
+		global covariates1 				region1 region2  white	mom_yrs_school																				//covariates Piza/Portela used for balance tests						
+		
+		global bargain_controls			region1 region2 region3 region4 		 color_bargain2 color_bargain5 hh_head_edu_bargain hh_head_male hh_head_age_bargain adults_income_bargain 		hh_size_bargain //Covariates used by Bargain/Boutin (2021) Paper
+		global bargain_controls_our_def region1 region2 region3 region4 region5  white		    pardo		   hh_head_edu 		   hh_head_male hh_head_age		   		 				  		hh_size         //Covariates used by Bargain/Boutin (2021) Paper
 		  
