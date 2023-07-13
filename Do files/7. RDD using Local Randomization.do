@@ -155,7 +155,7 @@
 			**
 			**
 			gen 	 	att_perc_mean = (ATE/mean_outcome)*100	 if pvalue  <= 0.10
-			format   	ATE-att_perc_mean pvalue* %4.3fc
+			format   	ATE-att_perc_mean pvalue* %4.1fc
 			format 		obs %4.0fc
 					
 			**
