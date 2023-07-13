@@ -471,7 +471,7 @@
 							w_rural_girls pw_rural_girls pwformal_rural_girls pwinformal_rural_girls uw_rural_girls uwformal_rural_girls uwinformal_rural_girls ///
 							w_rural_boys  pw_rural_boys  pwformal_rural_boys  pwinformal_rural_boys  uw_rural_boys  uwformal_rural_boys  uwinformal_rural_boys	///
 							[pw = weight]
-		//I added these numbers in the excel  					
+		//I added these numbers in the excel that is saved in the replication package, datawork, output, figures	
 		}
 		
 	
@@ -508,7 +508,7 @@
 				graph export "$figures/FigureA3.pdf", as(pdf) replace
 		}
 		
-		
+	/*	
 	**
 	*____________________________________________________________________________________________________________________________________*
 	**
@@ -547,4 +547,5 @@
 		  xlabel(-39(5)39) xtitle("Running variable, in weeks", size(large)) ytitle("Density", size(large)) 
 			graph export "$figures/FigureA4.pdf", as(pdf) replace
 	}
+	*/
 	

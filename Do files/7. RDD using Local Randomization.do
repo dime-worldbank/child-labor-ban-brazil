@@ -33,32 +33,32 @@
 		*Main sample (1999)
 		use "$final/child-labor-ban-brazil.dta" if year == 1999 & cohort1_12 == 1, clear
 				
-			rdwinselect xw1 mom_yrs_school hh_head_edu hh_head_age hh_size,   seed(980324) p(1)	obsmin(2000)						
-			rdwinselect zw1 mom_yrs_school hh_head_edu hh_head_age hh_size,   seed(980324)	obsmin(800)							// obsmin() is the minimum number of observations below and above the cutoff. 
-			rinselectdw zw1 mom_yrs_school hh_head_edu hh_head_age hh_size,   seed(980324) 	nwin(50) plot						// obsmin() is the minimum number of observations below and above the cutoff. 
+			cap noi  rdwinselect xw1 mom_yrs_school hh_head_edu hh_head_age hh_size,   seed(980324) p(1)	obsmin(2000)						
+			cap noi  rdwinselect zw1 mom_yrs_school hh_head_edu hh_head_age hh_size,   seed(980324)	obsmin(800)							// obsmin() is the minimum number of observations below and above the cutoff. 
+			cap noi  rdrinselect zw1 mom_yrs_school hh_head_edu hh_head_age hh_size,   seed(980324) 	nwin(50) plot						// obsmin() is the minimum number of observations below and above the cutoff. 
 
 			**Remember zw1 is our running variable in terms of weeks between the date of birth and December 16th 1984
-			rdwinselect zw1 mom_yrs_school hh_head_edu hh_head_age hh_size,   seed(980324)	obsmin(500)							// obsmin() is the minimum number of observations below and above the cutoff. 
+			cap noi  rdwinselect  zw1 mom_yrs_school hh_head_edu hh_head_age hh_size,   seed(980324)	obsmin(500)							// obsmin() is the minimum number of observations below and above the cutoff. 
 			//-14 e 13  selected window 
-			rinselectdw zw1 mom_yrs_school hh_head_edu hh_head_age hh_size,   seed(980324)	nwin(50) plot						// obsmin() is the minimum number of observations below and above the cutoff. 
-			graph export "$figures/FigureA5.pdf", as(pdf) replace
+			cap noi  rdwinselect  zw1 mom_yrs_school hh_head_edu hh_head_age hh_size,   seed(980324)	nwin(50) plot						// obsmin() is the minimum number of observations below and above the cutoff. 
+			cap noi  graph export "$figures/FigureA5.pdf", as(pdf) replace
 		
-		
+		/*
 		**
 		*Placebo (1998) 
 		**Children cohort 2: cutoff 12, 16, 1983. We do not have a window in which the local randomization holds. 
 		use "$final/child-labor-ban-brazil.dta" if year == 1998 & cohort2_12 == 1, clear
-			rdwinselect zw2  mom_yrs_school hh_head_edu hh_head_age hh_size ,   seed(2198)	obsmin(1000)						// obsmin() is the minimum number of observations below and above the cutoff. 
-			rdwinselect zw2  mom_yrs_school hh_head_edu hh_head_age hh_size ,   seed(2198)	nwin(50) plot						// obsmin() is the minimum number of observations below and above the cutoff. 
+			cap noi rdwinselect  zw2  mom_yrs_school hh_head_edu hh_head_age hh_size ,   seed(2198)	obsmin(1000)						// obsmin() is the minimum number of observations below and above the cutoff. 
+			cap noi rdwinselect zw2  mom_yrs_school hh_head_edu hh_head_age hh_size ,   seed(2198)	nwin(50) plot						// obsmin() is the minimum number of observations below and above the cutoff. 
 			
 		**
 		*Placebo (1998) 
 		**Children cohort 2: cutoff 12, 16, 1983. We do not have a window in which the local randomization holds. 
 		use "$final/child-labor-ban-brazil.dta" if year == 1997 & cohort4_12 == 1, clear
-			rdwinselect zw4  mom_yrs_school hh_head_edu hh_head_age hh_size ,   seed(2198)	obsmin(1000)						// obsmin() is the minimum number of observations below and above the cutoff. 
-			rdwinselect zw4  mom_yrs_school hh_head_edu hh_head_age hh_size ,   seed(2198)	nwin(50) plot						// obsmin() is the minimum number of observations below and above the cutoff. 
+			cap noi rdwinselect zw4  mom_yrs_school hh_head_edu hh_head_age hh_size ,   seed(2198)	obsmin(1000)						// obsmin() is the minimum number of observations below and above the cutoff. 
+			cap noi rdwinselect zw4  mom_yrs_school hh_head_edu hh_head_age hh_size ,   seed(2198)	nwin(50) plot						// obsmin() is the minimum number of observations below and above the cutoff. 
 		}
-		
+		*/
 		
 		*________________________________________________________________________________________________________________________________*
 		**
@@ -67,16 +67,17 @@
 		**
 		*________________________________________________________________________________________________________________________________*
 		{
-		
+			use "$final/child-labor-ban-brazil.dta",clear 
 			estimates clear
 			matrix results = (0,0,0,0,0,0,0,0,0,0,0,0) 									//storing dependent variable, sample, observed statistic, lower bound and upper bounds, and mean of the dependent outcome
 			local dep_var = 1														//we attributed a model number for each specification we tested
 			
 			set seed 740592
+			
 			**
 			*Estimates using Cattaneo
 			*----------------------------------------------------------------------------------------------------------------------------*
-			foreach variable in   $shorttem_outcomes {		//short-term outcomes
+			foreach variable in eap pwork pwork_formal pwork_informal schoolatt study_only {		//short-term outcomes
 				foreach cohort in 1			    							 {		      //cohort1 = cutoff Dec 16, 1984.
 					foreach year in  1998 1999  							 {																							
 						
@@ -181,6 +182,7 @@
 			save 		"$inter/Local Randomization Results_1999.dta", replace 
 		}
 		
+		
 		*________________________________________________________________________________________________________________________________*
 		**
 		**
@@ -269,7 +271,7 @@
 							**
 							**
 							local variable = 1
-							foreach var of varlist $shortterm_outcomes highschool_degree wage_hour {																					//short term outcomes
+							foreach var of varlist eap pwork pwork_formal pwork_informal schoolatt study_only highschool_degree wage_hour {																					//short term outcomes
 								
 								if "`var'" == "schoolatt" {
 								rdrandinf `var' zw1 if highschool_degree == 0, cutoff(0) wl(`wl') wr(`wr') interfci(0.05) seed(8474085)						//estimate of ATE
@@ -299,7 +301,7 @@
 							*
 							**
 							local variable = 1
-							foreach var of varlist $longterm_outcomes   {												//long term outcomes					
+							foreach var of varlist college_degree working pwork_formal wage_hour   {												//long term outcomes					
 								rdrandinf `var' zw1,  cutoff(0)   wl(`wl') wr(`wr') interfci(0.05) seed(493734)	
 								matrix results = results \ (`year', 0, `variable', r(obs_stat), r(int_lb), r(int_ub), `bandwidth')
 								local variable = `variable' + 1
@@ -377,7 +379,7 @@
 		*________________________________________________________________________________________________________________________________*
 		**
 		**
-		*Figures for short and long-term. Figures 3
+		*Figures for short and long-term. Figures 2
 		**
 		*________________________________________________________________________________________________________________________________*
 		{
@@ -402,6 +404,12 @@
 							local min = r(min) + r(min)/3
 							quietly su upper, detail
 							local max = r(max) + r(max)/3
+							if shortterm_outcomes == 1 local title = "Economically Active"
+							if shortterm_outcomes == 2 local title = "Paid work"
+							if shortterm_outcomes == 3 local title = "Formal paid work"
+							if shortterm_outcomes == 4 local title = "Informal paid work"
+							if shortterm_outcomes == 5 local title = "Attending school"
+							if shortterm_outcomes == 6 local title = "Only attending school"
 							
 							twoway  ///
 							||  	scatter ATE 	 year_n1 ,   color(orange) msize(large) msymbol(O) 																					///
@@ -411,17 +419,16 @@
 							xtitle("", size(small)) 											  																						///
 							yscale(r(`min' `max'))	 																																	///
 							ytitle("ATE, in pp", size(small))					 																										///					
-							title({bf:`: label `shortterm_outcomes' `shortterm_outcomes''}, pos(11) color(navy) span size(medsmall))														///
+							title({bf: `title'}, pos(11) color(navy) span size(medsmall))														///
 							legend(off) xsize(6) ysize(4)																																			///
 							note(".", color(black) fcolor(background) pos(7) size(small)) saving(short`figure'.gph, replace)
 							local figure = `figure' + 1
 						restore
 					}
-
+				
 					
 					*Graph with estimations for shortterm outcomes
-					graph combine short1.gph short2.gph short3.gph short4.gph short5.gph short6.gph, cols(2) graphregion(fcolor(white)) ysize(10) xsize(15) title(, fcolor(white) size(medium) color(cranberry))
-					
+					graph combine short1.gph short2.gph short3.gph short4.gph short5.gph short6.gph, cols(3) graphregion(fcolor(white)) ysize(10) xsize(15) title(, fcolor(white) size(medium) color(cranberry))
 					if `bandwidth' == 10 graph export "$figures/Figure2.pdf",  as(pdf) replace
 				
 					forvalues figure = 1(1)6 {
@@ -429,7 +436,7 @@
 					}
 				}	
 			}
-		}		
+		}
 			
 		
 		
@@ -448,9 +455,9 @@
 			**
 			*----------------------------------------------------------------------------------------------------------------------------*
 			use "$final/child-labor-ban-brazil.dta" if urban == 1 & male == 1 & year == 1999 & cohort1_12 == 1, clear
-			
-				foreach var of varlist  $shortterm_outcomes {
-					rdrandinf 		`var' zw1, c(0) wl(-14) wr(13) interfci(0.05) seed(547946) 			//estimating RDD for economically active children. Window between -13 and 12 weeks. 
+			clonevar T = D1
+				foreach var of varlist eap pwork pwork_formal pwork_informal schoolatt study_only {
+					rdrandinf 		`var' zw1, c(0) wl(-14) wr(13) interfci(0.05) seed(547946)  		//estimating RDD for economically active children. Window between -13 and 12 weeks. 
 						
 					local lower =  r(obs_stat) - 0.10		//upper bound of ATE
 					local upper =  r(obs_stat) + 0.10		//lower bound of ATE
@@ -469,7 +476,7 @@
 			*Figure
 			**
 			*----------------------------------------------------------------------------------------------------------------------------*
-				foreach name in $shortterm_outcomes  {			//pwork_formal lnwage_hour //outcomes
+				foreach name in eap pwork pwork_formal pwork_informal schoolatt study_only  {			//pwork_formal lnwage_hour //outcomes
 					
 					use "$inter/Robustness_`name'.dta", clear
 		 
@@ -483,7 +490,7 @@
 					twoway contour pvalue t w, ccuts(0(0.1)1) xlabel(10(1)18, labsize(small)) ylabel(, labsize(small) nogrid) ///
 					xtitle("Weeks around cutoff", size(medsmall)) ///
 					ytitle("ATE under H0", size(medsmall)) ///
-					title("{bf:`title'}", size(medium) color(navy) pos(11)) ///
+					title("{bf:`title'}", size(large) color(navy) pos(11)) ///
 					saving("$figures/Robustness_`name'.gph", replace)
 				
 				}

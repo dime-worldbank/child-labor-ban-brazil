@@ -103,8 +103,8 @@
 	**
 	*PROGRAM TO CALCULATE ADJUSTED P VALUES (testing 18  hypothesis)
 	*------------------------------------------------------------------------------------------------------------------------------------*
-	cap program drop mht_18hypothesis  //multiple hyphothesis test inside each bandwidth
-	program define   mht_18hypothesis  //for each bandwidth, lets calculate the adjusted p-value for each one of the 6 outcomes. 
+	cap program drop mht_18hypothesis 
+	program define   mht_18hypothesis   
 	syntax,  band_tested(string) cohort(integer) year(integer) 
 	
 	
@@ -209,7 +209,7 @@
 			use "$final/child-labor-ban-brazil.dta" if urban == 1 & male == 1 & cohort1_12 == 1 & year == 1999, clear	//boys, urban, 1999ta
 			estimates clear
 			local dep_var = 1 //	 	
-				foreach variable in $shorttem_outcomes	{
+				foreach variable in eap pwork pwork_formal pwork_informal schoolatt study_only	{
 					**
 					if "`variable'" == "eap"    		local title = "Economically active"
 					if "`variable'" == "pwork"			local title = "Paid work"
@@ -226,13 +226,17 @@
 							pwolf, method(1) bandwidth(`bandwidth') dep_var(`dep_var')
 						}
 						local dep_var = `dep_var' + 1
-					if inlist("`variable'", "eap"			, "pwork"		, "pwork_formal") estout * using "$tables\TableA2.xls",  keep(D1)   title("`title'") label  stats(pwolf1  N,  labels("Romano-Wolf" "Number of Cases"))  cells(b(star fmt(2) ) se(par(`"="("' `")""')  fmt(2)) p(fmt(2))) starlevels(* 0.10 ** 0.05 *** 0.01) replace
-					if inlist("`variable'", "pwork_informa"	, "schoolatt"	, "study_only"  ) estout * using "$tables\TableA3.xls",  keep(D1)   title("`title'") label  stats(pwolf1  N,  labels("Romano-Wolf" "Number of Cases"))  cells(b(star fmt(2) ) se(par(`"="("' `")""')  fmt(2)) p(fmt(2))) starlevels(* 0.10 ** 0.05 *** 0.01) replace
+					
+					if "`variable'" == "eap" 							  estout * using "$tables\TableA2.xls",  keep(D1)   title("`title'") label  stats(pwolf1  N,  labels("Romano-Wolf" "Number of Cases"))  cells(b(star fmt(2) ) se(par(`"="("' `")""')  fmt(2)) p(fmt(2))) starlevels(* 0.10 ** 0.05 *** 0.01) replace
+					if inlist("`variable'", "pwork"		, "pwork_formal") estout * using "$tables\TableA2.xls",  keep(D1)   title("`title'") label  stats(pwolf1  N,  labels("Romano-Wolf" "Number of Cases"))  cells(b(star fmt(2) ) se(par(`"="("' `")""')  fmt(2)) p(fmt(2))) starlevels(* 0.10 ** 0.05 *** 0.01) append
+					
+					if "`variable'" == "pwork_informal" 				  estout * using "$tables\TableA3.xls",  keep(D1)   title("`title'") label  stats(pwolf1  N,  labels("Romano-Wolf" "Number of Cases"))  cells(b(star fmt(2) ) se(par(`"="("' `")""')  fmt(2)) p(fmt(2))) starlevels(* 0.10 ** 0.05 *** 0.01) replace
+					if inlist("`variable'", "schoolatt"	, "study_only"  ) estout * using "$tables\TableA3.xls",  keep(D1)   title("`title'") label  stats(pwolf1  N,  labels("Romano-Wolf" "Number of Cases"))  cells(b(star fmt(2) ) se(par(`"="("' `")""')  fmt(2)) p(fmt(2))) starlevels(* 0.10 ** 0.05 *** 0.01) append
 				}
 			 cap erase "$inter\mht_inside_bandwidth.dta"
 		}
 
-			
+		
 	*Table A4
 	*-----------------------------------------------------------------------------------------------------------------------------------*
 	{
@@ -269,8 +273,8 @@
 						local dep_var = `dep_var' + 1
 				}
 				
-			   *if `groupvar' == 1 estout * using "$tables\.xls" 		, keep(D`cohort')   label  mgroups("Economically active" 	"Paid work" 		"Formal paid work"		,  pattern(1 0 0 1 0 0 1 0 0))  stats(pwolf1 pwolf2 N,  labels("Romano-Wolf" "Number of Cases"))  cells(b(star fmt(2) ) se(par(`"="("' `")""')  fmt(2)) p(fmt(2))) starlevels(* 0.10 ** 0.05 *** 0.01) replace
-			   *if `groupvar' == 2 estout * using "$tables\.xls" 		, keep(D`cohort')   label  mgroups("Informal paid work" 	"Attending school" 	"Only attending school"	,  pattern(1 0 0 1 0 0 1 0 0))  stats(pwolf1 pwolf2 N,  labels("Romano-Wolf" "Number of Cases"))  cells(b(star fmt(2) ) se(par(`"="("' `")""')  fmt(2)) p(fmt(2))) starlevels(* 0.10 ** 0.05 *** 0.01) append
+			   *if `groupvar' == 1 estout * using "$tables\.xls" 		,  keep(D`cohort')   label  mgroups("Economically active" 	"Paid work" 		"Formal paid work"		,  pattern(1 0 0 1 0 0 1 0 0))  stats(pwolf1 pwolf2 N,  labels("Romano-Wolf" "Number of Cases"))  cells(b(star fmt(2) ) se(par(`"="("' `")""')  fmt(2)) p(fmt(2))) starlevels(* 0.10 ** 0.05 *** 0.01) replace
+			   *if `groupvar' == 2 estout * using "$tables\.xls" 		,  keep(D`cohort')   label  mgroups("Informal paid work" 	"Attending school" 	"Only attending school"	,  pattern(1 0 0 1 0 0 1 0 0))  stats(pwolf1 pwolf2 N,  labels("Romano-Wolf" "Number of Cases"))  cells(b(star fmt(2) ) se(par(`"="("' `")""')  fmt(2)) p(fmt(2))) starlevels(* 0.10 ** 0.05 *** 0.01) append
 				if `groupvar' == 3 estout * using "$tables\TableA4.xls" ,  keep(D`cohort')   label  mgroups("Economically active" 	"Paid work" 		"Formal paid work"		,  pattern(1 0 0 1 0 0 1 0 0))  stats(pwolf1 pwolf2 N,  labels("Romano-Wolf" "Number of Cases"))  cells(b(star fmt(2) ) se(par(`"="("' `")""')  fmt(2)) p(fmt(2))) starlevels(* 0.10 ** 0.05 *** 0.01) replace
 				if `groupvar' == 4 estout * using "$tables\TableA4.xls" ,  keep(D`cohort')   label  mgroups("Informal paid work" 	"Attending school" 	"Only attending school"	,  pattern(1 0 0 1 0 0 1 0 0))  stats(pwolf1 pwolf2 N,  labels("Romano-Wolf" "Number of Cases"))  cells(b(star fmt(2) ) se(par(`"="("' `")""')  fmt(2)) p(fmt(2))) starlevels(* 0.10 ** 0.05 *** 0.01) append
 				if `groupvar' == 5 estout * using "$tables\TableA5.xls" ,  keep(D`cohort')   label  mgroups("Economically active" 	"Paid work" 		"Formal paid work"		,  pattern(1 0 0 1 0 0 1 0 0))  stats(pwolf1 pwolf2 N,  labels("Romano-Wolf" "Number of Cases"))  cells(b(star fmt(2) ) se(par(`"="("' `")""')  fmt(2)) p(fmt(2))) starlevels(* 0.10 ** 0.05 *** 0.01) append

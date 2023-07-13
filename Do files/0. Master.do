@@ -228,13 +228,13 @@
 	*--------------------------------------------------------------------------------------------------------------------------------*
 	   
 	  *Installing packages needed to run all dofiles called by this master dofile. */
-		ieboilstart, version(15)          	
+		version 16   	
 	   set more off, permanently 
-	   local user_commands ietoolkit rdrobust mat2txt qqvalue somersd parmest matvsort
+	   local user_commands ietoolkit rdrobust mat2txt qqvalue somersd parmest matvsort estout sumstats unique
 	   foreach command of local user_commands   {
 		   cap which `command'
 		   if _rc == 111 {
-			   ssc install `command'
+			   ssc install `command' 
 		   }
 	   }		
 		
@@ -243,14 +243,14 @@
 		net install rdlocrand,  from(https://github.com/rdpackages/rdlocrand/tree/master/stata) replace
 		net install rddensity,  from(https://github.com/rdpackages/rddensity/tree/master/stata) replace
 		net install lpdensity,  from(https://github.com/nppackages/lpdensity/tree/master/stata) replace
-		
-		
+
+		/*
 		*MC Crary test
 		sysdir  //locations
 		copy https://eml.berkeley.edu/~jmccrary/DCdensity/DCdensity.ado  `"`c(sysdir_plus)'/DCdensity.ado"', public replace
 		discard   // you have to discard to see installed adofiles
 		which DCdensity
-		
+		*/
 		
 		**DataZoom Package
 		net install datazoom_social, from("https://raw.githubusercontent.com/datazoompuc/datazoom_social_stata/master/") force
@@ -285,7 +285,7 @@
 	   * Root folder globals
 	   * -------------------------*
 	   if $user == 1 {
-		   global projectfolder  "C:\Users\wb495845\OneDrive - WBG\III. Labor\child-labor-ban-brazil" 					//project file path in your computer
+		   global projectfolder "C:\Users\wb495845\OneDrive - WBG\III. Labor\child-labor-ban-brazil\DataWork\replication package\"				//project file path in your computer
 	   }
 	   
 	   **
@@ -310,9 +310,20 @@
 		global dep_vars1 				D gap84 	  																			//linear model
 		global dep_vars2 				D gap84 gap84_2																			//quadratic model
 		global dep_vars3 				D 																						//without including the running variable, just the treatment dummy
-		
 		global covariates1 				region1 region2  white	mom_yrs_school																				//covariates Piza/Portela used for balance tests						
-		
 		global bargain_controls			region1 region2 region3 region4 		 color_bargain2 color_bargain5 hh_head_edu_bargain hh_head_male hh_head_age_bargain adults_income_bargain 		hh_size_bargain //Covariates used by Bargain/Boutin (2021) Paper
 		global bargain_controls_our_def region1 region2 region3 region4 region5  white		    pardo		   hh_head_edu 		   hh_head_male hh_head_age		   		 				  		hh_size         //Covariates used by Bargain/Boutin (2021) Paper
 		  
+	   
+	*--------------------------------------------------------------------------------------------------------------------------------*
+	**
+	*Setting up Globals
+	**
+	*--------------------------------------------------------------------------------------------------------------------------------*
+		*do "$datawork/Do files/1. Importing HouseHold Survey (PNAD).do" YOU NEED TO DOWNLOAD THE PNAD WAVES IN .TXT FORMAT TO REPLICATE THIS CODE- SEE ABOVE.
+		*do "$datawork/Do files/2. Harmonizing Household Survey (PNAD)" You need to run do file 1. before running this one.
+		 do "$datawork/Do files/3. Setting up Paper Data.do" 
+		 do "$datawork/Do files/4. Descriptives.do" 
+		 do "$datawork/Do files/5. Rdrobust.do" 
+		 do "$datawork/Do files/6. Continuity Based Design.do" 
+		 do "$datawork/Do files/7. RDD using Local Randomization.do" 
