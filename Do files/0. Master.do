@@ -252,6 +252,11 @@
 		which DCdensity
 		*/
 		
+		  set sslrelax on 
+		  copy https://eml.berkeley.edu/~jmccrary/DCdensity/DCdensity.ado  `"`c(sysdir_plus)'/DCdensity.ado"', public replace
+		  set sslrelax off
+
+		
 		**DataZoom Package
 		net install datazoom_social, from("https://raw.githubusercontent.com/datazoompuc/datazoom_social_stata/master/") force
 		
@@ -285,7 +290,7 @@
 	   * Root folder globals
 	   * -------------------------*
 	   if $user == 1 {
-		   global projectfolder "C:\Users\wb495845\OneDrive - WBG\III. Labor\child-labor-ban-brazil\DataWork\replication package\"				//project file path in your computer
+		   global projectfolder "C:\Users\wb495845\OneDrive - WBG\III. Labor\child-labor-ban-brazil"				//project file path in your computer
 	   }
 	   
 	   **
