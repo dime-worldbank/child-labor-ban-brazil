@@ -319,7 +319,7 @@
 		global bargain_controls			region1 region2 region3 region4 		 color_bargain2 color_bargain5 hh_head_edu_bargain hh_head_male hh_head_age_bargain adults_income_bargain 		hh_size_bargain //Covariates used by Bargain/Boutin (2021) Paper
 		global bargain_controls_our_def region1 region2 region3 region4 region5  white		    pardo		   hh_head_edu 		   hh_head_male hh_head_age		   		 				  		hh_size         //Covariates used by Bargain/Boutin (2021) Paper
 		  
-	   
+	  
 	*--------------------------------------------------------------------------------------------------------------------------------*
 	**
 	*Setting up Globals

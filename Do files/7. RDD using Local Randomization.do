@@ -57,8 +57,10 @@
 		use "$final/child-labor-ban-brazil.dta" if year == 1997 & cohort4_12 == 1, clear
 			cap noi rdwinselect zw4  mom_yrs_school hh_head_edu hh_head_age hh_size ,   seed(2198)	obsmin(1000)						// obsmin() is the minimum number of observations below and above the cutoff. 
 			cap noi rdwinselect zw4  mom_yrs_school hh_head_edu hh_head_age hh_size ,   seed(2198)	nwin(50) plot						// obsmin() is the minimum number of observations below and above the cutoff. 
-		}
 		*/
+		}
+		
+		
 		
 		*________________________________________________________________________________________________________________________________*
 		**
@@ -523,21 +525,6 @@
 	
 	
 	
-	
-	
-	
-	
-	
-	
-	
-	/*
-	use "$final/child-labor-ban-brazil.dta" if urban  == 1	& male == 1 & year == 2007 & cohort1_12 == 1, clear	
-	rdsampsi  	working zw1, samph(10 11)  nratio(0.25) plot
-	
-	use "$final/child-labor-ban-brazil.dta" if urban  == 1	& male == 1 & cohort1_12 == 1, clear	//only boys, urban areas
-	rdrandinf mom_working zw1,  wl(-14) wr(13)  interfci(0.05) seed(493734)	
-
-	*/
 	
 	
 	
