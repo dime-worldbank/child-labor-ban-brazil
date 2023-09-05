@@ -313,8 +313,8 @@
 		use "$final/child-labor-ban-brazil.dta" if year == 1999 & (xw1 >= -9 & xw1 < 9 ) & male == 1 & urban == 1, clear			//12 week bandwidth in 1999
 		label var hh_head_male 		"Head of the household is male"
 		label var oldest_person_hh "Age of the oldest person in the household"
-		iebaltab  mom_yrs_school oldest_person_hh $bargain_controls_our_def [pw = weight],   pttest  format(%12.2fc) grpvar(D1) savetex("$tables/TableA1.tex") rowvarlabels 			///
-		tblnote("Source: PNAD, 1999.") notecombine texdocument  texcaption("Balance test for affected and unaffected cohorts, 12-week bandwidth (1999)") replace
+		iebaltab  mom_yrs_school oldest_person_hh $bargain_controls_our_def [pw = weight],   pttest  format(%12.2fc) grpvar(D1) save("$tables/TableA1.xls") rowvarlabels 			///
+	 replace
 	}	
 				
 	
@@ -348,17 +348,17 @@
 			foreach var of varlist `outcomes' {
 				tw  (lpolyci `var' xw1 if xw1 >= 0, kernel(triangle) degree(0) bw(4) acolor(gs12) fcolor(gs12) clcolor(gray) clwidth(0.3)) 		///
 					(lpolyci `var' xw1 if xw1 <  0, kernel(triangle) degree(0) bw(4) acolor(gs12) fcolor(gs12) clcolor(gray) clwidth(0.3)) 		///
-					(scatter `var' xw1 if xw1 >= -12 & xw1 <  0 ,  sort msymbol(circle) msize(small) mcolor(navy))         		 	///
-					(scatter `var' xw1 if xw1 >=   0 & xw1 <= 12, xlabel(-10 "-42" -5 "-20" 0 "0" 5 "20" 10 "42", valuelabel) sort msymbol(circle) msize(small) mcolor(cranberry)), xline(0) 	///
+					(scatter `var' xw1 if xw1 >= -12 & xw1 <  0 ,  sort msymbol(circle) msize(medium) mcolor(gs8))         		 	///
+					(scatter `var' xw1 if xw1 >=   0 & xw1 <= 12, xlabel(-10 "-42" -5 "-20" 0 "0" 5 "20" 10 "42", valuelabel) sort msymbol(T) msize(medium) mcolor(gs8)), xline(0) 	///
 					legend(off) 																									///
 					plotregion(color(white) fcolor(white) lcolor(white) icolor(white) ifcolor(white) ilcolor(white)) 				///						
-					title({bf:`: variable label `var''}, pos(11) color(navy) span size(medium))										///
-					ytitle("%") xtitle("Age difference from the cutoff (in weeks)", size(small)) saving(short_`var'.gph, replace) 	/// 
+					title({bf:`: variable label `var''}, pos(11) color(black) span size(medsmall))										///
+					ytitle("% of children") xtitle("Age difference from the cutoff (in weeks)", size(small)) saving(short_`var'.gph, replace) 	/// 
 					note("", color(black) fcolor(background) pos(7) size(small)) 
 			}
 			
 			graph combine short_eap.gph short_pwork.gph short_pwork_informal.gph short_study_only.gph, cols(2) graphregion(fcolor(white)) ysize(7) xsize(7) title(, fcolor(white) size(medium) color(cranberry))
-			graph export "$figures/Figure1.pdf", as(pdf) replace
+			graph export "$figures/Figure1.tif", as(tif) replace
 			foreach var of varlist `outcomes' {
 			erase short_`var'.gph
 			}	
@@ -368,7 +368,7 @@
 	**
 	*____________________________________________________________________________________________________________________________________*
 	**
-	*Figure A1
+	*Figure C4
 	*____________________________________________________________________________________________________________________________________*
 	**
 	{
@@ -392,25 +392,25 @@
 			reshape long A_, i(year D1)  j(status) string
 			reshape wide A_, i(year status) j(D1)
 					
-			graph bar (asis)A_0 A_1, bargap(5) bar(2,  lw(0.5) lcolor(navy) fcolor(gs12)) bar(1, lw(0.5) lcolor(emidblue) fcolor(gs12) fintensity(70))	bar(2, lw(0.5) lcolor(navy) fcolor(emidblue) )		///
+			graph bar (asis)A_0 A_1, bargap(5) bar(1, lw(0.5) lcolor(gs8) fcolor(gs12) fintensity(70))	bar(2, lw(0.5) lcolor(gs8) fcolor(gs10) )		///
 			over(status, sort(status) label(labsize(medium)) relabel(1 `" "Economically" "active" "' 2 `" "Paid" "work" "' 3 `"Formal"'  4 `"Informal"' ))																			///
 			blabel(bar, position(outside) orientation(horizontal) size(medsmall) color(black) format (%4.1fc))   																						///
 			title("", pos(12) size(medsmall) color(black)) subtitle(, pos(12) size(medsmall) color(black)) 																								///
-			ytitle("%", size(medsmall)) 																																								///
-			yscale(off)	 ylabel(,nogrid nogextend) 																																						///	
+			ytitle("% of children", size(medsmall)) 																																								///
+			 ylabel(,nogrid nogextend) 																																						///	
 			plotregion(color(white) fcolor(white) lcolor(white) icolor(white) ifcolor(white) ilcolor(white)) 																							///						
 			legend(order(1 "Unnafected cohort" 2 "Affected")  region(lwidth(none) color(white) fcolor(none)) cols(2) size(medium) position(12))      		            							///
 			note("" , color(black) fcolor(background) pos(7) size(small)) 																											///
 			xsize(6) ysize(5) 
 
-			local nb =`.Graph.plotregion1.barlabels.arrnels'
-			di `nb'
-			forval i = 1/`nb' {
-			  di "`.Graph.plotregion1.barlabels[`i'].text[1]'"
-			  .Graph.plotregion1.barlabels[`i'].text[1]="`.Graph.plotregion1.barlabels[`i'].text[1]'%"
-			}
-			.Graph.drawgraph
-			graph export "$figures/FigureA1.pdf", as(pdf) replace
+			*local nb =`.Graph.plotregion1.barlabels.arrnels'
+			*di `nb'
+			*forval i = 1/`nb' {
+			*  di "`.Graph.plotregion1.barlabels[`i'].text[1]'"
+			*  .Graph.plotregion1.barlabels[`i'].text[1]="`.Graph.plotregion1.barlabels[`i'].text[1]'%"
+			*}
+			*.Graph.drawgraph
+			graph export "$figures/FigureC4.tif", as(tif) replace
 		}
 	}		
 		
@@ -418,7 +418,7 @@
 	*
 	*____________________________________________________________________________________________________________________________________*
 	**
-	*Figure A2
+	*Figure C2
 	*____________________________________________________________________________________________________________________________________*
 	**
 	{
@@ -478,7 +478,7 @@
 	**
 	*____________________________________________________________________________________________________________________________________*
 	**
-	*Figure A3
+	*Figure C3
 	*____________________________________________________________________________________________________________________________________*
 	**
 	{
@@ -494,9 +494,9 @@
 			br if D1 == 0
 			
 			tw 	///
-				(line pwork year		, msize(2) msymbol(T) lwidth(0.5) color(emidblue)  lp(solid) connect(direct) recast(connected) mlabel(pwork) 	 mlabcolor(black) mlabpos(12))   ///  
-				(line eap year			, msize(2) msymbol(D) lwidth(0.5) color(erose) 	   lp(solid) connect(direct) recast(connected) mlabel(eap) 		 mlabcolor(black) mlabpos(3)) 	///  
-				(line schoolatt year 	, by(D1, note("")) msize(2) msymbol(O) lwidth(0.5) color(gs12) 	   lp(solid) connect(direct) recast(connected) mlabel(schoolatt) mlabcolor(black) mlabpos(12) 	///
+				(line pwork year		, msize(2) msymbol(T) lwidth(0.5) color(gs8)  lp(solid) connect(direct) recast(connected) mlabel(pwork) 	 mlabcolor(black) mlabpos(12))   ///  
+				(line eap year			, msize(2) msymbol(D) lwidth(0.5) color(gs12) 	   lp(dot) connect(direct) recast(connected) mlabel(eap) 		 mlabcolor(black) mlabpos(3)) 	///  
+				(line schoolatt year 	, by(D1, note("")) msize(2) msymbol(O) lwidth(0.5) color(gs5) 	   lp(shortdash) connect(direct) recast(connected) mlabel(schoolatt) mlabcolor(black) mlabpos(12) 	///
 				ylabel(, labsize(small) angle(horizontal) format(%2.0fc)) 																												///
 				xscale(r(-1(1)7)) ///
 				xlabel(0 `" "13-years" "old" "' 1 `" "14" "" "' 2 `" "16" "" "' 3 `" "17" "" "' 4 `" "18" "" "' 5 `" "19" "" "' 6 `" "20" "" "' 7 `" "21" "" "', labsize(medium) gmax angle(horizontal)) 											///
@@ -505,14 +505,14 @@
 				legend(order(1 "Paid work" 2 "Economically active" 3 "Attending school") pos(12) cols(3) region(lstyle(none) fcolor(none)) size(large))  			///
 				xsize(9) ysize(5) 	///
 				note(, span color(black) fcolor(background) pos(7) size(small))) 
-				graph export "$figures/FigureA3.pdf", as(pdf) replace
+				graph export "$figures/FigureC3.tif", as(tif) replace
 		}
 		
 	
 	**
 	*____________________________________________________________________________________________________________________________________*
 	**
-	*Figure A4
+	*Figure C5
 	*____________________________________________________________________________________________________________________________________*
 	**
 	{	
@@ -545,7 +545,7 @@
 		  (line lo `evalname' if `evalname' > `breakpoint' & `evalname' < 31, lcolor(black) lwidth(vthin)),             ///
 		  xline(`breakpoint', lcolor(black)) legend(off) ///
 		  xlabel(-39(5)39) xtitle("Running variable, in weeks", size(large)) ytitle("Density", size(large)) 
-			graph export "$figures/FigureA4.pdf", as(pdf) replace
+			graph export "$figures/FigureC5.tif", as(tif) replace
 	}
 	*/
 	

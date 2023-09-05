@@ -127,7 +127,7 @@
 							if `sample' == 2 | `sample' == 4 use "$final/child-labor-ban-brazil.dta" if (year  == 1999 | year == 2001) & cohort1_12 == 1, clear
 							
 							replace `variable' = `variable'*100		
-									
+							
 							if `sample' == 1 | `sample' == 2 bargain_sample 					//running the exclusions suggested by Bargain/Boutin
 													
 								reg `variable' zw1 `controls' D1 i.year [aw = weight] if cohort1_`bandwidth' == 1							, cluster(zw1)			//boys/girls, rural/urban

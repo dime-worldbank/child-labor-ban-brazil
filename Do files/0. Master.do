@@ -228,7 +228,7 @@
 	*--------------------------------------------------------------------------------------------------------------------------------*
 	   
 	  *Installing packages needed to run all dofiles called by this master dofile. */
-		version 16   	
+	   version 16   	
 	   set more off, permanently 
 	   local user_commands ietoolkit rdrobust mat2txt qqvalue somersd parmest matvsort estout sumstats unique
 	   foreach command of local user_commands   {
@@ -244,6 +244,12 @@
 		net install rddensity,  from(https://github.com/rdpackages/rddensity/tree/master/stata) replace
 		net install lpdensity,  from(https://github.com/nppackages/lpdensity/tree/master/stata) replace
 
+		
+		net install rdlocrand, from (https://raw.githubusercontent.com/rdpackages/rdlocrand/master/stata) replace
+		net install rddensity, from (https://raw.githubusercontent.com/rdpackages/rddensity/master/stata) replace
+		net install lpdensity, from (https://raw.githubusercontent.com/rdpackages/lpdensity/master/stata) replace
+
+
 		/*
 		*MC Crary test
 		sysdir  //locations
@@ -252,10 +258,10 @@
 		which DCdensity
 		*/
 		
-		  set sslrelax on 
-		  copy https://eml.berkeley.edu/~jmccrary/DCdensity/DCdensity.ado  `"`c(sysdir_plus)'/DCdensity.ado"', public replace
-		  set sslrelax off
-
+		set sslrelax on 
+		copy https://eml.berkeley.edu/~jmccrary/DCdensity/DCdensity.ado  `"`c(sysdir_plus)'/DCdensity.ado"', public replace
+		set sslrelax off
+		 
 		
 		**DataZoom Package
 		net install datazoom_social, from("https://raw.githubusercontent.com/datazoompuc/datazoom_social_stata/master/") force
@@ -290,7 +296,7 @@
 	   * Root folder globals
 	   * -------------------------*
 	   if $user == 1 {
-		   global projectfolder "C:\Users\wb495845\OneDrive - WBG\III. Labor\child-labor-ban-brazil"				//project file path in your computer
+		   global projectfolder "C:\Users\Brian\OneDrive\Desktop\replication package"				//project file path in your computer
 	   }
 	   
 	   **
@@ -322,13 +328,26 @@
 	  
 	*--------------------------------------------------------------------------------------------------------------------------------*
 	**
-	*Setting up Globals
+	*Running do files
 	**
 	*--------------------------------------------------------------------------------------------------------------------------------*
+		do "$datawork/Do files/ado/iebaltab.ado"
+		do "$datawork/Do files/ado/lpdensity.ado"
+		do "$datawork/Do files/ado/rdsensitivity.ado"
+		do "$datawork/Do files/ado/rwolf2.ado"
+		do "$datawork/Do files/ado/rdbwselect.ado"
+		do "$datawork/Do files/ado/rdplot.ado"
+		do "$datawork/Do files/ado/rdrobust.ado"
+		do "$datawork/Do files/ado/rdwinselect.ado"
+		do "$datawork/Do files/ado/rdwinselect_allcovs.ado"
+		do "$datawork/Do files/ado/rdrandinf.ado"
+		do "$datawork/Do files/ado/rdrandinf_model.ado"
+		
+		/*
 		*do "$datawork/Do files/1. Importing HouseHold Survey (PNAD).do" YOU NEED TO DOWNLOAD THE PNAD WAVES IN .TXT FORMAT TO REPLICATE THIS CODE- SEE ABOVE.
 		*do "$datawork/Do files/2. Harmonizing Household Survey (PNAD)" You need to run do file 1. before running this one.
-		 do "$datawork/Do files/3. Setting up Paper Data.do" 
-		 do "$datawork/Do files/4. Descriptives.do" 
+		*do "$datawork/Do files/3. Setting up Paper Data.do" 
+		*do "$datawork/Do files/4. Descriptives.do" 
 		 do "$datawork/Do files/5. Rdrobust.do" 
 		 do "$datawork/Do files/6. Continuity Based Design.do" 
 		 do "$datawork/Do files/7. RDD using Local Randomization.do" 

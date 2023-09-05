@@ -41,7 +41,7 @@
 			cap noi  rdwinselect  zw1 mom_yrs_school hh_head_edu hh_head_age hh_size,   seed(980324)	obsmin(500)							// obsmin() is the minimum number of observations below and above the cutoff. 
 			//-14 e 13  selected window 
 			cap noi  rdwinselect  zw1 mom_yrs_school hh_head_edu hh_head_age hh_size,   seed(980324)	nwin(50) plot						// obsmin() is the minimum number of observations below and above the cutoff. 
-			cap noi  graph export "$figures/FigureA5.pdf", as(pdf) replace
+			cap noi  graph export "$figures/FigureC1.tif", as(tif) replace
 		
 		/*
 		**
@@ -414,14 +414,14 @@
 							if shortterm_outcomes == 6 local title = "Only attending school"
 							
 							twoway  ///
-							||  	scatter ATE 	 year_n1 ,   color(orange) msize(large) msymbol(O) 																					///
-							|| 		rcap lower upper year_n1 ,  lcolor(navy) lwidth( medthick )  	 																					///
-							yline(0, lw(0.6) lp(shortdash) lcolor(cranberry*06))  ylabel(, labsize(small) gmax angle(horizontal) format (%4.1fc)) 				 						///
+							||  	scatter ATE 	 year_n1 ,   color(gs8) msize(large) msymbol(O) 																					///
+							|| 		rcap lower upper year_n1 ,  lcolor(black) lwidth( medthick )  	 																					///
+							yline(0, lw(0.6) lp(shortdash) lcolor(gs10))  ylabel(, labsize(small) gmax angle(horizontal) format (%4.1fc)) 				 						///
 							xlabel(1 `" "13" "years" "old" "' 2 `" "14" "years" "old" "' 3 `" "16" "years" "old" "' 4 `" "17" "years" "old" "' 5 `" "18" "years" "old" "' 6 `" "19" "years" "old" "' 7 `" "20" "years" "old" "' 8 `" "21" "years" "old" "' ,  labsize(small)) ///
 							xtitle("", size(small)) 											  																						///
 							yscale(r(`min' `max'))	 																																	///
 							ytitle("ATE, in pp", size(small))					 																										///					
-							title({bf: `title'}, pos(11) color(navy) span size(medsmall))														///
+							title({bf: `title'}, pos(11) color(black) span size(medsmall))														///
 							legend(off) xsize(6) ysize(4)																																			///
 							note(".", color(black) fcolor(background) pos(7) size(small)) saving(short`figure'.gph, replace)
 							local figure = `figure' + 1
@@ -431,7 +431,7 @@
 					
 					*Graph with estimations for shortterm outcomes
 					graph combine short1.gph short2.gph short3.gph short4.gph short5.gph short6.gph, cols(3) graphregion(fcolor(white)) ysize(10) xsize(15) title(, fcolor(white) size(medium) color(cranberry))
-					if `bandwidth' == 10 graph export "$figures/Figure2.pdf",  as(pdf) replace
+					if `bandwidth' == 10 graph export "$figures/Figure2.tif",  as(tif) replace
 				
 					forvalues figure = 1(1)6 {
 					erase short`figure'.gph
@@ -452,6 +452,7 @@
 		**The command rdsensitivity calculates how sensitity is our estimation to different windows around the cutoff. 
 		*--------------------------------------------------------------------------------------------------------------------------------*
 		{
+			/*
 			**
 			*Local Randomization Inference Package
 			**
@@ -473,7 +474,7 @@
 														//wlist is is the window to the right of the cutoff to be tested
 														//tlist specifies the list of null values for the treatment effect
 				}
-									
+			*/						
 			**
 			*Figure
 			**
@@ -492,25 +493,16 @@
 					twoway contour pvalue t w, ccuts(0(0.1)1) xlabel(10(1)18, labsize(small)) ylabel(, labsize(small) nogrid) ///
 					xtitle("Weeks around cutoff", size(medsmall)) ///
 					ytitle("ATE under H0", size(medsmall)) ///
-					title("{bf:`title'}", size(large) color(navy) pos(11)) ///
+					title("{bf:`title'}", size(large) color(black) pos(11)) ///
 					saving("$figures/Robustness_`name'.gph", replace)
 				
 				}
 			
 				**
 				*Robusteness check using 1999 PNAD wave
-				graph combine   "$figures/Robustness_eap.gph" 			       "$figures/Robustness_pwork.gph" 			  		///
-				, graphregion(fcolor(white)) cols(3) ysize(6) xsize(12) title(, fcolor(white) size(medium) color(cranberry))	
-				graph export  "$figures/FigureA6a.pdf", as(pdf) replace
-				
-				graph combine    "$figures/Robustness_pwork_formal.gph"        "$figures/Robustness_pwork_informal.gph"  			        ///
-				, graphregion(fcolor(white)) cols(3) ysize(6) xsize(12) title(, fcolor(white) size(medium) color(cranberry))	
-				graph export  "$figures/FigureA6b.pdf", as(pdf) replace
-				
-				graph combine    "$figures/Robustness_schoolatt.gph"  "$figures/Robustness_study_only.gph" 		        ///
-				, graphregion(fcolor(white)) cols(3) ysize(6) xsize(12) title(, fcolor(white) size(medium) color(cranberry))	
-				graph export  "$figures/FigureA6c.pdf", as(pdf) replace
-				
+				graph combine   "$figures/Robustness_eap.gph" 			       "$figures/Robustness_pwork.gph" 	  "$figures/Robustness_pwork_formal.gph"        "$figures/Robustness_pwork_informal.gph"  	 "$figures/Robustness_schoolatt.gph"  "$figures/Robustness_study_only.gph" 			  		///
+				, graphregion(fcolor(white)) cols(2) ysize(18) xsize(12) title(, fcolor(white) size(medium) color(cranberry))	
+				graph export  "$figures/FigureC6.tif", as(tif) replace
 				**
 				*Erasing charts
 				foreach name in $shortterm_outcomes { 
